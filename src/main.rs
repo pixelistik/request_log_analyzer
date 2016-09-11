@@ -1,52 +1,72 @@
 extern crate regex;
 use regex::Regex;
 
+use std::io::{self, BufReader};
+use std::io::BufRead;
+use std::io::Read;
+use std::fs::File;
+extern crate time;
+use time::Tm;
+use time::strptime;
+
+#[derive(Eq, PartialEq)]
+#[derive(Debug)]
+pub struct Request {
+    time: Tm,
+    url: String
+}
+
+fn open_logfile(path: &str) -> Result<String, io::Error> {
+    let mut f = try!(File::open("src/test/simple-1.log"));
+
+    let f = BufReader::new(f);
+
+    let mut requests: Vec<Request> = Vec::new();
+
+    for line in f.lines() {
+        let r = try!(parse_line(line.unwrap()));
+
+        requests.push(r)
+    }
+
+    println!("So many: {}", requests.len());
+
+    Ok("bla".to_string())
+}
+
+pub fn parse_line(log_line: String) -> Result<Request, io::Error> {
+    let parts: Vec<&str> = log_line.split(" ").collect();
+
+    let url = parts[5];
+
+    Ok(Request {
+        time: strptime(parts[0], "%d/%b/%Y:%H:%M:%S").unwrap(),
+        url: url.to_string()
+    })
+
+}
 
 fn main() {
-    println!("Hello, world!");
+    println!("{}", open_logfile("some").unwrap());
 }
-
-
-pub fn extract_id(log_line: &str) -> Option<i32> {
-	let re = Regex::new(r"\[([0-9]+)\]").unwrap();
-	let cap = re.captures(log_line);
-
-	let m = cap.unwrap().at(1);
-	println!("{}", m.unwrap());
-
-	let result = m.unwrap().parse::<i32>();
-
-	match result {
-		Ok(i) => {
-			return Some(i)
-		}
-		Err(_e) => {
-			return None
-		}
-	}
-}
-
 
 #[cfg(test)]
 mod tests {
 	use super::*;
+    extern crate time;
+    use time::strptime;
 
-	#[test]
-	fn test_extract() {
-		let result: Option<i32> = extract_id("Some [123] log line");
-		assert_eq!(result, Some(123))
-	}
+    #[test]
+    fn test_parse_line() {
+        let line = "08/Apr/2016:09:58:47 +0200 [02] -> GET /content/some/other.html HTTP/1.1".to_string();
 
-	#[test]
-	fn test_extract2() {
-		let result: Option<i32> = extract_id("Some [9] log line");
-		assert_eq!(result, Some(9))
-	}
+        let expected = Request {
+            time: strptime("08/Apr/2016:09:58:47 +0200", "%d/%b/%Y:%H:%M:%S").unwrap(),
+            url: "/content/some/other.html".to_string()
+        };
 
-	#[test]
-	#[should_panic]
-	fn test_no_id() {
-		let result: Option<i32> = extract_id("Some log line without an ID");
-	}
+        let result = parse_line(line);
 
+        assert_eq!(result.unwrap(), expected)
+    }
 }
