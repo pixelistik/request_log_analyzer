@@ -3,7 +3,6 @@ use regex::Regex;
 
 use std::io::{self, BufReader};
 use std::io::BufRead;
-use std::io::Read;
 use std::fs::File;
 extern crate time;
 use time::Tm;
@@ -12,12 +11,17 @@ use time::strptime;
 #[derive(Eq, PartialEq)]
 #[derive(Debug)]
 pub struct Request {
+    id: i32,
     time: Tm,
-    url: String
+    url: String,
 }
 
-fn open_logfile(path: &str) -> Result<String, io::Error> {
-    let mut f = try!(File::open("src/test/simple-1.log"));
+pub struct Response {
+
+}
+
+fn open_logfile(path: &str) -> Result<Vec<Request>, io::Error> {
+    let f = try!(File::open(path));
 
     let f = BufReader::new(f);
 
@@ -25,29 +29,34 @@ fn open_logfile(path: &str) -> Result<String, io::Error> {
 
     for line in f.lines() {
         let r = try!(parse_line(line.unwrap()));
-
+        println!("{:?}", r);
         requests.push(r)
     }
 
-    println!("So many: {}", requests.len());
-
-    Ok("bla".to_string())
+    Ok(requests)
 }
 
 pub fn parse_line(log_line: String) -> Result<Request, io::Error> {
     let parts: Vec<&str> = log_line.split(" ").collect();
 
+
+    let id = parts[2];
     let url = parts[5];
 
     Ok(Request {
+        id: id[1..id.len()-1].parse().unwrap(),
         time: strptime(parts[0], "%d/%b/%Y:%H:%M:%S").unwrap(),
         url: url.to_string()
     })
-
 }
 
 fn main() {
-    println!("{}", open_logfile("some").unwrap());
+    let requests = open_logfile("src/test/simple-1.log");
+
+    match requests {
+        Ok(requests) => println!("So many: {}", requests.len()),
+        Err(e) => println!("Could not parse, error {}", e),
+    }
 }
 
 #[cfg(test)]
@@ -61,6 +70,7 @@ mod tests {
         let line = "08/Apr/2016:09:58:47 +0200 [02] -> GET /content/some/other.html HTTP/1.1".to_string();
 
         let expected = Request {
+            id: 2,
             time: strptime("08/Apr/2016:09:58:47 +0200", "%d/%b/%Y:%H:%M:%S").unwrap(),
             url: "/content/some/other.html".to_string()
         };
