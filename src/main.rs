@@ -11,6 +11,140 @@ use time::Duration;
 
 #[derive(Eq, PartialEq)]
 #[derive(Debug)]
+pub enum HttpStatus {
+    Continue,
+    SwitchingProtocols,
+    Processing,
+    OK,
+    Created,
+    Accepted,
+    NonAuthoritativeInformation,
+    NoContent,
+    ResetContent,
+    PartialContent,
+    MultiStatus,
+    AlreadyReported,
+    IMUsed,
+    MultipleChoices,
+    MovedPermanently,
+    Found,
+    SeeOther,
+    NotModified,
+    UseProxy,
+    TemporaryRedirect,
+    PermanentRedirect,
+    BadRequest,
+    Unauthorized,
+    PaymentRequired,
+    Forbidden,
+    NotFound,
+    MethodNotAllowed,
+    NotAcceptable,
+    ProxyAuthenticationRequired,
+    RequestTimeout,
+    Conflict,
+    Gone,
+    LengthRequired,
+    PreconditionFailed,
+    PayloadTooLarge,
+    URITooLong,
+    UnsupportedMediaType,
+    RangeNotSatisfiable,
+    ExpectationFailed,
+    ImaTeapot,
+    MisdirectedRequest,
+    UnprocessableEntity,
+    Locked,
+    FailedDependency,
+    UpgradeRequired,
+    PreconditionRequired,
+    TooManyRequests,
+    RequestHeaderFieldsTooLarge,
+    UnavailableForLegalReasons,
+    InternalServerError,
+    NotImplemented,
+    BadGateway,
+    ServiceUnavailable,
+    GatewayTimeout,
+    HTTPVersionNotSupported,
+    VariantAlsoNegotiates,
+    InsufficientStorage,
+    LoopDetected,
+    NotExtended,
+    NetworkAuthenticationRequired,
+    Unregistered,
+}
+
+impl HttpStatus {
+    fn from_code(code: i32) -> HttpStatus {
+        match code {
+            100 => HttpStatus::Continue,
+            101 => HttpStatus::SwitchingProtocols,
+            102 => HttpStatus::Processing,
+            200 => HttpStatus::OK,
+            201 => HttpStatus::Created,
+            202 => HttpStatus::Accepted,
+            203 => HttpStatus::NonAuthoritativeInformation,
+            204 => HttpStatus::NoContent,
+            205 => HttpStatus::ResetContent,
+            206 => HttpStatus::PartialContent,
+            207 => HttpStatus::MultiStatus,
+            208 => HttpStatus::AlreadyReported,
+            226 => HttpStatus::IMUsed,
+            300 => HttpStatus::MultipleChoices,
+            301 => HttpStatus::MovedPermanently,
+            302 => HttpStatus::Found,
+            303 => HttpStatus::SeeOther,
+            304 => HttpStatus::NotModified,
+            305 => HttpStatus::UseProxy,
+            307 => HttpStatus::TemporaryRedirect,
+            308 => HttpStatus::PermanentRedirect,
+            400 => HttpStatus::BadRequest,
+            401 => HttpStatus::Unauthorized,
+            402 => HttpStatus::PaymentRequired,
+            403 => HttpStatus::Forbidden,
+            404 => HttpStatus::NotFound,
+            405 => HttpStatus::MethodNotAllowed,
+            406 => HttpStatus::NotAcceptable,
+            407 => HttpStatus::ProxyAuthenticationRequired,
+            408 => HttpStatus::RequestTimeout,
+            409 => HttpStatus::Conflict,
+            410 => HttpStatus::Gone,
+            411 => HttpStatus::LengthRequired,
+            412 => HttpStatus::PreconditionFailed,
+            413 => HttpStatus::PayloadTooLarge,
+            414 => HttpStatus::URITooLong,
+            415 => HttpStatus::UnsupportedMediaType,
+            416 => HttpStatus::RangeNotSatisfiable,
+            417 => HttpStatus::ExpectationFailed,
+            418 => HttpStatus::ImaTeapot,
+            421 => HttpStatus::MisdirectedRequest,
+            422 => HttpStatus::UnprocessableEntity,
+            423 => HttpStatus::Locked,
+            424 => HttpStatus::FailedDependency,
+            426 => HttpStatus::UpgradeRequired,
+            428 => HttpStatus::PreconditionRequired,
+            429 => HttpStatus::TooManyRequests,
+            431 => HttpStatus::RequestHeaderFieldsTooLarge,
+            451 => HttpStatus::UnavailableForLegalReasons,
+            500 => HttpStatus::InternalServerError,
+            501 => HttpStatus::NotImplemented,
+            502 => HttpStatus::BadGateway,
+            503 => HttpStatus::ServiceUnavailable,
+            504 => HttpStatus::GatewayTimeout,
+            505 => HttpStatus::HTTPVersionNotSupported,
+            506 => HttpStatus::VariantAlsoNegotiates,
+            507 => HttpStatus::InsufficientStorage,
+            508 => HttpStatus::LoopDetected,
+            510 => HttpStatus::NotExtended,
+            511 => HttpStatus::NetworkAuthenticationRequired,
+            _ => HttpStatus::Unregistered,
+        }
+    }
+}
+
+#[derive(Eq, PartialEq)]
+#[derive(Debug)]
 pub struct Request {
     id: i32,
     time: Tm,
@@ -24,25 +158,39 @@ pub struct Response {
     time: Tm,
     mime_type: String,
     response_time: Duration,
+    http_status: HttpStatus,
 }
 
-fn open_logfile(path: &str) -> Result<Vec<Request>, io::Error> {
+pub fn open_logfile(path: &str) -> Result<(Vec<Request>,Vec<Response>), io::Error> {
     let f = try!(File::open(path));
 
     let f = BufReader::new(f);
 
     let mut requests: Vec<Request> = Vec::new();
+    let mut responses: Vec<Response> = Vec::new();
+
 
     for line in f.lines() {
-        let r = try!(parse_request_line(line.unwrap()));
-        println!("{:?}", r);
-        requests.push(r)
+        let line_value = &line.unwrap();
+
+        if line_value.contains("->") {
+            let r = try!(parse_request_line(&line_value));
+            println!("{:#?}", r);
+            requests.push(r)
+        }
+
+        if line_value.contains("<-") {
+            let r = try!(parse_response_line(&line_value));
+            println!("{:#?}", r);
+            responses.push(r)
+        }
+
     }
 
-    Ok(requests)
+    Ok((requests, responses))
 }
 
-pub fn parse_request_line(log_line: String) -> Result<Request, io::Error> {
+pub fn parse_request_line(log_line: &String) -> Result<Request, io::Error> {
     let parts: Vec<&str> = log_line.split(" ").collect();
 
 
@@ -56,29 +204,29 @@ pub fn parse_request_line(log_line: String) -> Result<Request, io::Error> {
     })
 }
 
-pub fn parse_response_line(log_line: String) -> Result<Response, io::Error> {
+pub fn parse_response_line(log_line: &String) -> Result<Response, io::Error> {
     let parts: Vec<&str> = log_line.split(" ").collect();
 
     let id = parts[2];
     let response_time = parts[parts.len()-1];
     let mime_type = parts[5];
+    let status_code = parts[4];
 
     Ok(Response {
         id: id[1..id.len()-1].parse().unwrap(),
         time: strptime(parts[0], "%d/%b/%Y:%H:%M:%S").unwrap(),
         response_time: Duration::milliseconds(response_time[0..response_time.len()-2].parse().unwrap()),
-        mime_type: mime_type.to_string()
+        mime_type: mime_type.to_string(),
+        http_status: HttpStatus::from_code(status_code.parse().unwrap()),
     })
 }
 
 
 fn main() {
-    let requests = open_logfile("src/test/simple-1.log");
-
-    match requests {
-        Ok(requests) => println!("So many: {}", requests.len()),
-        Err(e) => println!("Could not parse, error {}", e),
-    }
+    let lines = open_logfile("src/test/simple-1.log");
+    let (requests, responses) = lines.unwrap();
+    println!("So many requests: {}", requests.len());
+    println!("So many responses: {}", responses.len());
 }
 
 #[cfg(test)]
@@ -98,7 +246,7 @@ mod tests {
             url: "/content/some/other.html".to_string()
         };
 
-        let result = parse_request_line(line);
+        let result = parse_request_line(&line);
 
         assert_eq!(result.unwrap(), expected)
     }
@@ -112,10 +260,20 @@ mod tests {
             time: strptime("08/Apr/2016:09:58:48 +0200", "%d/%b/%Y:%H:%M:%S").unwrap(),
             mime_type: "text/html".to_string(),
             response_time: Duration::milliseconds(10),
+            http_status: HttpStatus::OK,
         };
 
-        let result = parse_response_line(line);
+        let result = parse_response_line(&line);
 
         assert_eq!(result.unwrap(), expected)
+    }
+
+    #[test]
+    fn test_open_logfile() {
+        let lines = open_logfile("src/test/simple-1.log");
+        let (requests, responses) = lines.unwrap();
+
+        assert_eq!(requests.len(), 2);
+        assert_eq!(responses.len(), 2);
     }
 }
