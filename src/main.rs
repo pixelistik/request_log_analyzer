@@ -28,7 +28,7 @@ fn open_logfile(path: &str) -> Result<Vec<Request>, io::Error> {
     let mut requests: Vec<Request> = Vec::new();
 
     for line in f.lines() {
-        let r = try!(parse_line(line.unwrap()));
+        let r = try!(parse_request_line(line.unwrap()));
         println!("{:?}", r);
         requests.push(r)
     }
@@ -36,7 +36,7 @@ fn open_logfile(path: &str) -> Result<Vec<Request>, io::Error> {
     Ok(requests)
 }
 
-pub fn parse_line(log_line: String) -> Result<Request, io::Error> {
+pub fn parse_request_line(log_line: String) -> Result<Request, io::Error> {
     let parts: Vec<&str> = log_line.split(" ").collect();
 
 
@@ -66,7 +66,7 @@ mod tests {
     use time::strptime;
 
     #[test]
-    fn test_parse_line() {
+    fn test_parse_request_line() {
         let line = "08/Apr/2016:09:58:47 +0200 [02] -> GET /content/some/other.html HTTP/1.1".to_string();
 
         let expected = Request {
@@ -75,7 +75,7 @@ mod tests {
             url: "/content/some/other.html".to_string()
         };
 
-        let result = parse_line(line);
+        let result = parse_request_line(line);
 
         assert_eq!(result.unwrap(), expected)
     }
