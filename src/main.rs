@@ -151,6 +151,18 @@ pub struct Request {
     url: String,
 }
 
+impl Request {
+    fn get_matching_response<'a>(&'a self, responses: &'a Vec<Response>) -> Option<&'a Response> {
+        for response in responses {
+            if self.id == response.id {
+                return Some(&response)
+            }
+        }
+
+        Some(&responses[0])
+    }
+}
+
 #[derive(Eq, PartialEq)]
 #[derive(Debug)]
 pub struct Response {
@@ -275,5 +287,15 @@ mod tests {
 
         assert_eq!(requests.len(), 2);
         assert_eq!(responses.len(), 2);
+    }
+
+    #[test]
+    fn test_get_matching_response() {
+        let lines = open_logfile("src/test/simple-1.log");
+        let (requests, responses) = lines.unwrap();
+
+        let result = requests[0].get_matching_response(&responses);
+
+        assert_eq!(*result.unwrap(), responses[0]);
     }
 }
