@@ -159,7 +159,7 @@ impl Request {
             }
         }
 
-        Some(&responses[0])
+        None
     }
 }
 
@@ -297,5 +297,21 @@ mod tests {
         let result = requests[0].get_matching_response(&responses);
 
         assert_eq!(*result.unwrap(), responses[0]);
+    }
+
+    #[test]
+    fn test_get_matching_response_none_found() {
+        let lines = open_logfile("src/test/simple-1.log");
+        let (requests, responses) = lines.unwrap();
+
+        let request_without_matching = Request {
+            id: 999,
+            time: strptime("08/Apr/2016:09:58:47 +0200", "%d/%b/%Y:%H:%M:%S").unwrap(),
+            url: "/content/some/other.html".to_string()
+        };
+
+        let result = request_without_matching.get_matching_response(&responses);
+
+        assert!(result.is_none());
     }
 }
