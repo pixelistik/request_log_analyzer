@@ -233,6 +233,27 @@ pub fn parse_response_line(log_line: &String) -> Result<Response, io::Error> {
     })
 }
 
+pub struct RequestResponsePair<'a> {
+    request: &'a Request,
+    response: &'a Response
+}
+
+pub fn pair_requests_responses<'a>(requests: &'a Vec<Request>, responses: &'a Vec<Response>) -> &'a Vec<RequestResponsePair<'a>> {
+    let mut request_response_pairs: Vec<RequestResponsePair> = Vec::new();
+
+    for request in requests {
+        match request.get_matching_response(responses) {
+            Some(response) => request_response_pairs.push(RequestResponsePair{
+                request: request,
+                response: response
+            }),
+            None => println!("none"),
+        }
+    }
+
+    &request_response_pairs
+}
+
 
 fn main() {
     let lines = open_logfile("src/test/simple-1.log");
@@ -321,5 +342,13 @@ mod tests {
         let result = request_without_matching.get_matching_response(&responses);
 
         assert!(result.is_none());
+    }
+
+    #[test]
+    fn test_pair_requests_resonses() {
+        let lines = open_logfile("src/test/simple-1.log");
+        let (requests, responses) = lines.unwrap();
+
+        let result = pair_requests_responses(&requests, &responses);
     }
 }
