@@ -328,7 +328,7 @@ mod tests {
     #[test]
     fn test_get_matching_response_none_found() {
         let lines = open_logfile("src/test/simple-1.log");
-        let (requests, responses) = lines.unwrap();
+        let (_, responses) = lines.unwrap();
 
         let request_without_matching = Request {
             id: 999,
