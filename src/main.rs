@@ -1,6 +1,3 @@
-extern crate regex;
-use regex::Regex;
-
 use std::io::{self, BufReader};
 use std::io::BufRead;
 use std::fs::File;

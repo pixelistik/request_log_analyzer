@@ -4,5 +4,4 @@ version = "0.1.0"
 authors = ["vagrant"]
 
 [dependencies]
-regex = "0.1.75"
 time = "0.1"
