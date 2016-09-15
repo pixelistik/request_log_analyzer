@@ -257,6 +257,12 @@ fn main() {
     let (requests, responses) = lines.unwrap();
     println!("So many requests: {}", requests.len());
     println!("So many responses: {}", responses.len());
+
+    let pairs: Vec<RequestResponsePair> = pair_requests_responses(requests, responses);
+
+    let times: Vec<i64> = pairs.iter().map(|rr| rr.response.response_time.num_milliseconds()).collect();
+    let sum: i64 = times.iter().sum();
+    println!("{}", sum);
 }
 
 #[cfg(test)]
