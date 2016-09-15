@@ -235,10 +235,10 @@ pub struct RequestResponsePair {
     response: Response
 }
 
-pub fn pair_requests_responses(mut requests:Vec<Request>, responses: Vec<Response>) -> Vec<RequestResponsePair> {
+pub fn pair_requests_responses(requests:Vec<Request>, responses: Vec<Response>) -> Vec<RequestResponsePair> {
     let mut request_response_pairs: Vec<RequestResponsePair> = Vec::new();
 
-    for request in requests.drain(..) {
+    for request in requests  {
         match request.get_matching_response(&responses) {
             Some(response) => request_response_pairs.push(RequestResponsePair{
                 request: request.clone(),
