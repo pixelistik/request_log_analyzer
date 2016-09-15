@@ -349,5 +349,8 @@ mod tests {
         let result = pair_requests_responses(requests, responses);
 
         assert_eq!(result.len(), 2);
+
+        assert_eq!(result[0].request.id, result[0].response.id);
+        assert_eq!(result[1].request.id, result[1].response.id);
     }
 }
