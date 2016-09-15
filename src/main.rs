@@ -9,7 +9,7 @@ use time::Tm;
 use time::strptime;
 use time::Duration;
 
-#[derive(Eq, PartialEq)]
+#[derive(Eq, PartialEq, Clone)]
 #[derive(Debug)]
 pub enum HttpStatus {
     Continue,
@@ -143,7 +143,7 @@ impl HttpStatus {
     }
 }
 
-#[derive(Eq, PartialEq)]
+#[derive(Eq, PartialEq, Clone)]
 #[derive(Debug)]
 pub struct Request {
     id: i32,
@@ -152,10 +152,10 @@ pub struct Request {
 }
 
 impl Request {
-    fn get_matching_response<'a>(&'a self, responses: &'a Vec<Response>) -> Option<&'a Response> {
+    fn get_matching_response<'a>(&'a self, responses: &'a Vec<Response>) -> Option<&Response> {
         for response in responses {
             if self.id == response.id {
-                return Some(&response)
+                return Some(response)
             }
         }
 
@@ -163,7 +163,7 @@ impl Request {
     }
 }
 
-#[derive(Eq, PartialEq)]
+#[derive(Eq, PartialEq, Clone)]
 #[derive(Debug)]
 pub struct Response {
     id: i32,
@@ -233,25 +233,25 @@ pub fn parse_response_line(log_line: &String) -> Result<Response, io::Error> {
     })
 }
 
-pub struct RequestResponsePair<'a> {
-    request: &'a Request,
-    response: &'a Response
+pub struct RequestResponsePair {
+    request: Request,
+    response: Response
 }
 
-pub fn pair_requests_responses<'a>(requests: &'a Vec<Request>, responses: &'a Vec<Response>) -> &'a Vec<RequestResponsePair<'a>> {
+pub fn pair_requests_responses(mut requests:Vec<Request>, responses: Vec<Response>) -> Vec<RequestResponsePair> {
     let mut request_response_pairs: Vec<RequestResponsePair> = Vec::new();
 
-    for request in requests {
-        match request.get_matching_response(responses) {
+    for request in requests.drain(..) {
+        match request.get_matching_response(&responses) {
             Some(response) => request_response_pairs.push(RequestResponsePair{
-                request: request,
-                response: response
+                request: request.clone(),
+                response: response.clone()
             }),
             None => println!("none"),
         }
     }
 
-    &request_response_pairs
+    request_response_pairs
 }
 
 
@@ -349,6 +349,6 @@ mod tests {
         let lines = open_logfile("src/test/simple-1.log");
         let (requests, responses) = lines.unwrap();
 
-        let result = pair_requests_responses(&requests, &responses);
+        let result = pair_requests_responses(requests, responses);
     }
 }
