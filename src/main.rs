@@ -296,7 +296,15 @@ mod tests {
 
         let result = requests[0].get_matching_response(&responses);
 
-        assert_eq!(*result.unwrap(), responses[0]);
+        let expected = Response {
+            id: 1,
+            time: strptime("08/Apr/2016:09:57:47 +0200", "%d/%b/%Y:%H:%M:%S").unwrap(),
+            mime_type: "text/html".to_string(),
+            response_time: Duration::milliseconds(7),
+            http_status: HttpStatus::OK,
+        };
+
+        assert_eq!(*result.unwrap(), expected);
     }
 
     #[test]
