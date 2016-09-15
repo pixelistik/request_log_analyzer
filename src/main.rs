@@ -347,5 +347,7 @@ mod tests {
         let (requests, responses) = lines.unwrap();
 
         let result = pair_requests_responses(requests, responses);
+
+        assert_eq!(result.len(), 2);
     }
 }
