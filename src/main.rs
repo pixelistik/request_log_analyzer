@@ -18,6 +18,20 @@ pub struct Request {
 }
 
 impl Request {
+    fn new_from_log_line(log_line: &String) -> Result<Request, io::Error> {
+        let parts: Vec<&str> = log_line.split(" ").collect();
+
+
+        let id = parts[2];
+        let url = parts[5];
+
+        Ok(Request {
+            id: id[1..id.len()-1].parse().unwrap(),
+            time: strptime(parts[0], "%d/%b/%Y:%H:%M:%S").unwrap(),
+            url: url.to_string()
+        })
+    }
+
     fn get_matching_response<'a>(&'a self, responses: &'a Vec<Response>) -> Option<&Response> {
         for response in responses {
             if self.id == response.id {
@@ -39,6 +53,25 @@ pub struct Response {
     http_status: HttpStatus,
 }
 
+impl Response {
+    fn new_from_log_line(log_line: &String) -> Result<Response, io::Error> {
+        let parts: Vec<&str> = log_line.split(" ").collect();
+
+        let id = parts[2];
+        let response_time = parts[parts.len()-1];
+        let mime_type = parts[5];
+        let status_code = parts[4];
+
+        Ok(Response {
+            id: id[1..id.len()-1].parse().unwrap(),
+            time: strptime(parts[0], "%d/%b/%Y:%H:%M:%S").unwrap(),
+            response_time: Duration::milliseconds(response_time[0..response_time.len()-2].parse().unwrap()),
+            mime_type: mime_type.to_string(),
+            http_status: HttpStatus::from_code(status_code.parse().unwrap()),
+        })
+    }
+}
+
 pub fn open_logfile(path: &str) -> Result<(Vec<Request>,Vec<Response>), io::Error> {
     let f = try!(File::open(path));
 
@@ -52,13 +85,13 @@ pub fn open_logfile(path: &str) -> Result<(Vec<Request>,Vec<Response>), io::Erro
         let line_value = &line.unwrap();
 
         if line_value.contains("->") {
-            let r = try!(parse_request_line(&line_value));
+            let r = try!(Request::new_from_log_line(&line_value));
             println!("{:#?}", r);
             requests.push(r)
         }
 
         if line_value.contains("<-") {
-            let r = try!(parse_response_line(&line_value));
+            let r = try!(Response::new_from_log_line(&line_value));
             println!("{:#?}", r);
             responses.push(r)
         }
@@ -66,37 +99,6 @@ pub fn open_logfile(path: &str) -> Result<(Vec<Request>,Vec<Response>), io::Erro
     }
 
     Ok((requests, responses))
-}
-
-pub fn parse_request_line(log_line: &String) -> Result<Request, io::Error> {
-    let parts: Vec<&str> = log_line.split(" ").collect();
-
-
-    let id = parts[2];
-    let url = parts[5];
-
-    Ok(Request {
-        id: id[1..id.len()-1].parse().unwrap(),
-        time: strptime(parts[0], "%d/%b/%Y:%H:%M:%S").unwrap(),
-        url: url.to_string()
-    })
-}
-
-pub fn parse_response_line(log_line: &String) -> Result<Response, io::Error> {
-    let parts: Vec<&str> = log_line.split(" ").collect();
-
-    let id = parts[2];
-    let response_time = parts[parts.len()-1];
-    let mime_type = parts[5];
-    let status_code = parts[4];
-
-    Ok(Response {
-        id: id[1..id.len()-1].parse().unwrap(),
-        time: strptime(parts[0], "%d/%b/%Y:%H:%M:%S").unwrap(),
-        response_time: Duration::milliseconds(response_time[0..response_time.len()-2].parse().unwrap()),
-        mime_type: mime_type.to_string(),
-        http_status: HttpStatus::from_code(status_code.parse().unwrap()),
-    })
 }
 
 pub struct RequestResponsePair {
@@ -152,7 +154,7 @@ mod tests {
             url: "/content/some/other.html".to_string()
         };
 
-        let result = parse_request_line(&line);
+        let result = Request::new_from_log_line(&line);
 
         assert_eq!(result.unwrap(), expected)
     }
@@ -169,7 +171,7 @@ mod tests {
             http_status: HttpStatus::OK,
         };
 
-        let result = parse_response_line(&line);
+        let result = Response::new_from_log_line(&line);
 
         assert_eq!(result.unwrap(), expected)
     }
