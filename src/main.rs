@@ -40,13 +40,10 @@ impl Request {
     }
 
     fn get_matching_response<'a>(&'a self, responses: &'a Vec<Response>) -> Option<&Response> {
-        for response in responses {
-            if self.id == response.id {
-                return Some(response)
-            }
+        match responses.binary_search_by_key(&self.id, |r| r.id) {
+            Ok(index) => Some(&responses[index]),
+            Err(_) => None
         }
-
-        None
     }
 }
 
@@ -102,6 +99,8 @@ pub fn open_logfile(path: &str) -> Result<(Vec<Request>,Vec<Response>), io::Erro
         }
 
     }
+
+    responses.sort_by_key(|r| r.id);
 
     Ok((requests, responses))
 }
