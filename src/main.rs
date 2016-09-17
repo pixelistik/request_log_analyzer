@@ -163,6 +163,16 @@ pub fn analyze(request_response_pairs: &Vec<RequestResponsePair>) -> RequestLogA
     }
 }
 
+fn render_terminal(result: RequestLogAnalyzerResult) {
+    println!("count:\t{}", result.count);
+    println!("time.avg:\t{}", result.avg);
+    println!("time.min:\t{}", result.min);
+    println!("time.median:\t{}", result.median);
+    println!("time.90percent:\t{}", result.percentile90);
+    println!("time.max:\t{}", result.max);
+}
+
+
 fn main() {
     let matches = App::new("Request.log Analyzer")
         .arg(Arg::with_name("filename")
@@ -180,7 +190,8 @@ fn main() {
     let pairs: Vec<RequestResponsePair> = pair_requests_responses(requests, responses);
 
     let result: RequestLogAnalyzerResult = analyze(&pairs);
-    println!("{:#?}", result);
+
+    render_terminal(result);
 }
 
 #[cfg(test)]
