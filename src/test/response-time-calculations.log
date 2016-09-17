@@ -1,0 +1,6 @@
+08/Apr/2016:09:57:47 +0200 [001] -> GET /content/some/page.html HTTP/1.1
+08/Apr/2016:09:57:47 +0200 [001] <- 200 text/html 1ms
+08/Apr/2016:09:58:47 +0200 [02] -> GET /content/some/other.html HTTP/1.1
+08/Apr/2016:09:58:47 +0200 [02] <- 200 text/html 10ms
+08/Apr/2016:10:58:47 +0200 [03] -> GET /content/some/third.html HTTP/1.1
+08/Apr/2016:10:58:47 +0200 [03] <- 200 text/html 100ms
