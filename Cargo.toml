@@ -6,3 +6,4 @@ authors = ["vagrant"]
 [dependencies]
 time = "0.1"
 streaming-stats = "0.1"
+clap = "2.12"

@@ -7,6 +7,8 @@ use time::strptime;
 use time::Duration;
 extern crate stats;
 use stats::median;
+extern crate clap;
+use clap::{Arg, App};
 
 mod http_status;
 use http_status::HttpStatus;
@@ -88,13 +90,11 @@ pub fn open_logfile(path: &str) -> Result<(Vec<Request>,Vec<Response>), io::Erro
 
         if line_value.contains("->") {
             let r = try!(Request::new_from_log_line(&line_value));
-            println!("{:#?}", r);
             requests.push(r)
         }
 
         if line_value.contains("<-") {
             let r = try!(Response::new_from_log_line(&line_value));
-            println!("{:#?}", r);
             responses.push(r)
         }
 
@@ -157,16 +157,23 @@ pub fn analyze(request_response_pairs: &Vec<RequestResponsePair>) -> RequestLogA
 }
 
 fn main() {
-    let lines = open_logfile("src/test/simple-1.log");
+    let matches = App::new("Request.log Analyzer")
+        .arg(Arg::with_name("filename")
+            .index(1)
+            .value_name("FILE")
+            .help("Log file to analyze")
+            .takes_value(true))
+            .get_matches();
+
+    let filename = matches.value_of("filename").unwrap();
+
+    let lines = open_logfile(filename);
     let (requests, responses) = lines.unwrap();
-    println!("So many requests: {}", requests.len());
-    println!("So many responses: {}", responses.len());
 
     let pairs: Vec<RequestResponsePair> = pair_requests_responses(requests, responses);
 
-    let times: Vec<i64> = pairs.iter().map(|rr| rr.response.response_time.num_milliseconds()).collect();
-    let sum: i64 = times.iter().sum();
-    println!("{}", sum);
+    let result: RequestLogAnalyzerResult = analyze(&pairs);
+    println!("{:#?}", result);
 }
 
 #[cfg(test)]
