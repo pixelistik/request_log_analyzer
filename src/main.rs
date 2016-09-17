@@ -294,7 +294,7 @@ mod tests {
             min: 1,
             avg: 37,
             median: 10,
-            percentile90: 10,
+            percentile90: 100,
         };
 
         assert_eq!(result, expected);

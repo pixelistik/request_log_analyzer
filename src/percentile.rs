@@ -2,7 +2,7 @@ pub fn percentile (data: &Vec<i64>, percent: f32) -> i64 {
     let mut data_sorted = data.clone();
     data_sorted.sort();
 
-    let index = (data_sorted.len() as f32 * percent - 1.0).floor() as usize;
+    let index = (data_sorted.len() as f32 * percent - 1.0).ceil() as usize;
 
     data_sorted[index]
 }
@@ -26,7 +26,7 @@ mod tests {
 
         let result = percentile(&data, 0.5);
 
-        assert_eq!(result, 4);
+        assert_eq!(result, 5);
     }
 
     #[test]
