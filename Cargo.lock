@@ -1,5 +1,5 @@
 [root]
-name = "log_matcher"
+name = "request_log_analyzer"
 version = "0.1.0"
 dependencies = [
  "clap 2.12.1 (registry+https://github.com/rust-lang/crates.io-index)",
