@@ -5,6 +5,8 @@ extern crate time;
 use time::Tm;
 use time::strptime;
 use time::Duration;
+extern crate stats;
+use stats::median;
 
 mod http_status;
 use http_status::HttpStatus;
@@ -122,6 +124,37 @@ pub fn pair_requests_responses(requests:Vec<Request>, responses: Vec<Response>) 
     request_response_pairs
 }
 
+#[derive(Eq, PartialEq)]
+#[derive(Debug)]
+pub struct RequestLogAnalyzerResult {
+    count: usize,
+    max: usize,
+    min: usize,
+    avg: usize,
+    median: usize,
+}
+
+pub fn analyze(request_response_pairs: &Vec<RequestResponsePair>) -> RequestLogAnalyzerResult {
+    let times: Vec<i64> = request_response_pairs.iter()
+        .map(|rr: &RequestResponsePair| -> i64 {rr.response.response_time.num_milliseconds() })
+        .collect();
+
+    let sum: usize = times.iter().sum::<i64>() as usize;
+    let avg: usize = sum / times.len();
+
+    let max: usize = *times.iter().max().unwrap() as usize;
+    let min: usize = *times.iter().min().unwrap() as usize;
+
+    let median = median(times.into_iter()).unwrap() as usize;
+
+    RequestLogAnalyzerResult {
+        count: request_response_pairs.len().into(),
+        max: max,
+        min: min,
+        avg: avg,
+        median: median,
+    }
+}
 
 fn main() {
     let lines = open_logfile("src/test/simple-1.log");
@@ -230,5 +263,26 @@ mod tests {
 
         assert_eq!(result[0].request.id, result[0].response.id);
         assert_eq!(result[1].request.id, result[1].response.id);
+    }
+
+    #[test]
+    fn test_request_log_analyzer_result() {
+        let lines = open_logfile("src/test/response-time-calculations.log");
+        let (requests, responses) = lines.unwrap();
+
+        let request_response_pairs = pair_requests_responses(requests, responses);
+
+        let result: RequestLogAnalyzerResult = analyze(&request_response_pairs);
+
+        let expected = RequestLogAnalyzerResult {
+            count: 3,
+            max: 100,
+            min: 1,
+            avg: 37,
+            median: 10,
+
+        };
+
+        assert_eq!(result, expected);
     }
 }
