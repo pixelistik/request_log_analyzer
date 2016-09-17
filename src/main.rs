@@ -115,12 +115,11 @@ pub fn pair_requests_responses(requests:Vec<Request>, responses: Vec<Response>) 
     let mut request_response_pairs: Vec<RequestResponsePair> = Vec::new();
 
     for request in requests  {
-        match request.get_matching_response(&responses) {
-            Some(response) => request_response_pairs.push(RequestResponsePair{
+        if let Some(response) = request.get_matching_response(&responses) {
+            request_response_pairs.push(RequestResponsePair{
                 request: request.clone(),
                 response: response.clone()
-            }),
-            None => println!("none"),
+            })
         }
     }
 
