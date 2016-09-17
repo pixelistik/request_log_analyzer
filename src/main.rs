@@ -10,6 +10,9 @@ use stats::median;
 extern crate clap;
 use clap::{Arg, App};
 
+mod percentile;
+use percentile::percentile;
+
 mod http_status;
 use http_status::HttpStatus;
 
@@ -132,6 +135,7 @@ pub struct RequestLogAnalyzerResult {
     min: usize,
     avg: usize,
     median: usize,
+    percentile90: usize,
 }
 
 pub fn analyze(request_response_pairs: &Vec<RequestResponsePair>) -> RequestLogAnalyzerResult {
@@ -145,6 +149,8 @@ pub fn analyze(request_response_pairs: &Vec<RequestResponsePair>) -> RequestLogA
     let max: usize = *times.iter().max().unwrap() as usize;
     let min: usize = *times.iter().min().unwrap() as usize;
 
+    let percentile90: usize = percentile(&times, 0.9) as usize;
+
     let median = median(times.into_iter()).unwrap() as usize;
 
     RequestLogAnalyzerResult {
@@ -153,6 +159,7 @@ pub fn analyze(request_response_pairs: &Vec<RequestResponsePair>) -> RequestLogA
         min: min,
         avg: avg,
         median: median,
+        percentile90: percentile90,
     }
 }
 
@@ -287,9 +294,21 @@ mod tests {
             min: 1,
             avg: 37,
             median: 10,
-
+            percentile90: 10,
         };
 
         assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_90_percentile_calculation() {
+        let lines = open_logfile("src/test/percentile.log");
+        let (requests, responses) = lines.unwrap();
+
+        let request_response_pairs = pair_requests_responses(requests, responses);
+
+        let result: RequestLogAnalyzerResult = analyze(&request_response_pairs);
+
+        assert_eq!(result.percentile90, 9);
     }
 }
