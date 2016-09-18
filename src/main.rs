@@ -117,10 +117,6 @@ fn main() {
 #[cfg(test)]
 mod tests {
 	use super::*;
-    extern crate time;
-    use time::strptime;
-    use::time::Duration;
-    use http_status::HttpStatus;
     use request_response::*;
 
     #[test]
@@ -130,65 +126,6 @@ mod tests {
 
         assert_eq!(requests.len(), 2);
         assert_eq!(responses.len(), 2);
-    }
-
-    #[test]
-    fn test_get_matching_response() {
-        let request = Request {
-            id: 2,
-            time: strptime("08/Apr/2016:09:58:47 +0200", "%d/%b/%Y:%H:%M:%S").unwrap(),
-            url: "/content/some/other.html".to_string()
-        };
-
-        let responses = vec![
-            Response {
-                id: 1,
-                time: strptime("08/Apr/2016:09:57:47 +0200", "%d/%b/%Y:%H:%M:%S").unwrap(),
-                mime_type: "text/html".to_string(),
-                response_time: Duration::milliseconds(7),
-                http_status: HttpStatus::OK,
-            },
-            Response {
-                id: 2,
-                time: strptime("08/Apr/2016:09:58:47 +0200", "%d/%b/%Y:%H:%M:%S").unwrap(),
-                mime_type: "text/html".to_string(),
-                response_time: Duration::milliseconds(10),
-                http_status: HttpStatus::OK,
-            },
-        ];
-
-        let result = request.get_matching_response(&responses);
-        assert_eq!(result.unwrap().id, 2);
-    }
-
-    #[test]
-    fn test_get_matching_response_none_found() {
-        let responses = vec![
-            Response {
-                id: 1,
-                time: strptime("08/Apr/2016:09:57:47 +0200", "%d/%b/%Y:%H:%M:%S").unwrap(),
-                mime_type: "text/html".to_string(),
-                response_time: Duration::milliseconds(7),
-                http_status: HttpStatus::OK,
-            },
-            Response {
-                id: 2,
-                time: strptime("08/Apr/2016:09:58:47 +0200", "%d/%b/%Y:%H:%M:%S").unwrap(),
-                mime_type: "text/html".to_string(),
-                response_time: Duration::milliseconds(10),
-                http_status: HttpStatus::OK,
-            },
-        ];
-
-        let request_without_matching = Request {
-            id: 999,
-            time: strptime("08/Apr/2016:09:58:47 +0200", "%d/%b/%Y:%H:%M:%S").unwrap(),
-            url: "/content/some/other.html".to_string()
-        };
-
-        let result = request_without_matching.get_matching_response(&responses);
-
-        assert!(result.is_none());
     }
 
     #[test]
