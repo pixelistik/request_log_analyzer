@@ -163,8 +163,22 @@ mod tests {
 
     #[test]
     fn test_get_matching_response_none_found() {
-        let lines = open_logfile("src/test/simple-1.log");
-        let (_, responses) = lines.unwrap();
+        let responses = vec![
+            Response {
+                id: 1,
+                time: strptime("08/Apr/2016:09:57:47 +0200", "%d/%b/%Y:%H:%M:%S").unwrap(),
+                mime_type: "text/html".to_string(),
+                response_time: Duration::milliseconds(7),
+                http_status: HttpStatus::OK,
+            },
+            Response {
+                id: 2,
+                time: strptime("08/Apr/2016:09:58:47 +0200", "%d/%b/%Y:%H:%M:%S").unwrap(),
+                mime_type: "text/html".to_string(),
+                response_time: Duration::milliseconds(10),
+                http_status: HttpStatus::OK,
+            },
+        ];
 
         let request_without_matching = Request {
             id: 999,
