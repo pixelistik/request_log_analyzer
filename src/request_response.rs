@@ -99,6 +99,25 @@ mod tests {
     use::time::Duration;
     use http_status::HttpStatus;
 
+    fn get_simple_responses_fixture() -> Vec<Response> {
+        vec![
+            Response {
+                id: 1,
+                time: strptime("08/Apr/2016:09:57:47 +0200", "%d/%b/%Y:%H:%M:%S").unwrap(),
+                mime_type: "text/html".to_string(),
+                response_time: Duration::milliseconds(7),
+                http_status: HttpStatus::OK,
+            },
+            Response {
+                id: 2,
+                time: strptime("08/Apr/2016:09:58:47 +0200", "%d/%b/%Y:%H:%M:%S").unwrap(),
+                mime_type: "text/html".to_string(),
+                response_time: Duration::milliseconds(10),
+                http_status: HttpStatus::OK,
+            },
+        ]
+    }
+
     #[test]
     fn test_parse_request_line() {
         let line = "08/Apr/2016:09:58:47 +0200 [02] -> GET /content/some/other.html HTTP/1.1".to_string();
@@ -156,22 +175,7 @@ mod tests {
             url: "/content/some/other.html".to_string()
         };
 
-        let responses = vec![
-            Response {
-                id: 1,
-                time: strptime("08/Apr/2016:09:57:47 +0200", "%d/%b/%Y:%H:%M:%S").unwrap(),
-                mime_type: "text/html".to_string(),
-                response_time: Duration::milliseconds(7),
-                http_status: HttpStatus::OK,
-            },
-            Response {
-                id: 2,
-                time: strptime("08/Apr/2016:09:58:47 +0200", "%d/%b/%Y:%H:%M:%S").unwrap(),
-                mime_type: "text/html".to_string(),
-                response_time: Duration::milliseconds(10),
-                http_status: HttpStatus::OK,
-            },
-        ];
+        let responses = get_simple_responses_fixture();
 
         let result = request.get_matching_response(&responses);
         assert_eq!(result.unwrap().id, 2);
@@ -179,22 +183,7 @@ mod tests {
 
     #[test]
     fn test_get_matching_response_none_found() {
-        let responses = vec![
-            Response {
-                id: 1,
-                time: strptime("08/Apr/2016:09:57:47 +0200", "%d/%b/%Y:%H:%M:%S").unwrap(),
-                mime_type: "text/html".to_string(),
-                response_time: Duration::milliseconds(7),
-                http_status: HttpStatus::OK,
-            },
-            Response {
-                id: 2,
-                time: strptime("08/Apr/2016:09:58:47 +0200", "%d/%b/%Y:%H:%M:%S").unwrap(),
-                mime_type: "text/html".to_string(),
-                response_time: Duration::milliseconds(10),
-                http_status: HttpStatus::OK,
-            },
-        ];
+        let responses = get_simple_responses_fixture();
 
         let request_without_matching = Request {
             id: 999,
