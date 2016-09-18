@@ -1,12 +1,12 @@
 use std::io::{self, BufReader};
 use std::io::BufRead;
 use std::fs::File;
+
 extern crate time;
-use time::Tm;
-use time::strptime;
-use time::Duration;
+
 extern crate stats;
 use stats::median;
+
 extern crate clap;
 use clap::{Arg, App};
 
@@ -14,7 +14,6 @@ mod percentile;
 use percentile::percentile;
 
 mod http_status;
-use http_status::HttpStatus;
 
 mod request_response;
 use request_response::*;

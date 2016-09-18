@@ -1,13 +1,9 @@
-use std::io::{self, BufReader};
-use std::io::BufRead;
-use std::fs::File;
-extern crate time;
+use std::io;
 use time::Tm;
 use time::strptime;
 use time::Duration;
 
 use http_status::HttpStatus;
-
 
 #[derive(Eq, PartialEq, Clone)]
 #[derive(Debug)]
@@ -99,7 +95,6 @@ pub fn pair_requests_responses(requests:Vec<Request>, responses: Vec<Response>) 
 #[cfg(test)]
 mod tests {
 	use super::*;
-    extern crate time;
     use time::strptime;
     use::time::Duration;
     use http_status::HttpStatus;
