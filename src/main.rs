@@ -134,20 +134,31 @@ mod tests {
 
     #[test]
     fn test_get_matching_response() {
-        let lines = open_logfile("src/test/simple-1.log");
-        let (requests, responses) = lines.unwrap();
-
-        let result = requests[0].get_matching_response(&responses);
-
-        let expected = Response {
-            id: 1,
-            time: strptime("08/Apr/2016:09:57:47 +0200", "%d/%b/%Y:%H:%M:%S").unwrap(),
-            mime_type: "text/html".to_string(),
-            response_time: Duration::milliseconds(7),
-            http_status: HttpStatus::OK,
+        let request = Request {
+            id: 2,
+            time: strptime("08/Apr/2016:09:58:47 +0200", "%d/%b/%Y:%H:%M:%S").unwrap(),
+            url: "/content/some/other.html".to_string()
         };
 
-        assert_eq!(*result.unwrap(), expected);
+        let responses = vec![
+            Response {
+                id: 1,
+                time: strptime("08/Apr/2016:09:57:47 +0200", "%d/%b/%Y:%H:%M:%S").unwrap(),
+                mime_type: "text/html".to_string(),
+                response_time: Duration::milliseconds(7),
+                http_status: HttpStatus::OK,
+            },
+            Response {
+                id: 2,
+                time: strptime("08/Apr/2016:09:58:47 +0200", "%d/%b/%Y:%H:%M:%S").unwrap(),
+                mime_type: "text/html".to_string(),
+                response_time: Duration::milliseconds(10),
+                http_status: HttpStatus::OK,
+            },
+        ];
+
+        let result = request.get_matching_response(&responses);
+        assert_eq!(result.unwrap().id, 2);
     }
 
     #[test]
