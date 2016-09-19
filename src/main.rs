@@ -106,6 +106,7 @@ fn main() {
         .arg(Arg::with_name("filename")
             .index(1)
             .value_name("FILE")
+            .required(true)
             .help("Log file to analyze")
             .takes_value(true))
         .arg(Arg::with_name("time_filter_minutes")
