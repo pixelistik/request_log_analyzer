@@ -34,6 +34,10 @@ impl Request {
             Err(_) => None
         }
     }
+
+    pub fn is_between_times(&self, start: Tm, end: Tm) -> bool {
+        start < self.time && self.time <= end
+    }
 }
 
 #[derive(Eq, PartialEq, Clone)]
@@ -97,6 +101,7 @@ mod tests {
 	use super::*;
     use time::strptime;
     use::time::Duration;
+    use::time::Tm;
     use http_status::HttpStatus;
 
     fn get_simple_responses_fixture() -> Vec<Response> {
@@ -194,5 +199,47 @@ mod tests {
         let result = request_without_matching.get_matching_response(&responses);
 
         assert!(result.is_none());
+    }
+
+    #[test]
+    fn test_is_between_times() {
+        let request = Request {
+            id: 1,
+            time: strptime("08/Apr/2016:10:00:00 +0200", "%d/%b/%Y:%H:%M:%S").unwrap(),
+            url: "/content/some/other.html".to_string()
+        };
+
+        let start: Tm = strptime("08/Apr/2016:09:00:00 +0200", "%d/%b/%Y:%H:%M:%S").unwrap();
+        let end: Tm = strptime("08/Apr/2016:11:00:00 +0200", "%d/%b/%Y:%H:%M:%S").unwrap();
+
+        assert_eq!(request.is_between_times(start, end), true);
+    }
+
+    #[test]
+    fn test_is_between_times_not() {
+        let request = Request {
+            id: 1,
+            time: strptime("08/Apr/2016:11:00:00 +0200", "%d/%b/%Y:%H:%M:%S").unwrap(),
+            url: "/content/some/other.html".to_string()
+        };
+
+        let start: Tm = strptime("08/Apr/2016:09:00:00 +0200", "%d/%b/%Y:%H:%M:%S").unwrap();
+        let end: Tm = strptime("08/Apr/2016:10:00:00 +0200", "%d/%b/%Y:%H:%M:%S").unwrap();
+
+        assert_eq!(request.is_between_times(start, end), false);
+    }
+
+    #[test]
+    fn test_is_between_times_include_end() {
+        let request = Request {
+            id: 1,
+            time: strptime("08/Apr/2016:10:00:00 +0200", "%d/%b/%Y:%H:%M:%S").unwrap(),
+            url: "/content/some/other.html".to_string()
+        };
+
+        let start: Tm = strptime("08/Apr/2016:09:00:00 +0200", "%d/%b/%Y:%H:%M:%S").unwrap();
+        let end: Tm = strptime("08/Apr/2016:10:00:00 +0200", "%d/%b/%Y:%H:%M:%S").unwrap();
+
+        assert_eq!(request.is_between_times(start, end), true);
     }
 }

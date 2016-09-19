@@ -3,6 +3,7 @@ use std::io::BufRead;
 use std::fs::File;
 
 extern crate time;
+use time::Duration;
 
 extern crate stats;
 use stats::median;
@@ -18,7 +19,7 @@ mod http_status;
 mod request_response;
 use request_response::*;
 
-pub fn open_logfile(path: &str) -> Result<(Vec<Request>,Vec<Response>), io::Error> {
+pub fn open_logfile(path: &str, time_filter: Option<Duration>) -> Result<(Vec<Request>,Vec<Response>), io::Error> {
     let f = try!(File::open(path));
 
     let f = BufReader::new(f);
@@ -26,18 +27,21 @@ pub fn open_logfile(path: &str) -> Result<(Vec<Request>,Vec<Response>), io::Erro
     let mut requests: Vec<Request> = Vec::new();
     let mut responses: Vec<Response> = Vec::new();
 
-
     for line in f.lines() {
         let line_value = &line.unwrap();
 
         if line_value.contains("->") {
             let r = try!(Request::new_from_log_line(&line_value));
-            requests.push(r)
+
+            if time_filter.is_none() ||
+              (time_filter.is_some() && r.is_between_times(time::now() - time_filter.unwrap(), time::now())) {
+                requests.push(r);
+            }
         }
 
         if line_value.contains("<-") {
             let r = try!(Response::new_from_log_line(&line_value));
-            responses.push(r)
+            responses.push(r);
         }
 
     }
@@ -104,7 +108,7 @@ fn main() {
 
     let filename = matches.value_of("filename").unwrap();
 
-    let lines = open_logfile(filename);
+    let lines = open_logfile(filename, None);
     let (requests, responses) = lines.unwrap();
 
     let pairs: Vec<RequestResponsePair> = pair_requests_responses(requests, responses);
@@ -118,10 +122,12 @@ fn main() {
 mod tests {
 	use super::*;
     use request_response::*;
+    extern crate time;
+    use time::Duration;
 
     #[test]
     fn test_open_logfile() {
-        let lines = open_logfile("src/test/simple-1.log");
+        let lines = open_logfile("src/test/simple-1.log", None);
         let (requests, responses) = lines.unwrap();
 
         assert_eq!(requests.len(), 2);
@@ -129,8 +135,23 @@ mod tests {
     }
 
     #[test]
+    fn test_open_logfile_time_filter() {
+        let time_filter: Duration = Duration::minutes(1);
+        let lines = open_logfile("src/test/simple-1.log", Some(time_filter));
+        let (requests, responses) = lines.unwrap();
+
+        assert_eq!(requests.len(), 0);
+
+        let time_filter: Duration = Duration::minutes(52560000); // 100 years
+        let lines = open_logfile("src/test/simple-1.log", Some(time_filter));
+        let (requests, responses) = lines.unwrap();
+
+        assert_eq!(requests.len(), 2);
+    }
+
+    #[test]
     fn test_pair_requests_resonses() {
-        let lines = open_logfile("src/test/simple-1.log");
+        let lines = open_logfile("src/test/simple-1.log", None);
         let (requests, responses) = lines.unwrap();
 
         let result = pair_requests_responses(requests, responses);
@@ -143,7 +164,7 @@ mod tests {
 
     #[test]
     fn test_request_log_analyzer_result() {
-        let lines = open_logfile("src/test/response-time-calculations.log");
+        let lines = open_logfile("src/test/response-time-calculations.log", None);
         let (requests, responses) = lines.unwrap();
 
         let request_response_pairs = pair_requests_responses(requests, responses);
@@ -164,7 +185,7 @@ mod tests {
 
     #[test]
     fn test_90_percentile_calculation() {
-        let lines = open_logfile("src/test/percentile.log");
+        let lines = open_logfile("src/test/percentile.log", None);
         let (requests, responses) = lines.unwrap();
 
         let request_response_pairs = pair_requests_responses(requests, responses);
