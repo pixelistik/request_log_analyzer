@@ -104,11 +104,21 @@ fn main() {
             .value_name("FILE")
             .help("Log file to analyze")
             .takes_value(true))
-            .get_matches();
+        .arg(Arg::with_name("time_filter_minutes")
+                .value_name("MINUTES")
+                .short("t")
+                .help("Limit to the last n minutes")
+                .takes_value(true))
+                .get_matches();
 
     let filename = matches.value_of("filename").unwrap();
 
-    let lines = open_logfile(filename, None);
+    let time_filter = match matches.value_of("time_filter_minutes") {
+        Some(minutes) => Some(Duration::minutes(minutes.parse().unwrap())),
+        None => None
+    };
+
+    let lines = open_logfile(filename, time_filter);
     let (requests, responses) = lines.unwrap();
 
     let pairs: Vec<RequestResponsePair> = pair_requests_responses(requests, responses);
