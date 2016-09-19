@@ -62,7 +62,11 @@ pub struct RequestLogAnalyzerResult {
     percentile90: usize,
 }
 
-pub fn analyze(request_response_pairs: &Vec<RequestResponsePair>) -> RequestLogAnalyzerResult {
+pub fn analyze(request_response_pairs: &Vec<RequestResponsePair>) -> Option<RequestLogAnalyzerResult> {
+    if request_response_pairs.len() == 0 {
+        return None;
+    }
+
     let times: Vec<i64> = request_response_pairs.iter()
         .map(|rr: &RequestResponsePair| -> i64 {rr.response.response_time.num_milliseconds() })
         .collect();
@@ -77,14 +81,14 @@ pub fn analyze(request_response_pairs: &Vec<RequestResponsePair>) -> RequestLogA
 
     let median = median(times.into_iter()).unwrap() as usize;
 
-    RequestLogAnalyzerResult {
+    Some(RequestLogAnalyzerResult {
         count: request_response_pairs.len().into(),
         max: max,
         min: min,
         avg: avg,
         median: median,
         percentile90: percentile90,
-    }
+    })
 }
 
 fn render_terminal(result: RequestLogAnalyzerResult) {
@@ -123,9 +127,10 @@ fn main() {
 
     let pairs: Vec<RequestResponsePair> = pair_requests_responses(requests, responses);
 
-    let result: RequestLogAnalyzerResult = analyze(&pairs);
-
-    render_terminal(result);
+    match analyze(&pairs) {
+        Some(result) => render_terminal(result),
+        None => println!("No matching log lines in file.")
+    }
 }
 
 #[cfg(test)]
@@ -179,16 +184,30 @@ mod tests {
 
         let request_response_pairs = pair_requests_responses(requests, responses);
 
-        let result: RequestLogAnalyzerResult = analyze(&request_response_pairs);
+        let result = analyze(&request_response_pairs);
 
-        let expected = RequestLogAnalyzerResult {
+        let expected = Some(RequestLogAnalyzerResult {
             count: 3,
             max: 100,
             min: 1,
             avg: 37,
             median: 10,
             percentile90: 100,
-        };
+        });
+
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_request_log_analyze_none_matching() {
+        let lines = open_logfile("src/test/simple-1.log", Some(Duration::minutes(0)));
+        let (requests, responses) = lines.unwrap();
+
+        let request_response_pairs = pair_requests_responses(requests, responses);
+
+        let result = analyze(&request_response_pairs);
+
+        let expected = None;
 
         assert_eq!(result, expected);
     }
@@ -200,7 +219,7 @@ mod tests {
 
         let request_response_pairs = pair_requests_responses(requests, responses);
 
-        let result: RequestLogAnalyzerResult = analyze(&request_response_pairs);
+        let result: RequestLogAnalyzerResult = analyze(&request_response_pairs).unwrap();
 
         assert_eq!(result.percentile90, 9);
     }
