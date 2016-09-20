@@ -14,6 +14,9 @@ then
     sudo service resolvconf reload
 
     curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain stable
+
+    sudo apt-get install build-essential
+    rustup target add x86_64-unknown-linux-musl
 fi
 SCRIPT
 
