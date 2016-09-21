@@ -88,7 +88,7 @@ pub struct RequestResponsePair {
 }
 
 impl RequestResponsePair {
-    fn matches_include_exclude_filter(&self, include_term: Option<&str>, exclude_term: Option<&str>) -> bool {
+    pub fn matches_include_exclude_filter(&self, include_term: Option<&str>, exclude_term: Option<&str>) -> bool {
         let include_result = match include_term {
             Some(include_term) => self.request.original_log_line.contains(include_term) || self.response.original_log_line.contains(include_term),
             None => true

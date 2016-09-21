@@ -110,11 +110,21 @@ fn main() {
             .help("Log file to analyze")
             .takes_value(true))
         .arg(Arg::with_name("time_filter_minutes")
-                .value_name("MINUTES")
-                .short("t")
-                .help("Limit to the last n minutes")
-                .takes_value(true))
-                .get_matches();
+            .value_name("MINUTES")
+            .short("t")
+            .help("Limit to the last n minutes")
+            .takes_value(true))
+        .arg(Arg::with_name("include_term")
+            .value_name("TERM")
+            .long("include")
+            .help("Only includes lines that contain this term")
+            .takes_value(true))
+        .arg(Arg::with_name("exclude_term")
+            .value_name("TERM")
+            .long("exclude")
+            .help("Excludes lines that contain this term")
+            .takes_value(true))
+        .get_matches();
 
     let filename = matches.value_of("filename").unwrap();
 
@@ -126,7 +136,13 @@ fn main() {
     let lines = open_logfile(filename, time_filter);
     let (requests, responses) = lines.unwrap();
 
-    let pairs: Vec<RequestResponsePair> = pair_requests_responses(requests, responses);
+    let pairs: Vec<RequestResponsePair> = pair_requests_responses(requests, responses)
+        .into_iter()
+        .filter(|rr| rr.matches_include_exclude_filter(
+            matches.value_of("include_term"),
+            matches.value_of("exclude_term")
+        ))
+        .collect();
 
     match analyze(&pairs) {
         Some(result) => render_terminal(result),
