@@ -208,6 +208,9 @@ mod tests {
     use request_response::*;
     extern crate chrono;
     use chrono::*;
+    use std::str;
+    use std::io::prelude::Write;
+    use std::io::{self, BufReader};
 
     #[test]
     fn test_open_logfile() {
@@ -293,25 +296,21 @@ mod tests {
         assert_eq!(result.percentile90, 9);
     }
 
-    #[test]
-    fn test_render_graphite() {
-        use std::io::{self, BufReader};
-        use std::io::prelude::Write;
-        use std::str;
+    struct MockTcpStream {
+        write_calls: Vec<String>,
+    }
 
-        struct MockTcpStream {
-            write_calls: Vec<String>,
-        };
-
-        impl Write for MockTcpStream {
-            fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-                self.write_calls.push(str::from_utf8(buf).unwrap().to_string());
-                Ok(1)
-            }
-
-            fn flush(&mut self) -> io::Result<()> { Ok(()) }
+    impl Write for MockTcpStream {
+        fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+            self.write_calls.push(str::from_utf8(buf).unwrap().to_string());
+            Ok(1)
         }
 
+        fn flush(&mut self) -> io::Result<()> { Ok(()) }
+    }
+
+    #[test]
+    fn test_render_graphite() {
         let mut mock_tcp_stream = MockTcpStream {
             write_calls: vec![]
         };
