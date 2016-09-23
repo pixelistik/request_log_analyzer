@@ -181,12 +181,24 @@ fn main() {
         ))
         .collect();
 
-    let stream = TcpStream::connect("127.0.0.1:2003").unwrap();
 
-    match analyze(&pairs) {
-        // Some(result) => render_terminal(result),
-        Some(result) => render_graphite(result, UTC::now().with_timezone(time_zone), stream),
-        None => println!("No matching log lines in file.")
+    if args.is_present("graphite-server") {
+        let stream = TcpStream::connect(
+            (
+                args.value_of("graphite-server").unwrap(),
+                args.value_of("graphite-port").unwrap().parse().unwrap()
+            )
+        ).unwrap();
+
+        match analyze(&pairs) {
+            Some(result) => render_graphite(result, UTC::now().with_timezone(time_zone), stream),
+            None => println!("No matching log lines in file.")
+        }
+    } else {
+        match analyze(&pairs) {
+            Some(result) => render_terminal(result),
+            None => println!("No matching log lines in file.")
+        }
     }
 }
 
