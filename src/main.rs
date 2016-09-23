@@ -101,17 +101,20 @@ fn render_terminal(result: RequestLogAnalyzerResult) {
 }
 
 pub fn render_graphite<T: Write>(result: RequestLogAnalyzerResult, time: DateTime<FixedOffset>, mut stream: T) {
-    stream.write(
-        format!(
-            "requests.count {} {:?}\n",
-            result.count,
-            time.timestamp()
-        )
-        .as_bytes()
-    );
+    let mut write = |text: String| {
+        stream.write(
+            format!("{} {}\n", text, time.timestamp() )
+            .as_bytes()
+        );
+    };
+
+    write(format!("requests.count {}", result.count));
+    write(format!("requests.time.max {}", result.max));
+    write(format!("requests.time.min {}", result.min));
+    write(format!("requests.time.avg {}", result.avg));
+    write(format!("requests.time.median {}", result.median));
+    write(format!("requests.time.90percent {}", result.percentile90));
 }
-
-
 
 fn main() {
     let matches = App::new("Request.log Analyzer")
@@ -289,5 +292,10 @@ mod tests {
         );
 
         assert_eq!(&mock_tcp_stream.write_calls[0], "requests.count 3 1474576919\n");
+        assert_eq!(&mock_tcp_stream.write_calls[1], "requests.time.max 100 1474576919\n");
+        assert_eq!(&mock_tcp_stream.write_calls[2], "requests.time.min 1 1474576919\n");
+        assert_eq!(&mock_tcp_stream.write_calls[3], "requests.time.avg 37 1474576919\n");
+        assert_eq!(&mock_tcp_stream.write_calls[4], "requests.time.median 10 1474576919\n");
+        assert_eq!(&mock_tcp_stream.write_calls[5], "requests.time.90percent 100 1474576919\n");
     }
 }
