@@ -1,9 +1,10 @@
-use std::io::{self, BufReader};
+use std::io::{self, BufReader, Write};
 use std::io::BufRead;
 use std::fs::File;
 
 extern crate time;
 use time::Duration;
+use time::Tm;
 
 extern crate stats;
 use stats::median;
@@ -100,6 +101,18 @@ fn render_terminal(result: RequestLogAnalyzerResult) {
     println!("time.max:\t{}", result.max);
 }
 
+pub fn render_graphite<T: Write>(result: RequestLogAnalyzerResult, time: Tm, mut stream: T) {
+    stream.write(
+        format!(
+            "count {} {:?}\n",
+            result.count,
+            time.to_timespec().sec
+        )
+        .as_bytes()
+    );
+}
+
+
 
 fn main() {
     let matches = App::new("Request.log Analyzer")
@@ -156,6 +169,7 @@ mod tests {
     use request_response::*;
     extern crate time;
     use time::Duration;
+    use time::strptime;
 
     #[test]
     fn test_open_logfile() {
@@ -239,5 +253,43 @@ mod tests {
         let result: RequestLogAnalyzerResult = analyze(&request_response_pairs).unwrap();
 
         assert_eq!(result.percentile90, 9);
+    }
+
+    #[test]
+    fn test_render_graphite() {
+        use std::io::{self, BufReader};
+        use std::io::prelude::Write;
+        use std::str;
+
+        struct MockTcpStream {
+            write_calls: Vec<String>,
+        };
+
+        impl Write for MockTcpStream {
+            fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+                self.write_calls.push(str::from_utf8(buf).unwrap().to_string());
+                Ok(1)
+            }
+
+            fn flush(&mut self) -> io::Result<()> { Ok(()) }
+        }
+
+        let mut mock_tcp_stream = MockTcpStream {
+            write_calls: vec![]
+        };
+
+        render_graphite(RequestLogAnalyzerResult {
+                count: 3,
+                max: 100,
+                min: 1,
+                avg: 37,
+                median: 10,
+                percentile90: 100,
+            },
+            strptime("22/Sep/2016:22:41:59 +0200", "%d/%b/%Y:%H:%M:%S %z").unwrap(),
+            &mut mock_tcp_stream
+        );
+
+        assert_eq!(&mock_tcp_stream.write_calls[0], "requests.count 3 1474576919\n");
     }
 }
