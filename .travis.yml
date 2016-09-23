@@ -14,6 +14,6 @@ deploy:
   file: 'target/release/request_log_analyzer'
   skip_cleanup: true
   on:
-    tags
+    tags: true
     rust: stable
     all_branches: true
