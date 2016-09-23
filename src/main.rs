@@ -2,9 +2,8 @@ use std::io::{self, BufReader, Write};
 use std::io::BufRead;
 use std::fs::File;
 
-extern crate time;
-use time::Duration;
-use time::Tm;
+extern crate chrono;
+use chrono::*;
 
 extern crate stats;
 use stats::median;
@@ -35,7 +34,7 @@ pub fn open_logfile(path: &str, time_filter: Option<Duration>) -> Result<(Vec<Re
             let r = try!(Request::new_from_log_line(&line_value));
 
             if time_filter.is_none() ||
-              (time_filter.is_some() && r.is_between_times(time::now() - time_filter.unwrap(), time::now())) {
+              (time_filter.is_some() && r.is_between_times(UTC::now().with_timezone(&r.time.timezone()) - time_filter.unwrap(), UTC::now().with_timezone(&r.time.timezone()))) {
                 requests.push(r);
             }
         }
@@ -101,12 +100,12 @@ fn render_terminal(result: RequestLogAnalyzerResult) {
     println!("time.max:\t{}", result.max);
 }
 
-pub fn render_graphite<T: Write>(result: RequestLogAnalyzerResult, time: Tm, mut stream: T) {
+pub fn render_graphite<T: Write>(result: RequestLogAnalyzerResult, time: DateTime<FixedOffset>, mut stream: T) {
     stream.write(
         format!(
             "count {} {:?}\n",
             result.count,
-            time.to_timespec().sec
+            time.timestamp()
         )
         .as_bytes()
     );
@@ -167,9 +166,8 @@ fn main() {
 mod tests {
 	use super::*;
     use request_response::*;
-    extern crate time;
-    use time::Duration;
-    use time::strptime;
+    extern crate chrono;
+    use chrono::*;
 
     #[test]
     fn test_open_logfile() {
@@ -286,7 +284,7 @@ mod tests {
                 median: 10,
                 percentile90: 100,
             },
-            strptime("22/Sep/2016:22:41:59 +0200", "%d/%b/%Y:%H:%M:%S %z").unwrap(),
+            DateTime::parse_from_str("22/Sep/2016:22:41:59 +0200", "%d/%b/%Y:%H:%M:%S %z").unwrap(),
             &mut mock_tcp_stream
         );
 

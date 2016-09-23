@@ -1,7 +1,5 @@
 use std::io;
-use time::Tm;
-use time::strptime;
-use time::Duration;
+use chrono::*;
 
 use http_status::HttpStatus;
 
@@ -9,7 +7,7 @@ use http_status::HttpStatus;
 #[derive(Debug)]
 pub struct Request {
     pub id: i32,
-    pub time: Tm,
+    pub time: DateTime<FixedOffset>,
     pub url: String,
     original_log_line: String,
 }
@@ -24,7 +22,7 @@ impl Request {
 
         Ok(Request {
             id: id[1..id.len()-1].parse().unwrap(),
-            time: strptime(parts[0], "%d/%b/%Y:%H:%M:%S").unwrap(),
+            time: DateTime::parse_from_str(&format!("{} {}", parts[0], parts[1]), "%d/%b/%Y:%H:%M:%S %z").unwrap(),
             url: url.to_string(),
             original_log_line: log_line.clone(),
         })
@@ -37,7 +35,7 @@ impl Request {
         }
     }
 
-    pub fn is_between_times(&self, start: Tm, end: Tm) -> bool {
+    pub fn is_between_times(&self, start: DateTime<FixedOffset>, end: DateTime<FixedOffset>) -> bool {
         start < self.time && self.time <= end
     }
 
@@ -48,7 +46,7 @@ impl Request {
 #[derive(Debug)]
 pub struct Response {
     pub id: i32,
-    pub time: Tm,
+    pub time: DateTime<FixedOffset>,
     pub mime_type: String,
     pub response_time: Duration,
     pub http_status: HttpStatus,
@@ -73,7 +71,7 @@ impl Response {
 
         Ok(Response {
             id: id[1..id.len()-1].parse().unwrap(),
-            time: strptime(parts[0], "%d/%b/%Y:%H:%M:%S").unwrap(),
+            time: DateTime::parse_from_str(&format!("{} {}", parts[0], parts[1]), "%d/%b/%Y:%H:%M:%S %z").unwrap(),
             response_time: Duration::milliseconds(response_time[0..response_time.len()-2].parse().unwrap()),
             mime_type: mime_type,
             http_status: HttpStatus::from_code(status_code.parse().unwrap()),
@@ -121,16 +119,14 @@ pub fn pair_requests_responses(requests:Vec<Request>, responses: Vec<Response>) 
 #[cfg(test)]
 mod tests {
 	use super::*;
-    use time::strptime;
-    use::time::Duration;
-    use::time::Tm;
+    use::chrono::*;
     use http_status::HttpStatus;
 
     fn get_simple_responses_fixture() -> Vec<Response> {
         vec![
             Response {
                 id: 1,
-                time: strptime("08/Apr/2016:09:57:47 +0200", "%d/%b/%Y:%H:%M:%S").unwrap(),
+                time: DateTime::parse_from_str("08/Apr/2016:09:57:47 +0200", "%d/%b/%Y:%H:%M:%S %z").unwrap(),
                 mime_type: "text/html".to_string(),
                 response_time: Duration::milliseconds(7),
                 http_status: HttpStatus::OK,
@@ -138,7 +134,7 @@ mod tests {
             },
             Response {
                 id: 2,
-                time: strptime("08/Apr/2016:09:58:47 +0200", "%d/%b/%Y:%H:%M:%S").unwrap(),
+                time: DateTime::parse_from_str("08/Apr/2016:09:58:47 +0200", "%d/%b/%Y:%H:%M:%S %z").unwrap(),
                 mime_type: "text/html".to_string(),
                 response_time: Duration::milliseconds(10),
                 http_status: HttpStatus::OK,
@@ -153,7 +149,7 @@ mod tests {
 
         let expected = Request {
             id: 2,
-            time: strptime("08/Apr/2016:09:58:47 +0200", "%d/%b/%Y:%H:%M:%S").unwrap(),
+            time: DateTime::parse_from_str("08/Apr/2016:09:58:47 +0200", "%d/%b/%Y:%H:%M:%S %z").unwrap(),
             url: "/content/some/other.html".to_string(),
             original_log_line: "08/Apr/2016:09:58:47 +0200 [02] -> GET /content/some/other.html HTTP/1.1".to_string(),
         };
@@ -169,7 +165,7 @@ mod tests {
 
         let expected = Response {
             id: 2,
-            time: strptime("08/Apr/2016:09:58:48 +0200", "%d/%b/%Y:%H:%M:%S").unwrap(),
+            time: DateTime::parse_from_str("08/Apr/2016:09:58:48 +0200", "%d/%b/%Y:%H:%M:%S %z").unwrap(),
             mime_type: "text/html".to_string(),
             response_time: Duration::milliseconds(10),
             http_status: HttpStatus::OK,
@@ -187,7 +183,7 @@ mod tests {
 
         let expected = Response {
             id: 200,
-            time: strptime("06/Apr/2016:14:54:16 +0200", "%d/%b/%Y:%H:%M:%S").unwrap(),
+            time: DateTime::parse_from_str("06/Apr/2016:14:54:16 +0200", "%d/%b/%Y:%H:%M:%S %z").unwrap(),
             mime_type: "text/html; charset=utf-8".to_string(),
             response_time: Duration::milliseconds(250),
             http_status: HttpStatus::OK,
@@ -203,7 +199,7 @@ mod tests {
     fn test_get_matching_response() {
         let request = Request {
             id: 2,
-            time: strptime("08/Apr/2016:09:58:47 +0200", "%d/%b/%Y:%H:%M:%S").unwrap(),
+            time: DateTime::parse_from_str("08/Apr/2016:09:58:47 +0200", "%d/%b/%Y:%H:%M:%S %z").unwrap(),
             url: "/content/some/other.html".to_string(),
             original_log_line: "foo".to_string(),
         };
@@ -220,7 +216,7 @@ mod tests {
 
         let request_without_matching = Request {
             id: 999,
-            time: strptime("08/Apr/2016:09:58:47 +0200", "%d/%b/%Y:%H:%M:%S").unwrap(),
+            time: DateTime::parse_from_str("08/Apr/2016:09:58:47 +0200", "%d/%b/%Y:%H:%M:%S %z").unwrap(),
             url: "/content/some/other.html".to_string(),
             original_log_line: "foo".to_string(),
         };
@@ -234,13 +230,13 @@ mod tests {
     fn test_is_between_times() {
         let request = Request {
             id: 1,
-            time: strptime("08/Apr/2016:10:00:00 +0200", "%d/%b/%Y:%H:%M:%S").unwrap(),
+            time: DateTime::parse_from_str("08/Apr/2016:10:00:00 +0200", "%d/%b/%Y:%H:%M:%S %z").unwrap(),
             url: "/content/some/other.html".to_string(),
             original_log_line: "foo".to_string(),
         };
 
-        let start: Tm = strptime("08/Apr/2016:09:00:00 +0200", "%d/%b/%Y:%H:%M:%S").unwrap();
-        let end: Tm = strptime("08/Apr/2016:11:00:00 +0200", "%d/%b/%Y:%H:%M:%S").unwrap();
+        let start: DateTime<FixedOffset> = DateTime::parse_from_str("08/Apr/2016:09:00:00 +0200", "%d/%b/%Y:%H:%M:%S %z").unwrap();
+        let end: DateTime<FixedOffset> = DateTime::parse_from_str("08/Apr/2016:11:00:00 +0200", "%d/%b/%Y:%H:%M:%S %z").unwrap();
 
         assert_eq!(request.is_between_times(start, end), true);
     }
@@ -249,13 +245,13 @@ mod tests {
     fn test_is_between_times_not() {
         let request = Request {
             id: 1,
-            time: strptime("08/Apr/2016:11:00:00 +0200", "%d/%b/%Y:%H:%M:%S").unwrap(),
+            time: DateTime::parse_from_str("08/Apr/2016:11:00:00 +0200", "%d/%b/%Y:%H:%M:%S %z").unwrap(),
             url: "/content/some/other.html".to_string(),
             original_log_line: "foo".to_string(),
         };
 
-        let start: Tm = strptime("08/Apr/2016:09:00:00 +0200", "%d/%b/%Y:%H:%M:%S").unwrap();
-        let end: Tm = strptime("08/Apr/2016:10:00:00 +0200", "%d/%b/%Y:%H:%M:%S").unwrap();
+        let start: DateTime<FixedOffset> = DateTime::parse_from_str("08/Apr/2016:09:00:00 +0200", "%d/%b/%Y:%H:%M:%S %z").unwrap();
+        let end: DateTime<FixedOffset> = DateTime::parse_from_str("08/Apr/2016:10:00:00 +0200", "%d/%b/%Y:%H:%M:%S %z").unwrap();
 
         assert_eq!(request.is_between_times(start, end), false);
     }
@@ -264,13 +260,13 @@ mod tests {
     fn test_is_between_times_include_end() {
         let request = Request {
             id: 1,
-            time: strptime("08/Apr/2016:10:00:00 +0200", "%d/%b/%Y:%H:%M:%S").unwrap(),
+            time: DateTime::parse_from_str("08/Apr/2016:10:00:00 +0200", "%d/%b/%Y:%H:%M:%S %z").unwrap(),
             url: "/content/some/other.html".to_string(),
             original_log_line: "foo".to_string(),
         };
 
-        let start: Tm = strptime("08/Apr/2016:09:00:00 +0200", "%d/%b/%Y:%H:%M:%S").unwrap();
-        let end: Tm = strptime("08/Apr/2016:10:00:00 +0200", "%d/%b/%Y:%H:%M:%S").unwrap();
+        let start: DateTime<FixedOffset> = DateTime::parse_from_str("08/Apr/2016:09:00:00 +0200", "%d/%b/%Y:%H:%M:%S %z").unwrap();
+        let end: DateTime<FixedOffset> = DateTime::parse_from_str("08/Apr/2016:10:00:00 +0200", "%d/%b/%Y:%H:%M:%S %z").unwrap();
 
         assert_eq!(request.is_between_times(start, end), true);
     }
