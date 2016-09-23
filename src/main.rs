@@ -101,10 +101,24 @@ fn render_terminal(result: RequestLogAnalyzerResult) {
     println!("time.max:\t{}", result.max);
 }
 
-pub fn render_graphite<T: Write>(result: RequestLogAnalyzerResult, time: DateTime<FixedOffset>, mut stream: T) {
+pub fn render_graphite<T: Write>(result: RequestLogAnalyzerResult, time: DateTime<FixedOffset>, prefix: Option<&str>, mut stream: T) {
+    let prefix_text: &str;
+    let prefix_separator: &str;
+
+    match prefix {
+        Some(p) => {
+            prefix_text = p;
+            prefix_separator = ".";
+        }
+        None => {
+            prefix_text = "";
+            prefix_separator = "";
+        }
+    };
+
     let mut write = |text: String| {
         stream.write(
-            format!("{} {}\n", text, time.timestamp() )
+            format!("{}{}{} {}\n", prefix_text, prefix_separator, text, time.timestamp() )
             .as_bytes()
         );
     };
@@ -191,7 +205,7 @@ fn main() {
         ).unwrap();
 
         match analyze(&pairs) {
-            Some(result) => render_graphite(result, UTC::now().with_timezone(time_zone), stream),
+            Some(result) => render_graphite(result, UTC::now().with_timezone(time_zone), args.value_of("graphite-prefix"), stream),
             None => println!("No matching log lines in file.")
         }
     } else {
@@ -324,6 +338,7 @@ mod tests {
                 percentile90: 100,
             },
             DateTime::parse_from_str("22/Sep/2016:22:41:59 +0200", "%d/%b/%Y:%H:%M:%S %z").unwrap(),
+            None,
             &mut mock_tcp_stream
         );
 
@@ -333,5 +348,32 @@ mod tests {
         assert_eq!(&mock_tcp_stream.write_calls[3], "requests.time.avg 37 1474576919\n");
         assert_eq!(&mock_tcp_stream.write_calls[4], "requests.time.median 10 1474576919\n");
         assert_eq!(&mock_tcp_stream.write_calls[5], "requests.time.90percent 100 1474576919\n");
+    }
+
+    #[test]
+    fn test_render_graphite_prefix() {
+        let mut mock_tcp_stream = MockTcpStream {
+            write_calls: vec![]
+        };
+
+        render_graphite(RequestLogAnalyzerResult {
+                count: 3,
+                max: 100,
+                min: 1,
+                avg: 37,
+                median: 10,
+                percentile90: 100,
+            },
+            DateTime::parse_from_str("22/Sep/2016:22:41:59 +0200", "%d/%b/%Y:%H:%M:%S %z").unwrap(),
+            Some("my.prefix"),
+            &mut mock_tcp_stream
+        );
+
+        assert_eq!(&mock_tcp_stream.write_calls[0], "my.prefix.requests.count 3 1474576919\n");
+        assert_eq!(&mock_tcp_stream.write_calls[1], "my.prefix.requests.time.max 100 1474576919\n");
+        assert_eq!(&mock_tcp_stream.write_calls[2], "my.prefix.requests.time.min 1 1474576919\n");
+        assert_eq!(&mock_tcp_stream.write_calls[3], "my.prefix.requests.time.avg 37 1474576919\n");
+        assert_eq!(&mock_tcp_stream.write_calls[4], "my.prefix.requests.time.median 10 1474576919\n");
+        assert_eq!(&mock_tcp_stream.write_calls[5], "my.prefix.requests.time.90percent 100 1474576919\n");
     }
 }
