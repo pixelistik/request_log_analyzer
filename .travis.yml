@@ -5,7 +5,7 @@ rust:
 
 deploy:
   provider: releases
-    api_key: '$GITHUB_API_KEY'
+  api_key: '$GITHUB_API_KEY'
   file: 'target/release/request_log_analyzer'
   skip_cleanup: true
   on:
