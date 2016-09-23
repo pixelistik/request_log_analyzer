@@ -1,5 +1,6 @@
 use std::io::{self, BufReader, Write};
 use std::io::BufRead;
+use std::net::TcpStream;
 use std::fs::File;
 
 extern crate chrono;
@@ -151,6 +152,8 @@ fn main() {
     let lines = open_logfile(filename, time_filter);
     let (requests, responses) = lines.unwrap();
 
+    let time_zone = &requests[0].time.timezone();
+
     let pairs: Vec<RequestResponsePair> = pair_requests_responses(requests, responses)
         .into_iter()
         .filter(|rr| rr.matches_include_exclude_filter(
@@ -159,8 +162,11 @@ fn main() {
         ))
         .collect();
 
+    let stream = TcpStream::connect("127.0.0.1:2003").unwrap();
+
     match analyze(&pairs) {
-        Some(result) => render_terminal(result),
+        // Some(result) => render_terminal(result),
+        Some(result) => render_graphite(result, UTC::now().with_timezone(time_zone), stream),
         None => println!("No matching log lines in file.")
     }
 }
