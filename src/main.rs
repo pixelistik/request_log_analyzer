@@ -118,7 +118,7 @@ pub fn render_graphite<T: Write>(result: RequestLogAnalyzerResult, time: DateTim
 }
 
 fn main() {
-    let matches = App::new("Request.log Analyzer")
+    let args = App::new("Request.log Analyzer")
         .arg(Arg::with_name("filename")
             .index(1)
             .value_name("FILE")
@@ -142,9 +142,9 @@ fn main() {
             .takes_value(true))
         .get_matches();
 
-    let filename = matches.value_of("filename").unwrap();
+    let filename = args.value_of("filename").unwrap();
 
-    let time_filter = match matches.value_of("time_filter_minutes") {
+    let time_filter = match args.value_of("time_filter_minutes") {
         Some(minutes) => Some(Duration::minutes(minutes.parse().unwrap())),
         None => None
     };
@@ -157,8 +157,8 @@ fn main() {
     let pairs: Vec<RequestResponsePair> = pair_requests_responses(requests, responses)
         .into_iter()
         .filter(|rr| rr.matches_include_exclude_filter(
-            matches.value_of("include_term"),
-            matches.value_of("exclude_term")
+            args.value_of("include_term"),
+            args.value_of("exclude_term")
         ))
         .collect();
 
