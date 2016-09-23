@@ -103,7 +103,7 @@ fn render_terminal(result: RequestLogAnalyzerResult) {
 pub fn render_graphite<T: Write>(result: RequestLogAnalyzerResult, time: DateTime<FixedOffset>, mut stream: T) {
     stream.write(
         format!(
-            "count {} {:?}\n",
+            "requests.count {} {:?}\n",
             result.count,
             time.timestamp()
         )
