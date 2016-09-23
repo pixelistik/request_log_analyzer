@@ -1,8 +1,12 @@
 language: rust
+script: make all
 rust:
   - stable
-  - beta
-  - nightly
-matrix:
-  allow_failures:
-    - rust: nightly
+
+deploy:
+  provider: releases
+    api_key: '$GITHUB_API_KEY'
+  file: 'target/release/request_log_analyzer'
+  skip_cleanup: true
+  on:
+    tags
