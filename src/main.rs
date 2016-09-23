@@ -10,7 +10,7 @@ extern crate stats;
 use stats::median;
 
 extern crate clap;
-use clap::{Arg, App};
+use clap::{Arg, App, ArgMatches};
 
 mod percentile;
 use percentile::percentile;
@@ -117,8 +117,8 @@ pub fn render_graphite<T: Write>(result: RequestLogAnalyzerResult, time: DateTim
     write(format!("requests.time.90percent {}", result.percentile90));
 }
 
-fn main() {
-    let args = App::new("Request.log Analyzer")
+fn parse_args<'a>() -> ArgMatches<'a> {
+    App::new("Request.log Analyzer")
         .arg(Arg::with_name("filename")
             .index(1)
             .value_name("FILE")
@@ -140,7 +140,11 @@ fn main() {
             .long("exclude")
             .help("Excludes lines that contain this term")
             .takes_value(true))
-        .get_matches();
+        .get_matches()
+}
+
+fn main() {
+    let args = parse_args();
 
     let filename = args.value_of("filename").unwrap();
 
