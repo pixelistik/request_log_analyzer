@@ -20,10 +20,17 @@ mod http_status;
 mod request_response;
 use request_response::*;
 
-pub fn parse_logfile(path: &str, time_filter: Option<Duration>) -> Result<(Vec<Request>,Vec<Response>), io::Error> {
-    let f = try!(File::open(path));
+fn open_logfile(path: &str) -> BufReader<File> {
+    let file = File::open(path);
 
-    let f = BufReader::new(f);
+    match file {
+        Ok(f) => BufReader::new(f),
+        Err(err) => panic!("Could not open file {}: {}", path, err)
+    }
+}
+
+pub fn parse_logfile(path: &str, time_filter: Option<Duration>) -> Result<(Vec<Request>,Vec<Response>), io::Error> {
+    let f = open_logfile(path);
 
     let mut requests: Vec<Request> = Vec::new();
     let mut responses: Vec<Response> = Vec::new();
