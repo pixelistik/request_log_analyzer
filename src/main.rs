@@ -29,7 +29,7 @@ fn open_logfile(path: &str) -> BufReader<File> {
     }
 }
 
-pub fn parse_logfile(path: &str, time_filter: Option<Duration>, exclude_term: Option<&str>) -> Result<(Vec<Request>,Vec<Response>), io::Error> {
+pub fn parse_logfile(path: &str, time_filter: Option<Duration>, exclude_term: Option<&str>) -> Result<(Vec<Request>,Vec<Response>), &'static str> {
     let f = open_logfile(path);
 
     let mut requests: Vec<Request> = Vec::new();

@@ -13,15 +13,34 @@ pub struct Request {
 }
 
 impl Request {
-    pub fn new_from_log_line(log_line: &String, check_term: Option<&str>) -> Result<Request, io::Error> {
+    pub fn new_from_log_line(log_line: &String, check_term: Option<&str>) -> Result<Request, &'static str> {
         let parts: Vec<&str> = log_line.split(" ").collect();
 
-        let id = parts[2];
-        let url = parts[5];
+        let id = match parts.get(2) {
+            Some(id) =>  id,
+            None => return Err("Uncomprehensible request logline")
+        };
+
+        let id_parsed: i32 = match id[1..id.len()-1].parse() {
+            Ok(id) =>  id,
+            Err(err) => return Err("Uncomprehensible request logline")
+        };
+
+        let url = match parts.get(5) {
+            Some(url) =>  url,
+            None => return Err("Uncomprehensible request logline")
+        };
+
+        let date = &format!("{} {}", parts[0], parts[1]);
+
+        let date_parsed = match DateTime::parse_from_str(date, "%d/%b/%Y:%H:%M:%S %z") {
+            Ok(date_time) => date_time,
+            Err(err) => return Err("Uncomprehensible request logline")
+        };
 
         Ok(Request {
-            id: id[1..id.len()-1].parse().unwrap(),
-            time: DateTime::parse_from_str(&format!("{} {}", parts[0], parts[1]), "%d/%b/%Y:%H:%M:%S %z").unwrap(),
+            id: id_parsed,
+            time: date_parsed,
             url: url.to_string(),
             contains_term: match check_term {
                 Some(t) => Some(log_line.contains(t)),
@@ -54,7 +73,7 @@ pub struct Response {
 }
 
 impl Response {
-    pub fn new_from_log_line(log_line: &String, check_term: Option<&str>) -> Result<Response, io::Error> {
+    pub fn new_from_log_line(log_line: &String, check_term: Option<&str>) -> Result<Response, &'static str> {
         let parts: Vec<&str> = log_line.split(" ").collect();
 
         let id = parts[2];
@@ -156,6 +175,39 @@ mod tests {
         let result = Request::new_from_log_line(&line, None);
 
         assert_eq!(result.unwrap(), expected)
+    }
+
+    #[test]
+    fn test_parse_request_line_bad_format() {
+        let line = "08/A16:09:58:47 justsomegarbage".to_string();
+
+        let expected: Result<Request, &'static str> = Err("Uncomprehensible request logline");
+        let result: Result<Request, &'static str> = Request::new_from_log_line(&line, None);
+
+        assert_eq!(result.is_err(), true);
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_parse_request_line_bad_format_but_enough_parts() {
+        let line = "just some garbage with more parts at the end".to_string();
+
+        let expected: Result<Request, &'static str> = Err("Uncomprehensible request logline");
+        let result: Result<Request, &'static str> = Request::new_from_log_line(&line, None);
+
+        assert_eq!(result.is_err(), true);
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_parse_request_line_bad_date_format() {
+        let line = "99/XYZ/9999:09:99:99 +9900 [02] -> GET /content/some/other.html HTTP/1.1".to_string();
+
+        let expected: Result<Request, &'static str> = Err("Uncomprehensible request logline");
+        let result: Result<Request, &'static str> = Request::new_from_log_line(&line, None);
+
+        assert_eq!(result.is_err(), true);
+        assert_eq!(result, expected);
     }
 
     #[test]
