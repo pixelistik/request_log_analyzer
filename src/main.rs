@@ -29,7 +29,7 @@ fn open_logfile(path: &str) -> BufReader<File> {
     }
 }
 
-pub fn parse_logfile(path: &str, time_filter: Option<Duration>) -> Result<(Vec<Request>,Vec<Response>), io::Error> {
+pub fn parse_logfile(path: &str, time_filter: Option<Duration>, exclude_term: Option<&str>) -> Result<(Vec<Request>,Vec<Response>), io::Error> {
     let f = open_logfile(path);
 
     let mut requests: Vec<Request> = Vec::new();
@@ -37,6 +37,10 @@ pub fn parse_logfile(path: &str, time_filter: Option<Duration>) -> Result<(Vec<R
 
     for line in f.lines() {
         let line_value = &line.unwrap();
+
+        if exclude_term.is_some() && line_value.contains(exclude_term.unwrap()) {
+            continue;
+        }
 
         if line_value.contains("->") {
             let r = try!(Request::new_from_log_line(&line_value, None));
@@ -189,7 +193,7 @@ fn main() {
         None => None
     };
 
-    let lines = parse_logfile(filename, time_filter);
+    let lines = parse_logfile(filename, time_filter, args.value_of("exclude_term"));
     let (requests, responses) = lines.unwrap();
 
     let time_zone = &requests[0].time.timezone();
@@ -198,7 +202,6 @@ fn main() {
         .into_iter()
         .filter(|rr| rr.matches_include_filter())
         .collect();
-
 
     if args.is_present("graphite-server") {
         let stream = TcpStream::connect(
@@ -232,7 +235,7 @@ mod tests {
 
     #[test]
     fn test_parse_logfile() {
-        let lines = parse_logfile("src/test/simple-1.log", None);
+        let lines = parse_logfile("src/test/simple-1.log", None, None);
         let (requests, responses) = lines.unwrap();
 
         assert_eq!(requests.len(), 2);
@@ -242,21 +245,47 @@ mod tests {
     #[test]
     fn test_open_logfile_time_filter() {
         let time_filter: Duration = Duration::minutes(1);
-        let lines = parse_logfile("src/test/simple-1.log", Some(time_filter));
+        let lines = parse_logfile("src/test/simple-1.log", Some(time_filter), None);
         let (requests, responses) = lines.unwrap();
 
         assert_eq!(requests.len(), 0);
 
         let time_filter: Duration = Duration::minutes(52560000); // 100 years
-        let lines = parse_logfile("src/test/simple-1.log", Some(time_filter));
+        let lines = parse_logfile("src/test/simple-1.log", Some(time_filter), None);
         let (requests, responses) = lines.unwrap();
 
         assert_eq!(requests.len(), 2);
     }
 
     #[test]
+    fn test_parse_logfile_exlude_term_in_request_line() {
+        let lines = parse_logfile("src/test/simple-1.log", None, Some("other.html"));
+        let (requests, responses) = lines.unwrap();
+
+        assert_eq!(requests.len(), 1);
+        assert_eq!(requests[0].id, 1);
+    }
+
+    #[test]
+    fn test_parse_logfile_exlude_term_in_response_line() {
+        let lines = parse_logfile("src/test/simple-1.log", None, Some("text/html"));
+        let (requests, responses) = lines.unwrap();
+
+        assert_eq!(responses.len(), 0);
+    }
+
+    #[test]
+    fn test_parse_logfile_exlude_term_given_but_not_found() {
+        let lines = parse_logfile("src/test/simple-1.log", None, Some("term that does not exist"));
+        let (requests, responses) = lines.unwrap();
+
+        assert_eq!(requests.len(), 2);
+        assert_eq!(responses.len(), 2);
+    }
+
+    #[test]
     fn test_pair_requests_resonses() {
-        let lines = parse_logfile("src/test/simple-1.log", None);
+        let lines = parse_logfile("src/test/simple-1.log", None, None);
         let (requests, responses) = lines.unwrap();
 
         let result = pair_requests_responses(requests, responses);
@@ -269,7 +298,7 @@ mod tests {
 
     #[test]
     fn test_request_log_analyzer_result() {
-        let lines = parse_logfile("src/test/response-time-calculations.log", None);
+        let lines = parse_logfile("src/test/response-time-calculations.log", None, None);
         let (requests, responses) = lines.unwrap();
 
         let request_response_pairs = pair_requests_responses(requests, responses);
@@ -290,7 +319,7 @@ mod tests {
 
     #[test]
     fn test_request_log_analyze_none_matching() {
-        let lines = parse_logfile("src/test/simple-1.log", Some(Duration::minutes(0)));
+        let lines = parse_logfile("src/test/simple-1.log", Some(Duration::minutes(0)), None);
         let (requests, responses) = lines.unwrap();
 
         let request_response_pairs = pair_requests_responses(requests, responses);
@@ -304,7 +333,7 @@ mod tests {
 
     #[test]
     fn test_90_percentile_calculation() {
-        let lines = parse_logfile("src/test/percentile.log", None);
+        let lines = parse_logfile("src/test/percentile.log", None, None);
         let (requests, responses) = lines.unwrap();
 
         let request_response_pairs = pair_requests_responses(requests, responses);
