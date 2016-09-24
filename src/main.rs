@@ -20,7 +20,7 @@ mod http_status;
 mod request_response;
 use request_response::*;
 
-pub fn open_logfile(path: &str, time_filter: Option<Duration>) -> Result<(Vec<Request>,Vec<Response>), io::Error> {
+pub fn parse_logfile(path: &str, time_filter: Option<Duration>) -> Result<(Vec<Request>,Vec<Response>), io::Error> {
     let f = try!(File::open(path));
 
     let f = BufReader::new(f);
@@ -182,7 +182,7 @@ fn main() {
         None => None
     };
 
-    let lines = open_logfile(filename, time_filter);
+    let lines = parse_logfile(filename, time_filter);
     let (requests, responses) = lines.unwrap();
 
     let time_zone = &requests[0].time.timezone();
@@ -227,8 +227,8 @@ mod tests {
     use std::io::{self, BufReader};
 
     #[test]
-    fn test_open_logfile() {
-        let lines = open_logfile("src/test/simple-1.log", None);
+    fn test_parse_logfile() {
+        let lines = parse_logfile("src/test/simple-1.log", None);
         let (requests, responses) = lines.unwrap();
 
         assert_eq!(requests.len(), 2);
@@ -238,13 +238,13 @@ mod tests {
     #[test]
     fn test_open_logfile_time_filter() {
         let time_filter: Duration = Duration::minutes(1);
-        let lines = open_logfile("src/test/simple-1.log", Some(time_filter));
+        let lines = parse_logfile("src/test/simple-1.log", Some(time_filter));
         let (requests, responses) = lines.unwrap();
 
         assert_eq!(requests.len(), 0);
 
         let time_filter: Duration = Duration::minutes(52560000); // 100 years
-        let lines = open_logfile("src/test/simple-1.log", Some(time_filter));
+        let lines = parse_logfile("src/test/simple-1.log", Some(time_filter));
         let (requests, responses) = lines.unwrap();
 
         assert_eq!(requests.len(), 2);
@@ -252,7 +252,7 @@ mod tests {
 
     #[test]
     fn test_pair_requests_resonses() {
-        let lines = open_logfile("src/test/simple-1.log", None);
+        let lines = parse_logfile("src/test/simple-1.log", None);
         let (requests, responses) = lines.unwrap();
 
         let result = pair_requests_responses(requests, responses);
@@ -265,7 +265,7 @@ mod tests {
 
     #[test]
     fn test_request_log_analyzer_result() {
-        let lines = open_logfile("src/test/response-time-calculations.log", None);
+        let lines = parse_logfile("src/test/response-time-calculations.log", None);
         let (requests, responses) = lines.unwrap();
 
         let request_response_pairs = pair_requests_responses(requests, responses);
@@ -286,7 +286,7 @@ mod tests {
 
     #[test]
     fn test_request_log_analyze_none_matching() {
-        let lines = open_logfile("src/test/simple-1.log", Some(Duration::minutes(0)));
+        let lines = parse_logfile("src/test/simple-1.log", Some(Duration::minutes(0)));
         let (requests, responses) = lines.unwrap();
 
         let request_response_pairs = pair_requests_responses(requests, responses);
@@ -300,7 +300,7 @@ mod tests {
 
     #[test]
     fn test_90_percentile_calculation() {
-        let lines = open_logfile("src/test/percentile.log", None);
+        let lines = parse_logfile("src/test/percentile.log", None);
         let (requests, responses) = lines.unwrap();
 
         let request_response_pairs = pair_requests_responses(requests, responses);
