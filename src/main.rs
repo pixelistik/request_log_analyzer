@@ -1,4 +1,5 @@
-use std::io::{self, BufReader, Write};
+use std::io::BufReader;
+use std::io::Write;
 use std::io::BufRead;
 use std::net::TcpStream;
 use std::fs::File;
@@ -128,7 +129,7 @@ pub fn render_graphite<T: Write>(result: RequestLogAnalyzerResult, time: DateTim
     };
 
     let mut write = |text: String| {
-        stream.write(
+        let _ = stream.write(
             format!("{}{}{} {}\n", prefix_text, prefix_separator, text, time.timestamp() )
             .as_bytes()
         );
@@ -231,7 +232,7 @@ mod tests {
     use chrono::*;
     use std::str;
     use std::io::prelude::Write;
-    use std::io::{self, BufReader};
+    use std::io::{self};
 
     #[test]
     fn test_parse_logfile() {
@@ -246,13 +247,13 @@ mod tests {
     fn test_open_logfile_time_filter() {
         let time_filter: Duration = Duration::minutes(1);
         let lines = parse_logfile("src/test/simple-1.log", Some(time_filter), None);
-        let (requests, responses) = lines.unwrap();
+        let (requests, _) = lines.unwrap();
 
         assert_eq!(requests.len(), 0);
 
         let time_filter: Duration = Duration::minutes(52560000); // 100 years
         let lines = parse_logfile("src/test/simple-1.log", Some(time_filter), None);
-        let (requests, responses) = lines.unwrap();
+        let (requests, _) = lines.unwrap();
 
         assert_eq!(requests.len(), 2);
     }
@@ -260,7 +261,7 @@ mod tests {
     #[test]
     fn test_parse_logfile_exlude_term_in_request_line() {
         let lines = parse_logfile("src/test/simple-1.log", None, Some("other.html"));
-        let (requests, responses) = lines.unwrap();
+        let (requests, _) = lines.unwrap();
 
         assert_eq!(requests.len(), 1);
         assert_eq!(requests[0].id, 1);
@@ -269,7 +270,7 @@ mod tests {
     #[test]
     fn test_parse_logfile_exlude_term_in_response_line() {
         let lines = parse_logfile("src/test/simple-1.log", None, Some("text/html"));
-        let (requests, responses) = lines.unwrap();
+        let (_, responses) = lines.unwrap();
 
         assert_eq!(responses.len(), 0);
     }

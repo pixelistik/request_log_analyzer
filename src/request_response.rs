@@ -1,4 +1,3 @@
-use std::io;
 use chrono::*;
 
 use http_status::HttpStatus;
@@ -23,7 +22,7 @@ impl Request {
 
         let id_parsed: i32 = match id[1..id.len()-1].parse() {
             Ok(id) =>  id,
-            Err(err) => return Err("Uncomprehensible request logline")
+            Err(_) => return Err("Uncomprehensible request logline")
         };
 
         let url = match parts.get(5) {
@@ -35,7 +34,7 @@ impl Request {
 
         let date_parsed = match DateTime::parse_from_str(date, "%d/%b/%Y:%H:%M:%S %z") {
             Ok(date_time) => date_time,
-            Err(err) => return Err("Uncomprehensible request logline")
+            Err(_) => return Err("Uncomprehensible request logline")
         };
 
         Ok(Request {
