@@ -39,7 +39,7 @@ pub fn parse_logfile(path: &str, time_filter: Option<Duration>) -> Result<(Vec<R
         let line_value = &line.unwrap();
 
         if line_value.contains("->") {
-            let r = try!(Request::new_from_log_line(&line_value));
+            let r = try!(Request::new_from_log_line(&line_value, None));
 
             if time_filter.is_none() ||
               (time_filter.is_some() && r.is_between_times(UTC::now().with_timezone(&r.time.timezone()) - time_filter.unwrap(), UTC::now().with_timezone(&r.time.timezone()))) {
@@ -48,7 +48,7 @@ pub fn parse_logfile(path: &str, time_filter: Option<Duration>) -> Result<(Vec<R
         }
 
         if line_value.contains("<-") {
-            let r = try!(Response::new_from_log_line(&line_value));
+            let r = try!(Response::new_from_log_line(&line_value, None));
             responses.push(r);
         }
 
@@ -196,10 +196,7 @@ fn main() {
 
     let pairs: Vec<RequestResponsePair> = pair_requests_responses(requests, responses)
         .into_iter()
-        .filter(|rr| rr.matches_include_exclude_filter(
-            args.value_of("include_term"),
-            args.value_of("exclude_term")
-        ))
+        .filter(|rr| rr.matches_include_filter())
         .collect();
 
 
