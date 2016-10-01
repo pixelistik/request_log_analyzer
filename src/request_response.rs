@@ -20,6 +20,11 @@ impl Request {
             None => return Err("Uncomprehensible request logline")
         };
 
+        // Shortest valid id format is "[1]"
+        if id.len() < 3 {
+            return Err("Uncomprehensible request logline");
+        }
+
         let id_parsed: i32 = match id[1..id.len()-1].parse() {
             Ok(id) =>  id,
             Err(_) => return Err("Uncomprehensible request logline")
@@ -76,6 +81,12 @@ impl Response {
         let parts: Vec<&str> = log_line.split(" ").collect();
 
         let id = parts[2];
+
+        // Shortest valid id format is "[1]"
+        if id.len() < 3 {
+            return Err("Uncomprehensible response logline");
+        }
+
         let response_time = parts[parts.len()-1];
 
         // Handle special case where the mime type sometimes contains
@@ -210,6 +221,17 @@ mod tests {
     }
 
     #[test]
+    fn test_parse_request_line_bad_id_format() {
+        let line = "08/Apr/2016:09:58:47 +0200 2 -> GET /content/some/other.html HTTP/1.1".to_string();
+
+        let expected: Result<Request, &'static str> = Err("Uncomprehensible request logline");
+        let result: Result<Request, &'static str> = Request::new_from_log_line(&line, None);
+
+        assert_eq!(result.is_err(), true);
+        assert_eq!(result, expected);
+    }
+
+    #[test]
     fn test_parse_response_line() {
         let line = "08/Apr/2016:09:58:48 +0200 [02] <- 200 text/html 10ms".to_string();
 
@@ -243,6 +265,17 @@ mod tests {
         let result = Response::new_from_log_line(&line, None);
 
         assert_eq!(result.unwrap(), expected)
+    }
+
+    #[test]
+    fn test_parse_response_line_bad_id_format() {
+        let line = "08/Apr/2016:09:58:48 +0200 2 <- 200 text/html 10ms".to_string();
+
+        let expected: Result<Response, &'static str> = Err("Uncomprehensible response logline");
+        let result: Result<Response, &'static str> = Response::new_from_log_line(&line, None);
+
+        assert_eq!(result.is_err(), true);
+        assert_eq!(result, expected);
     }
 
     #[test]
