@@ -11,7 +11,7 @@ matrix:
 deploy:
   provider: releases
   api_key: '$GITHUB_API_KEY'
-  file: 'target/x86_64-unknown-linux-musl/release/request_log_analyzer'
+  file: 'target/release/request_log_analyzer'
   skip_cleanup: true
   on:
     tags: true
