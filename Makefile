@@ -6,4 +6,12 @@ target/release/request_log_analyzer: src/
 test:
 	cargo test --verbose
 
-.PHONY: all test
+musl-deps:
+	rustup target add x86_64-unknown-linux-musl
+
+musl: target/x86_64-unknown-linux-musl/release/request_log_analyzer
+
+target/x86_64-unknown-linux-musl/release/request_log_analyzer: musl-deps test src/
+	cargo build --release --verbose --target=x86_64-unknown-linux-musl
+
+.PHONY: all test musl-deps musl
