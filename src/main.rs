@@ -1,6 +1,7 @@
 use std::io::BufReader;
 use std::io::Write;
 use std::io::BufRead;
+use std::io::{self};
 use std::net::TcpStream;
 use std::fs::File;
 
@@ -20,6 +21,14 @@ mod http_status;
 
 mod request_response;
 use request_response::*;
+
+// http://stackoverflow.com/a/27590832/376138
+macro_rules! println_stderr(
+    ($($arg:tt)*) => { {
+        let r = writeln!(&mut ::std::io::stderr(), $($arg)*);
+        r.expect("failed printing to stderr");
+    } }
+);
 
 fn open_logfile(path: &str) -> BufReader<File> {
     let file = File::open(path);
@@ -51,14 +60,14 @@ pub fn parse_logfile(path: &str, time_filter: Option<Duration>, exclude_term: Op
                         requests.push(r);
                     }
                 },
-                Err(err) => ()
+                Err(err) => println_stderr!("Skipped a line: {}", err)
             }
         }
 
         if line_value.contains("<-") {
             match Response::new_from_log_line(&line_value, None) {
                 Ok(r) => responses.push(r),
-                Err(err) => ()
+                Err(err) => println_stderr!("Skipped a line: {}", err)
             }
         }
 
