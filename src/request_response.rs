@@ -104,14 +104,17 @@ impl Response {
             _ => parts[5].to_string()
         };
 
-        let status_code = parts[4];
+        let status_code = match parts[4].parse() {
+            Ok(number) => HttpStatus::from_code(number),
+            Err(_) => return Err("Uncomprehensible response logline")
+        };
 
         Ok(Response {
             id: id[1..id.len()-1].parse().unwrap(),
             time: DateTime::parse_from_str(&format!("{} {}", parts[0], parts[1]), "%d/%b/%Y:%H:%M:%S %z").unwrap(),
             response_time: response_time_duration,
             mime_type: mime_type,
-            http_status: HttpStatus::from_code(status_code.parse().unwrap()),
+            http_status: status_code,
             contains_term: match check_term {
                 Some(t) => Some(log_line.contains(t)),
                 None => None
@@ -300,6 +303,17 @@ mod tests {
     #[test]
     fn test_parse_response_line_bad_response_time_not_a_number() {
         let line = "08/Apr/2016:09:57:47 +0200 [001] <- 200 text/html XXXms".to_string();
+
+        let expected: Result<Response, &'static str> = Err("Uncomprehensible response logline");
+        let result: Result<Response, &'static str> = Response::new_from_log_line(&line, None);
+
+        assert_eq!(result.is_err(), true);
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_parse_response_line_bad_status_code() {
+        let line = "08/Apr/2016:09:57:47 +0200 [001] <- FOO text/html 10ms".to_string();
 
         let expected: Result<Response, &'static str> = Err("Uncomprehensible response logline");
         let result: Result<Response, &'static str> = Response::new_from_log_line(&line, None);
