@@ -82,6 +82,11 @@ impl Response {
 
         let id = parts[2];
 
+        let time = match DateTime::parse_from_str(&format!("{} {}", parts[0], parts[1]), "%d/%b/%Y:%H:%M:%S %z") {
+            Ok(time) => time,
+            Err(_) => return Err("Uncomprehensible response logline")
+        };
+
         // Shortest valid id format is "[1]"
         if id.len() < 3 {
             return Err("Uncomprehensible response logline");
@@ -111,7 +116,7 @@ impl Response {
 
         Ok(Response {
             id: id[1..id.len()-1].parse().unwrap(),
-            time: DateTime::parse_from_str(&format!("{} {}", parts[0], parts[1]), "%d/%b/%Y:%H:%M:%S %z").unwrap(),
+            time: time,
             response_time: response_time_duration,
             mime_type: mime_type,
             http_status: status_code,
@@ -281,6 +286,17 @@ mod tests {
     #[test]
     fn test_parse_response_line_bad_id_format() {
         let line = "08/Apr/2016:09:58:48 +0200 2 <- 200 text/html 10ms".to_string();
+
+        let expected: Result<Response, &'static str> = Err("Uncomprehensible response logline");
+        let result: Result<Response, &'static str> = Response::new_from_log_line(&line, None);
+
+        assert_eq!(result.is_err(), true);
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_parse_response_line_bad_time_format() {
+        let line = "08/Apr/2016:5:2X:48 +0200 [83940] <- 200 text/html 14642ms".to_string();
 
         let expected: Result<Response, &'static str> = Err("Uncomprehensible response logline");
         let result: Result<Response, &'static str> = Response::new_from_log_line(&line, None);
