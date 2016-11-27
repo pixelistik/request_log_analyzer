@@ -44,17 +44,22 @@ pub fn parse_logfile(path: &str, time_filter: Option<Duration>, exclude_term: Op
         }
 
         if line_value.contains("->") {
-            let r = try!(Request::new_from_log_line(&line_value, None));
-
-            if time_filter.is_none() ||
-              (time_filter.is_some() && r.is_between_times(UTC::now().with_timezone(&r.time.timezone()) - time_filter.unwrap(), UTC::now().with_timezone(&r.time.timezone()))) {
-                requests.push(r);
+            match Request::new_from_log_line(&line_value, None) {
+                Ok(r) => {
+                    if time_filter.is_none() ||
+                      (time_filter.is_some() && r.is_between_times(UTC::now().with_timezone(&r.time.timezone()) - time_filter.unwrap(), UTC::now().with_timezone(&r.time.timezone()))) {
+                        requests.push(r);
+                    }
+                },
+                Err(err) => ()
             }
         }
 
         if line_value.contains("<-") {
-            let r = try!(Response::new_from_log_line(&line_value, None));
-            responses.push(r);
+            match Response::new_from_log_line(&line_value, None) {
+                Ok(r) => responses.push(r),
+                Err(err) => ()
+            }
         }
 
     }
@@ -282,6 +287,15 @@ mod tests {
 
         assert_eq!(requests.len(), 2);
         assert_eq!(responses.len(), 2);
+    }
+
+    #[test]
+    fn test_parse_logfile_ignore_broken_lines() {
+        let lines = parse_logfile("src/test/broken.log", None, None);
+        let (requests, responses) = lines.unwrap();
+
+        assert_eq!(requests.len(), 1);
+        assert_eq!(responses.len(), 1);
     }
 
     #[test]
