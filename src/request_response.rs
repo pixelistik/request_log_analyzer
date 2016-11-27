@@ -88,6 +88,14 @@ impl Response {
         }
 
         let response_time = parts[parts.len()-1];
+        if response_time.len() < 3 {
+            return Err("Uncomprehensible response logline");
+        }
+
+        let response_time_duration = match response_time[0..response_time.len()-2].parse() {
+            Ok(number) => Duration::milliseconds(number),
+            Err(_) => return Err("Uncomprehensible response logline")
+        };
 
         // Handle special case where the mime type sometimes contains
         // a space, so we need to re-assemble it
@@ -101,7 +109,7 @@ impl Response {
         Ok(Response {
             id: id[1..id.len()-1].parse().unwrap(),
             time: DateTime::parse_from_str(&format!("{} {}", parts[0], parts[1]), "%d/%b/%Y:%H:%M:%S %z").unwrap(),
-            response_time: Duration::milliseconds(response_time[0..response_time.len()-2].parse().unwrap()),
+            response_time: response_time_duration,
             mime_type: mime_type,
             http_status: HttpStatus::from_code(status_code.parse().unwrap()),
             contains_term: match check_term {
@@ -270,6 +278,28 @@ mod tests {
     #[test]
     fn test_parse_response_line_bad_id_format() {
         let line = "08/Apr/2016:09:58:48 +0200 2 <- 200 text/html 10ms".to_string();
+
+        let expected: Result<Response, &'static str> = Err("Uncomprehensible response logline");
+        let result: Result<Response, &'static str> = Response::new_from_log_line(&line, None);
+
+        assert_eq!(result.is_err(), true);
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_parse_response_line_bad_response_time_too_short() {
+        let line = "08/Apr/2016:09:57:47 +0200 [001] <- 200 text/html X".to_string();
+
+        let expected: Result<Response, &'static str> = Err("Uncomprehensible response logline");
+        let result: Result<Response, &'static str> = Response::new_from_log_line(&line, None);
+
+        assert_eq!(result.is_err(), true);
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_parse_response_line_bad_response_time_not_a_number() {
+        let line = "08/Apr/2016:09:57:47 +0200 [001] <- 200 text/html XXXms".to_string();
 
         let expected: Result<Response, &'static str> = Err("Uncomprehensible response logline");
         let result: Result<Response, &'static str> = Response::new_from_log_line(&line, None);
