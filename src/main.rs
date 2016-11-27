@@ -1,7 +1,6 @@
 use std::io::BufReader;
 use std::io::Write;
 use std::io::BufRead;
-use std::io::{self};
 use std::net::TcpStream;
 use std::fs::File;
 
