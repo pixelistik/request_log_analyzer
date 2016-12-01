@@ -29,15 +29,6 @@ macro_rules! println_stderr(
     } }
 );
 
-fn open_logfile(path: &str) -> BufReader<File> {
-    let file = File::open(path);
-
-    match file {
-        Ok(f) => BufReader::new(f),
-        Err(err) => panic!("Could not open file {}: {}", path, err)
-    }
-}
-
 pub fn parse_input(input: Box<io::BufRead>, time_filter: Option<Duration>, exclude_term: Option<&str>) -> Result<(Vec<Request>,Vec<Response>), &'static str> {
     let mut requests: Vec<Request> = Vec::new();
     let mut responses: Vec<Response> = Vec::new();
@@ -193,6 +184,15 @@ fn parse_args<'a>() -> ArgMatches<'a> {
             .help("Prefix for Graphite key, e.g. 'servers.prod.publisher1'")
             .takes_value(true))
         .get_matches()
+}
+
+fn open_logfile(path: &str) -> BufReader<File> {
+    let file = File::open(path);
+
+    match file {
+        Ok(f) => BufReader::new(f),
+        Err(err) => panic!("Could not open file {}: {}", path, err)
+    }
 }
 
 fn main() {
