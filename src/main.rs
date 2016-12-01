@@ -165,8 +165,8 @@ fn parse_args<'a>() -> ArgMatches<'a> {
         .arg(Arg::with_name("filename")
             .index(1)
             .value_name("FILE")
-            .required(true)
-            .help("Log file to analyze")
+            .required(false)
+            .help("Log file to analyze, defaults to stdin")
             .takes_value(true))
         .arg(Arg::with_name("time_filter_minutes")
             .value_name("MINUTES")
@@ -204,14 +204,19 @@ fn parse_args<'a>() -> ArgMatches<'a> {
 fn main() {
     let args = parse_args();
 
-    let filename = args.value_of("filename").unwrap();
+    let filename = args.value_of("filename").unwrap_or("-");
 
     let time_filter = match args.value_of("time_filter_minutes") {
         Some(minutes) => Some(Duration::minutes(minutes.parse().unwrap())),
         None => None
     };
 
-    let lines = parse_logfile(filename, time_filter, args.value_of("exclude_term"));
+    let input: Box<io::BufRead> = match filename {
+        "-" => Box::new(BufReader::new(io::stdin())),
+        _ => Box::new(open_logfile(filename))
+    };
+
+    let lines = parse_input(input, time_filter, args.value_of("exclude_term"));
     let (requests, responses) = lines.unwrap();
 
     let time_zone = &requests[0].time.timezone();
