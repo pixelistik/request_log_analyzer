@@ -39,12 +39,12 @@ fn open_logfile(path: &str) -> BufReader<File> {
 }
 
 pub fn parse_logfile(path: &str, time_filter: Option<Duration>, exclude_term: Option<&str>) -> Result<(Vec<Request>,Vec<Response>), &'static str> {
-    let f = open_logfile(path);
+    let input = open_logfile(path);
 
     let mut requests: Vec<Request> = Vec::new();
     let mut responses: Vec<Response> = Vec::new();
 
-    for line in f.lines() {
+    for line in input.lines() {
         let line_value = &line.unwrap();
 
         if exclude_term.is_some() && line_value.contains(exclude_term.unwrap()) {
