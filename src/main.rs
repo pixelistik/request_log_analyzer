@@ -38,12 +38,6 @@ fn open_logfile(path: &str) -> BufReader<File> {
     }
 }
 
-pub fn parse_logfile(path: &str, time_filter: Option<Duration>, exclude_term: Option<&str>) -> Result<(Vec<Request>,Vec<Response>), &'static str> {
-    let input = Box::new(open_logfile(path));
-
-    parse_input(input, time_filter, exclude_term)
-}
-
 pub fn parse_input(input: Box<io::BufRead>, time_filter: Option<Duration>, exclude_term: Option<&str>) -> Result<(Vec<Request>,Vec<Response>), &'static str> {
     let mut requests: Vec<Request> = Vec::new();
     let mut responses: Vec<Response> = Vec::new();
@@ -253,12 +247,18 @@ mod tests {
     extern crate chrono;
     use chrono::*;
     use std::str;
-    use std::io::prelude::Write;
-    use std::io::{self};
+    use std::io;
+    use std::io::prelude::*;
+    use std::io::BufReader;
+    use std::fs::File;
+
+    fn input_from_filename(filename: &str) -> Box<io::BufRead> {
+        Box::new(BufReader::new(File::open(filename).unwrap()))
+    }
 
     #[test]
     fn test_parse_logfile() {
-        let lines = parse_logfile("src/test/simple-1.log", None, None);
+        let lines = parse_input(input_from_filename("src/test/simple-1.log"), None, None);
         let (requests, responses) = lines.unwrap();
 
         assert_eq!(requests.len(), 2);
@@ -268,13 +268,13 @@ mod tests {
     #[test]
     fn test_open_logfile_time_filter() {
         let time_filter: Duration = Duration::minutes(1);
-        let lines = parse_logfile("src/test/simple-1.log", Some(time_filter), None);
+        let lines = parse_input(input_from_filename("src/test/simple-1.log"), Some(time_filter), None);
         let (requests, _) = lines.unwrap();
 
         assert_eq!(requests.len(), 0);
 
         let time_filter: Duration = Duration::minutes(52560000); // 100 years
-        let lines = parse_logfile("src/test/simple-1.log", Some(time_filter), None);
+        let lines = parse_input(input_from_filename("src/test/simple-1.log"), Some(time_filter), None);
         let (requests, _) = lines.unwrap();
 
         assert_eq!(requests.len(), 2);
@@ -282,7 +282,7 @@ mod tests {
 
     #[test]
     fn test_parse_logfile_exlude_term_in_request_line() {
-        let lines = parse_logfile("src/test/simple-1.log", None, Some("other.html"));
+        let lines = parse_input(input_from_filename("src/test/simple-1.log"), None, Some("other.html"));
         let (requests, _) = lines.unwrap();
 
         assert_eq!(requests.len(), 1);
@@ -291,7 +291,7 @@ mod tests {
 
     #[test]
     fn test_parse_logfile_exlude_term_in_response_line() {
-        let lines = parse_logfile("src/test/simple-1.log", None, Some("text/html"));
+        let lines = parse_input(input_from_filename("src/test/simple-1.log"), None, Some("text/html"));
         let (_, responses) = lines.unwrap();
 
         assert_eq!(responses.len(), 0);
@@ -299,7 +299,7 @@ mod tests {
 
     #[test]
     fn test_parse_logfile_exlude_term_given_but_not_found() {
-        let lines = parse_logfile("src/test/simple-1.log", None, Some("term that does not exist"));
+        let lines = parse_input(input_from_filename("src/test/simple-1.log"), None, Some("term that does not exist"));
         let (requests, responses) = lines.unwrap();
 
         assert_eq!(requests.len(), 2);
@@ -308,7 +308,7 @@ mod tests {
 
     #[test]
     fn test_parse_logfile_ignore_broken_lines() {
-        let lines = parse_logfile("src/test/broken.log", None, None);
+        let lines = parse_input(input_from_filename("src/test/broken.log"), None, None);
         let (requests, responses) = lines.unwrap();
 
         assert_eq!(requests.len(), 1);
@@ -317,7 +317,7 @@ mod tests {
 
     #[test]
     fn test_pair_requests_resonses() {
-        let lines = parse_logfile("src/test/simple-1.log", None, None);
+        let lines = parse_input(input_from_filename("src/test/simple-1.log"), None, None);
         let (requests, responses) = lines.unwrap();
 
         let result = pair_requests_responses(requests, responses);
@@ -330,7 +330,7 @@ mod tests {
 
     #[test]
     fn test_request_log_analyzer_result() {
-        let lines = parse_logfile("src/test/response-time-calculations.log", None, None);
+        let lines = parse_input(input_from_filename("src/test/response-time-calculations.log"), None, None);
         let (requests, responses) = lines.unwrap();
 
         let request_response_pairs = pair_requests_responses(requests, responses);
@@ -351,7 +351,7 @@ mod tests {
 
     #[test]
     fn test_request_log_analyze_none_matching() {
-        let lines = parse_logfile("src/test/simple-1.log", Some(Duration::minutes(0)), None);
+        let lines = parse_input(input_from_filename("src/test/simple-1.log"), Some(Duration::minutes(0)), None);
         let (requests, responses) = lines.unwrap();
 
         let request_response_pairs = pair_requests_responses(requests, responses);
@@ -365,7 +365,7 @@ mod tests {
 
     #[test]
     fn test_90_percentile_calculation() {
-        let lines = parse_logfile("src/test/percentile.log", None, None);
+        let lines = parse_input(input_from_filename("src/test/percentile.log"), None, None);
         let (requests, responses) = lines.unwrap();
 
         let request_response_pairs = pair_requests_responses(requests, responses);
