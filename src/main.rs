@@ -1,6 +1,6 @@
+use std::io;
+use std::io::prelude::*;
 use std::io::BufReader;
-use std::io::Write;
-use std::io::BufRead;
 use std::net::TcpStream;
 use std::fs::File;
 
@@ -39,8 +39,12 @@ fn open_logfile(path: &str) -> BufReader<File> {
 }
 
 pub fn parse_logfile(path: &str, time_filter: Option<Duration>, exclude_term: Option<&str>) -> Result<(Vec<Request>,Vec<Response>), &'static str> {
-    let input = open_logfile(path);
+    let input = Box::new(open_logfile(path));
 
+    parse_input(input, time_filter, exclude_term)
+}
+
+pub fn parse_input(input: Box<io::BufRead>, time_filter: Option<Duration>, exclude_term: Option<&str>) -> Result<(Vec<Request>,Vec<Response>), &'static str> {
     let mut requests: Vec<Request> = Vec::new();
     let mut responses: Vec<Response> = Vec::new();
 
