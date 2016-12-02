@@ -226,7 +226,7 @@ fn main() {
                 args.value_of("graphite-server").unwrap(),
                 args.value_of("graphite-port").unwrap().parse().unwrap()
             )
-        ).unwrap();
+        ).expect("Could not connect to the Graphite server");
 
         match analyze(&pairs) {
             Some(result) => render_graphite(result, UTC::now().with_timezone(time_zone), args.value_of("graphite-prefix"), stream),
