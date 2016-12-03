@@ -15,7 +15,6 @@
             --graphite-port <GRAPHITE_PORT>         [default: 2003]
             --graphite-prefix <GRAPHITE_PREFIX>    Prefix for Graphite key, e.g. 'servers.prod.publisher1'
             --graphite-server <GRAPHITE_SERVER>    Send values to this Graphite server instead of stdout
-            --include <TERM>                       Only includes lines that contain this term
         -t <MINUTES>                               Limit to the last n minutes
 
     ARGS:
