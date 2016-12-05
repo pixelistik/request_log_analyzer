@@ -17,7 +17,8 @@ macro_rules! println_stderr(
 pub struct Request {
     pub id: i32,
     pub time: DateTime<FixedOffset>,
-    pub url: String
+    pub url: String,
+    pub original_log_line: String
 }
 
 impl Request {
@@ -54,7 +55,8 @@ impl Request {
         Ok(Request {
             id: id_parsed,
             time: date_parsed,
-            url: url.to_string()
+            url: url.to_string(),
+            original_log_line: log_line.clone()
         })
     }
 }
@@ -67,6 +69,7 @@ pub struct Response {
     pub mime_type: String,
     pub response_time: Duration,
     pub http_status: HttpStatus,
+    pub original_log_line: String,
 }
 
 impl Response {
@@ -118,6 +121,7 @@ impl Response {
             response_time: response_time_duration,
             mime_type: mime_type,
             http_status: status_code,
+            original_log_line: log_line.clone(),
         })
     }
 }
@@ -160,6 +164,9 @@ pub fn parse(reader: &mut io::Read) -> Result<(Vec<Request>,Vec<Response>), &'st
 #[cfg(test)]
 mod tests {
     use std::fs::File;
+    use::chrono::*;
+    use http_status::HttpStatus;
+
     use super::*;
 
     #[test]
@@ -171,4 +178,39 @@ mod tests {
         assert_eq!(requests.len(), 2);
         assert_eq!(responses.len(), 2);
     }
+
+    #[test]
+    fn test_parse_request_line() {
+        let line = "08/Apr/2016:09:58:47 +0200 [02] -> GET /content/some/other.html HTTP/1.1".to_string();
+
+        let expected = Request {
+            id: 2,
+            time: DateTime::parse_from_str("08/Apr/2016:09:58:47 +0200", "%d/%b/%Y:%H:%M:%S %z").unwrap(),
+            url: "/content/some/other.html".to_string(),
+            original_log_line: line.clone()
+        };
+
+        let result = Request::new_from_log_line(&line);
+
+        assert_eq!(result.unwrap(), expected)
+    }
+
+    #[test]
+    fn test_parse_response_line() {
+        let line = "08/Apr/2016:09:58:48 +0200 [02] <- 200 text/html 10ms".to_string();
+
+        let expected = Response {
+            id: 2,
+            time: DateTime::parse_from_str("08/Apr/2016:09:58:48 +0200", "%d/%b/%Y:%H:%M:%S %z").unwrap(),
+            mime_type: "text/html".to_string(),
+            response_time: Duration::milliseconds(10),
+            http_status: HttpStatus::OK,
+            original_log_line: line.clone(),
+        };
+
+        let result = Response::new_from_log_line(&line);
+
+        assert_eq!(result.unwrap(), expected)
+    }
+
 }
