@@ -162,19 +162,13 @@ mod tests {
     use std::fs::File;
     use super::*;
 
-    fn base_parsing_test(file_path: &str, expected_request_count: usize, expected_response_count: usize) -> (Vec<Request>,Vec<Response>) {
-        let mut input_reader = File::open(file_path).unwrap();
+    #[test]
+    fn test_parse_simple() {
+        let mut input_reader = File::open("src/test/simple-1.log").unwrap();
 
         let (requests, responses) = parse(&mut input_reader).unwrap();
 
-        assert_eq!(requests.len(), expected_request_count);
-        assert_eq!(responses.len(), expected_response_count);
-
-        (requests, responses)
-    }
-
-    #[test]
-    fn test_parse_simple() {
-        base_parsing_test("src/test/simple-1.log", 2, 2);
+        assert_eq!(requests.len(), 2);
+        assert_eq!(responses.len(), 2);
     }
 }
