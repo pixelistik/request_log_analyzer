@@ -13,7 +13,7 @@ macro_rules! println_stderr(
     } }
 );
 
-pub fn parse(reader: &mut io::Read) -> Result<(Vec<Request>,Vec<Response>), &'static str> {
+pub fn parse(reader: &mut io::Read) -> (Vec<Request>,Vec<Response>) {
     let input = io::BufReader::new(reader);
 
     let mut requests: Vec<Request> = Vec::new();
@@ -45,7 +45,7 @@ pub fn parse(reader: &mut io::Read) -> Result<(Vec<Request>,Vec<Response>), &'st
 
     responses.sort_by_key(|r| r.id);
 
-    Ok((requests, responses))
+    (requests, responses)
 }
 
 #[cfg(test)]
@@ -57,7 +57,7 @@ mod tests {
     fn test_parse_simple() {
         let mut input_reader = File::open("src/test/simple-1.log").unwrap();
 
-        let (requests, responses) = parse(&mut input_reader).unwrap();
+        let (requests, responses) = parse(&mut input_reader);
 
         assert_eq!(requests.len(), 2);
         assert_eq!(responses.len(), 2);
@@ -67,7 +67,7 @@ mod tests {
     fn test_parse_ignore_broken_lines() {
         let mut input_reader = File::open("src/test/broken.log").unwrap();
 
-        let (requests, responses) = parse(&mut input_reader).unwrap();
+        let (requests, responses) = parse(&mut input_reader);
 
         assert_eq!(requests.len(), 1);
         assert_eq!(responses.len(), 1);
