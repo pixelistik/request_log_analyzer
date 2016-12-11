@@ -2,6 +2,7 @@
 
 use log_parser::*;
 
+#[derive(Clone)]
 pub struct RequestResponsePair {
     pub request: log_events::Request,
     pub response: log_events::Response,

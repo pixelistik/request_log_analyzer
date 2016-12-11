@@ -21,6 +21,7 @@ mod log_parser;
 mod request_response_matcher;
 mod analyzer;
 mod render;
+mod filter;
 
 mod request_response;
 use request_response::*;
