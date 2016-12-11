@@ -2,7 +2,7 @@ use std::io;
 use std::io::BufRead;
 use std::io::Write;
 
-mod log_events;
+pub mod log_events;
 use self::log_events::*;
 
 // http://stackoverflow.com/a/27590832/376138

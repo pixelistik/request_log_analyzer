@@ -18,6 +18,7 @@ use percentile::percentile;
 
 mod http_status;
 mod log_parser;
+mod request_response_matcher;
 
 mod request_response;
 use request_response::*;
