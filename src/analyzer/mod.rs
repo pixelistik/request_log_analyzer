@@ -6,12 +6,12 @@ use percentile::percentile;
 #[derive(PartialEq)]
 #[derive(Debug)]
 pub struct RequestLogAnalyzerResult {
-    count: usize,
-    max: usize,
-    min: usize,
-    avg: usize,
-    median: usize,
-    percentile90: usize,
+    pub count: usize,
+    pub max: usize,
+    pub min: usize,
+    pub avg: usize,
+    pub median: usize,
+    pub percentile90: usize,
 }
 
 pub fn analyze(request_response_pairs: &Vec<RequestResponsePair>) -> Option<RequestLogAnalyzerResult> {
