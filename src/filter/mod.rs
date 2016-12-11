@@ -49,8 +49,8 @@ fn matches_filter(pair: &RequestResponsePair, conditions: &FilterConditions) -> 
     matches_include_terms && matches_exclude_terms && matches_time
 }
 
-pub fn filter(pairs: &Vec<RequestResponsePair>, conditions: FilterConditions) -> Vec<RequestResponsePair> {
-    let filtered_pairs: Vec<RequestResponsePair> = pairs.clone().into_iter()
+pub fn filter(pairs: Vec<RequestResponsePair>, conditions: FilterConditions) -> Vec<RequestResponsePair> {
+    let filtered_pairs: Vec<RequestResponsePair> = pairs.into_iter()
         .filter(|pair| matches_filter(&pair, &conditions))
         .collect();
 
@@ -91,7 +91,7 @@ mod tests {
             latest_time: None,
         };
 
-        let result: Vec<RequestResponsePair> = filter(&request_response_pairs, conditions);
+        let result: Vec<RequestResponsePair> = filter(request_response_pairs, conditions);
 
         assert_eq!(result.len(), 3);
     }
@@ -106,7 +106,7 @@ mod tests {
             latest_time: None,
         };
 
-        let result: Vec<RequestResponsePair> = filter(&request_response_pairs, conditions);
+        let result: Vec<RequestResponsePair> = filter(request_response_pairs, conditions);
 
         assert_eq!(result.len(), 2);
         assert_eq!(result[0].request.id, 1);
@@ -123,7 +123,7 @@ mod tests {
             latest_time: None,
         };
 
-        let result: Vec<RequestResponsePair> = filter(&request_response_pairs, conditions);
+        let result: Vec<RequestResponsePair> = filter(request_response_pairs, conditions);
 
         assert_eq!(result.len(), 2);
         assert_eq!(result[0].request.id, 1);
@@ -140,7 +140,7 @@ mod tests {
             latest_time: None,
         };
 
-        let result: Vec<RequestResponsePair> = filter(&request_response_pairs, conditions);
+        let result: Vec<RequestResponsePair> = filter(request_response_pairs, conditions);
 
         assert_eq!(result.len(), 1);
         assert_eq!(result[0].request.id, 2);
@@ -158,7 +158,7 @@ mod tests {
             latest_time: Some(Duration::minutes(10)),
         };
 
-        let result: Vec<RequestResponsePair> = filter(&request_response_pairs, conditions);
+        let result: Vec<RequestResponsePair> = filter(request_response_pairs, conditions);
 
         assert_eq!(result.len(), 1);
         assert_eq!(result[0].request.id, 1);

@@ -98,7 +98,7 @@ fn main() {
         latest_time: time_filter,
     };
 
-    let filtered_pairs = filter::filter(&pairs, conditions);
+    let filtered_pairs = filter::filter(pairs, conditions);
 
     let result = analyzer::analyze(&filtered_pairs);
 
