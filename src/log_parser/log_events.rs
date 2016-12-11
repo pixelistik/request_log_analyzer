@@ -1,3 +1,5 @@
+//! A module to parse invidual log lines into Requests and Responses
+
 use chrono::*;
 use http_status::HttpStatus;
 
@@ -139,6 +141,50 @@ mod tests {
     }
 
     #[test]
+    fn test_parse_request_line_bad_format() {
+        let line = "08/A16:09:58:47 justsomegarbage".to_string();
+
+        let expected: Result<Request, &'static str> = Err("Uncomprehensible request logline");
+        let result: Result<Request, &'static str> = Request::new_from_log_line(&line);
+
+        assert_eq!(result.is_err(), true);
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_parse_request_line_bad_format_but_enough_parts() {
+        let line = "just some garbage with more parts at the end".to_string();
+
+        let expected: Result<Request, &'static str> = Err("Uncomprehensible request logline");
+        let result: Result<Request, &'static str> = Request::new_from_log_line(&line);
+
+        assert_eq!(result.is_err(), true);
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_parse_request_line_bad_date_format() {
+        let line = "99/XYZ/9999:09:99:99 +9900 [02] -> GET /content/some/other.html HTTP/1.1".to_string();
+
+        let expected: Result<Request, &'static str> = Err("Uncomprehensible request logline");
+        let result: Result<Request, &'static str> = Request::new_from_log_line(&line);
+
+        assert_eq!(result.is_err(), true);
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_parse_request_line_bad_id_format() {
+        let line = "08/Apr/2016:09:58:47 +0200 2 -> GET /content/some/other.html HTTP/1.1".to_string();
+
+        let expected: Result<Request, &'static str> = Err("Uncomprehensible request logline");
+        let result: Result<Request, &'static str> = Request::new_from_log_line(&line);
+
+        assert_eq!(result.is_err(), true);
+        assert_eq!(result, expected);
+    }
+
+    #[test]
     fn test_parse_response_line() {
         let line = "08/Apr/2016:09:58:48 +0200 [02] <- 200 text/html 10ms".to_string();
 
@@ -156,4 +202,87 @@ mod tests {
         assert_eq!(result.unwrap(), expected)
     }
 
+    #[test]
+    fn test_parse_response_line_inconsistent_space() {
+        let line = "06/Apr/2016:14:54:16 +0200 [200] <- 200 text/html; charset=utf-8 250ms".to_string();
+
+        let expected = Response {
+            id: 200,
+            time: DateTime::parse_from_str("06/Apr/2016:14:54:16 +0200", "%d/%b/%Y:%H:%M:%S %z").unwrap(),
+            mime_type: "text/html; charset=utf-8".to_string(),
+            response_time: Duration::milliseconds(250),
+            http_status: HttpStatus::OK,
+            original_log_line: line.clone(),
+        };
+
+        let result = Response::new_from_log_line(&line);
+
+        assert_eq!(result.unwrap(), expected)
+    }
+
+    #[test]
+    fn test_parse_response_line_bad_id_format() {
+        let line = "08/Apr/2016:09:58:48 +0200 2 <- 200 text/html 10ms".to_string();
+
+        let expected: Result<Response, &'static str> = Err("Uncomprehensible response logline");
+        let result: Result<Response, &'static str> = Response::new_from_log_line(&line);
+
+        assert_eq!(result.is_err(), true);
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_parse_response_line_bad_id_format_no_number() {
+        let line = "08/Apr/2016:09:58:48 +0200 [XXX] <- 200 text/html 10ms".to_string();
+
+        let expected: Result<Response, &'static str> = Err("Uncomprehensible response logline");
+        let result: Result<Response, &'static str> = Response::new_from_log_line(&line);
+
+        assert_eq!(result.is_err(), true);
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_parse_response_line_bad_time_format() {
+        let line = "08/Apr/2016:5:2X:48 +0200 [83940] <- 200 text/html 14642ms".to_string();
+
+        let expected: Result<Response, &'static str> = Err("Uncomprehensible response logline");
+        let result: Result<Response, &'static str> = Response::new_from_log_line(&line);
+
+        assert_eq!(result.is_err(), true);
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_parse_response_line_bad_response_time_too_short() {
+        let line = "08/Apr/2016:09:57:47 +0200 [001] <- 200 text/html X".to_string();
+
+        let expected: Result<Response, &'static str> = Err("Uncomprehensible response logline");
+        let result: Result<Response, &'static str> = Response::new_from_log_line(&line);
+
+        assert_eq!(result.is_err(), true);
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_parse_response_line_bad_response_time_not_a_number() {
+        let line = "08/Apr/2016:09:57:47 +0200 [001] <- 200 text/html XXXms".to_string();
+
+        let expected: Result<Response, &'static str> = Err("Uncomprehensible response logline");
+        let result: Result<Response, &'static str> = Response::new_from_log_line(&line);
+
+        assert_eq!(result.is_err(), true);
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_parse_response_line_bad_status_code() {
+        let line = "08/Apr/2016:09:57:47 +0200 [001] <- FOO text/html 10ms".to_string();
+
+        let expected: Result<Response, &'static str> = Err("Uncomprehensible response logline");
+        let result: Result<Response, &'static str> = Response::new_from_log_line(&line);
+
+        assert_eq!(result.is_err(), true);
+        assert_eq!(result, expected);
+    }
 }
