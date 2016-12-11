@@ -20,6 +20,7 @@ mod http_status;
 mod log_parser;
 mod request_response_matcher;
 mod analyzer;
+mod render;
 
 mod request_response;
 use request_response::*;
@@ -219,7 +220,7 @@ fn main() {
 
     let result = analyzer::analyze(&pairs);
 
-    render_terminal(result.unwrap());
+    render::render_terminal(result.unwrap());
 
 
 
