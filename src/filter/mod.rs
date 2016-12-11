@@ -57,6 +57,7 @@ pub fn filter(pairs: &Vec<RequestResponsePair>, conditions: FilterConditions) ->
     filtered_pairs
 }
 
+#[cfg(test)]
 mod tests {
     use log_parser::log_events::*;
     use request_response_matcher::*;

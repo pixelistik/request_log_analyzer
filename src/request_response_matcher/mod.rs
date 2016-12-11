@@ -30,6 +30,7 @@ pub fn pair_requests_responses(requests:Vec<log_events::Request>, responses: Vec
     request_response_pairs
 }
 
+#[cfg(test)]
 mod tests {
     use chrono::*;
     use http_status::*;

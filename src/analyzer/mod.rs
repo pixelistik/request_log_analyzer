@@ -43,6 +43,7 @@ pub fn analyze(request_response_pairs: &Vec<RequestResponsePair>) -> Option<Requ
     })
 }
 
+#[cfg(test)]
 mod tests {
     use log_parser::log_events::*;
     use request_response_matcher::*;

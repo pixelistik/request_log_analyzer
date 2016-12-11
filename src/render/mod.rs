@@ -41,6 +41,7 @@ pub fn render_graphite<T: Write>(result: analyzer::RequestLogAnalyzerResult, tim
     write(format!("requests.time.90percent {}", result.percentile90));
 }
 
+#[cfg(test)]
 mod tests {
     use std::io;
     use std::io::prelude::*;
