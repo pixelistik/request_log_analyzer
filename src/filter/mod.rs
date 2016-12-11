@@ -1,4 +1,3 @@
-use log_parser::log_events::*;
 use request_response_matcher::*;
 use chrono::*;
 

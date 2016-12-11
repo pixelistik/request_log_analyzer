@@ -1,7 +1,7 @@
-extern crate stats;
 use stats::median;
 use request_response_matcher::*;
-use percentile::percentile;
+
+pub mod percentile;
 
 #[derive(PartialEq)]
 #[derive(Debug)]
@@ -29,7 +29,7 @@ pub fn analyze(request_response_pairs: &Vec<RequestResponsePair>) -> Option<Requ
     let max: usize = *times.iter().max().unwrap() as usize;
     let min: usize = *times.iter().min().unwrap() as usize;
 
-    let percentile90: usize = percentile(&times, 0.9) as usize;
+    let percentile90: usize = percentile::percentile(&times, 0.9) as usize;
 
     let median = median(times.into_iter()).unwrap() as usize;
 
