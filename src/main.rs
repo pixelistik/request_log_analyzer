@@ -236,12 +236,24 @@ fn main() {
     let result = analyzer::analyze(&filtered_pairs);
 
     match result {
-        Some(result) => render::render_terminal(result),
-        None => println!("No matching log lines in file.")
+        Some(result) => {
+            if args.is_present("graphite-server") {
+                let stream = TcpStream::connect(
+                    (
+                        args.value_of("graphite-server").unwrap(),
+                        args.value_of("graphite-port").unwrap().parse().unwrap()
+                    )
+                ).expect("Could not connect to the Graphite server");
+
+                let timezone = filtered_pairs[0].request.time.timezone();
+
+                render::render_graphite(result, UTC::now().with_timezone(&timezone), args.value_of("graphite-prefix"), stream);
+            } else {
+                render::render_terminal(result);
+            }
+        },
+        None => println_stderr!("No matching log lines in file.")
     }
-
-
-
 
 
 
