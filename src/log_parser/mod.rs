@@ -62,4 +62,14 @@ mod tests {
         assert_eq!(requests.len(), 2);
         assert_eq!(responses.len(), 2);
     }
+
+    #[test]
+    fn test_parse_ignore_broken_lines() {
+        let mut input_reader = File::open("src/test/broken.log").unwrap();
+
+        let (requests, responses) = parse(&mut input_reader).unwrap();
+
+        assert_eq!(requests.len(), 1);
+        assert_eq!(responses.len(), 1);
+    }
 }
