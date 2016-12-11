@@ -109,7 +109,7 @@ pub fn analyze(request_response_pairs: &Vec<RequestResponsePair>) -> Option<Requ
     })
 }
 
-fn render_terminal(result: RequestLogAnalyzerResult) {
+fn render_terminal(result: analyzer::RequestLogAnalyzerResult) {
     println!("count:\t{}", result.count);
     println!("time.avg:\t{}", result.avg);
     println!("time.min:\t{}", result.min);
@@ -189,11 +189,11 @@ fn parse_args<'a>() -> ArgMatches<'a> {
         .get_matches()
 }
 
-fn open_logfile(path: &str) -> BufReader<File> {
+fn open_logfile(path: &str) -> File {
     let file = File::open(path);
 
     match file {
-        Ok(f) => BufReader::new(f),
+        Ok(f) => f,
         Err(err) => panic!("Could not open file {}: {}", path, err)
     }
 }
@@ -208,39 +208,54 @@ fn main() {
         None => None
     };
 
-    let input: Box<io::BufRead> = match filename {
-        "-" => Box::new(BufReader::new(io::stdin())),
-        _ => Box::new(open_logfile(filename))
+    let mut input: Box<io::Read> = match filename {
+        "-" => Box::new(io::stdin()),
+        _ => Box::new(File::open(filename).unwrap())
     };
 
-    let lines = parse_input(input, time_filter, args.value_of("exclude_term"));
-    let (requests, responses) = lines.unwrap();
+    let (requests, responses) = log_parser::parse(&mut input);
 
-    let time_zone = &requests[0].time.timezone();
+    let pairs = request_response_matcher::pair_requests_responses(requests, responses);
 
-    let pairs: Vec<RequestResponsePair> = pair_requests_responses(requests, responses)
-        .into_iter()
-        .filter(|rr| rr.matches_include_filter())
-        .collect();
+    let result = analyzer::analyze(&pairs);
 
-    if args.is_present("graphite-server") {
-        let stream = TcpStream::connect(
-            (
-                args.value_of("graphite-server").unwrap(),
-                args.value_of("graphite-port").unwrap().parse().unwrap()
-            )
-        ).expect("Could not connect to the Graphite server");
+    render_terminal(result.unwrap());
 
-        match analyze(&pairs) {
-            Some(result) => render_graphite(result, UTC::now().with_timezone(time_zone), args.value_of("graphite-prefix"), stream),
-            None => println!("No matching log lines in file.")
-        }
-    } else {
-        match analyze(&pairs) {
-            Some(result) => render_terminal(result),
-            None => println!("No matching log lines in file.")
-        }
-    }
+
+
+
+
+
+
+
+    // let lines = parse_input(input, time_filter, args.value_of("exclude_term"));
+    // let (requests, responses) = lines.unwrap();
+    //
+    // let time_zone = &requests[0].time.timezone();
+    //
+    // let pairs: Vec<RequestResponsePair> = pair_requests_responses(requests, responses)
+    //     .into_iter()
+    //     .filter(|rr| rr.matches_include_filter())
+    //     .collect();
+    //
+    // if args.is_present("graphite-server") {
+    //     let stream = TcpStream::connect(
+    //         (
+    //             args.value_of("graphite-server").unwrap(),
+    //             args.value_of("graphite-port").unwrap().parse().unwrap()
+    //         )
+    //     ).expect("Could not connect to the Graphite server");
+    //
+    //     match analyze(&pairs) {
+    //         Some(result) => render_graphite(result, UTC::now().with_timezone(time_zone), args.value_of("graphite-prefix"), stream),
+    //         None => println!("No matching log lines in file.")
+    //     }
+    // } else {
+    //     match analyze(&pairs) {
+    //         Some(result) => render_terminal(result),
+    //         None => println!("No matching log lines in file.")
+    //     }
+    // }
 }
 
 #[cfg(test)]
