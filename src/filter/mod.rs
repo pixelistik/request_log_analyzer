@@ -3,9 +3,9 @@ use request_response_matcher::*;
 use chrono::*;
 
 pub struct FilterConditions {
-    include_terms: Option<Vec<String>>,
-    exclude_terms: Option<Vec<String>>,
-    latest_time: Option<Duration>,
+    pub include_terms: Option<Vec<String>>,
+    pub exclude_terms: Option<Vec<String>>,
+    pub latest_time: Option<Duration>,
 }
 
 fn matches_filter(pair: &RequestResponsePair, conditions: &FilterConditions) -> bool {

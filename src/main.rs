@@ -163,11 +163,11 @@ fn parse_args<'a>() -> ArgMatches<'a> {
             .short("t")
             .help("Limit to the last n minutes")
             .takes_value(true))
-        // .arg(Arg::with_name("include_term")
-        //     .value_name("TERM")
-        //     .long("include")
-        //     .help("Only includes lines that contain this term")
-        //     .takes_value(true))
+        .arg(Arg::with_name("include_term")
+            .value_name("TERM")
+            .long("include")
+            .help("Only includes lines that contain this term")
+            .takes_value(true))
         .arg(Arg::with_name("exclude_term")
             .value_name("TERM")
             .long("exclude")
@@ -219,9 +219,26 @@ fn main() {
 
     let pairs = request_response_matcher::pair_requests_responses(requests, responses);
 
-    let result = analyzer::analyze(&pairs);
+    let conditions = filter::FilterConditions {
+        include_terms: match args.value_of("include_term") {
+            Some(value) => Some(vec![value.to_string()]),
+            None => None
+        },
+        exclude_terms: match args.value_of("exclude_term") {
+            Some(value) => Some(vec![value.to_string()]),
+            None => None
+        },
+        latest_time: time_filter,
+    };
 
-    render::render_terminal(result.unwrap());
+    let filtered_pairs = filter::filter(&pairs, conditions);
+
+    let result = analyzer::analyze(&filtered_pairs);
+
+    match result {
+        Some(result) => render::render_terminal(result),
+        None => println!("No matching log lines in file.")
+    }
 
 
 
