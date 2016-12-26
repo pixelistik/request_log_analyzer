@@ -13,7 +13,9 @@ use clap::{Arg, App, ArgMatches};
 
 mod http_status;
 mod log_parser;
+use log_parser::log_events::*;
 mod request_response_matcher;
+use request_response_matcher::RequestResponsePair;
 mod filter;
 mod analyzer;
 mod render;
@@ -82,43 +84,97 @@ fn main() {
         _ => Box::new(File::open(filename).unwrap())
     };
 
-    let (requests, responses) = log_parser::parse(&mut input);
 
-    let pairs = request_response_matcher::pair_requests_responses(requests, responses);
+    let reader = io::BufReader::new(input);
 
-    let conditions = filter::FilterConditions {
-        include_terms: match args.value_of("include_term") {
-            Some(value) => Some(vec![value.to_string()]),
-            None => None
-        },
-        exclude_terms: match args.value_of("exclude_term") {
-            Some(value) => Some(vec![value.to_string()]),
-            None => None
-        },
-        latest_time: time_filter,
-    };
+    let lines = reader.lines();
 
-    let filtered_pairs = filter::filter(pairs, conditions);
+    let mut requests: Vec<Request> = Vec::new();
+    let mut responses: Vec<Response> = Vec::new();
+    let mut pairs: Vec<RequestResponsePair> = Vec::new();
 
-    let result = analyzer::analyze(&filtered_pairs);
+    for line in lines {
+        let line_value = &line.unwrap();
 
-    match result {
-        Some(result) => {
-            if args.is_present("graphite-server") {
-                let stream = TcpStream::connect(
-                    (
-                        args.value_of("graphite-server").unwrap(),
-                        args.value_of("graphite-port").unwrap().parse().unwrap()
-                    )
-                ).expect("Could not connect to the Graphite server");
-
-                let timezone = filtered_pairs[0].request.time.timezone();
-
-                render::render_graphite(result, UTC::now().with_timezone(&timezone), args.value_of("graphite-prefix"), stream);
-            } else {
-                render::render_terminal(result);
+        if line_value.contains("->") {
+            match Request::new_from_log_line(&line_value) {
+                Ok(r) => {
+                    // if time_filter.is_none() ||
+                    //   (time_filter.is_some() && r.is_between_times(UTC::now().with_timezone(&r.time.timezone()) - time_filter.unwrap(), UTC::now().with_timezone(&r.time.timezone()))) {
+                        requests.push(r);
+                    // }
+                },
+                Err(err) => println_stderr!("Skipped a line: {}", err)
             }
-        },
-        None => println_stderr!("No matching log lines in file.")
+        }
+
+        if line_value.contains("<-") {
+            match Response::new_from_log_line(&line_value) {
+                Ok(r) => responses.push(r),
+                Err(err) => println_stderr!("Skipped a line: {}", err)
+            }
+        }
+
+        // for ref request in &requests {
+        if requests.len() == 0 {
+            continue;
+        }
+        for request_index in 0..(requests.len() - 1) {
+            let matching_response_index: Option<usize> = responses.iter().position(|response| requests[request_index].id == response.id );
+
+            if matching_response_index.is_some() {
+                let request = requests.remove(request_index);
+                let response = responses.remove(matching_response_index.unwrap());
+
+                let pair = RequestResponsePair {
+                    request: request,
+                    response: response
+                };
+                // println!("request {:?} has response {:?}", request, response);
+                // println!("Requests len {:?}", requests.len());
+                // println!("========================================", );
+                println!("{:?}", pair);
+            }
+        }
     }
+
+    // let (requests, responses) = log_parser::parse(&mut input);
+    //
+    // let pairs = request_response_matcher::pair_requests_responses(requests, responses);
+    //
+    // let conditions = filter::FilterConditions {
+    //     include_terms: match args.value_of("include_term") {
+    //         Some(value) => Some(vec![value.to_string()]),
+    //         None => None
+    //     },
+    //     exclude_terms: match args.value_of("exclude_term") {
+    //         Some(value) => Some(vec![value.to_string()]),
+    //         None => None
+    //     },
+    //     latest_time: time_filter,
+    // };
+    //
+    // let filtered_pairs = filter::filter(pairs, conditions);
+    //
+    // let result = analyzer::analyze(&filtered_pairs);
+    //
+    // match result {
+    //     Some(result) => {
+    //         if args.is_present("graphite-server") {
+    //             let stream = TcpStream::connect(
+    //                 (
+    //                     args.value_of("graphite-server").unwrap(),
+    //                     args.value_of("graphite-port").unwrap().parse().unwrap()
+    //                 )
+    //             ).expect("Could not connect to the Graphite server");
+    //
+    //             let timezone = filtered_pairs[0].request.time.timezone();
+    //
+    //             render::render_graphite(result, UTC::now().with_timezone(&timezone), args.value_of("graphite-prefix"), stream);
+    //         } else {
+    //             render::render_terminal(result);
+    //         }
+    //     },
+    //     None => println_stderr!("No matching log lines in file.")
+    // }
 }
