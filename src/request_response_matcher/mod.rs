@@ -9,13 +9,6 @@ pub struct RequestResponsePair {
     pub response: log_events::Response,
 }
 
-fn get_matching_response<'a>(request: &log_events::Request, responses: &'a Vec<log_events::Response>) -> Option<&'a log_events::Response> {
-    match responses.binary_search_by_key(&request.id, |r| r.id) {
-        Ok(index) => Some(&responses[index]),
-        Err(_) => None
-    }
-}
-
 pub fn extract_matching_request_response_pairs(requests: &mut Vec<log_events::Request>, responses: &mut Vec<log_events::Response>) -> Vec<RequestResponsePair> {
     let mut request_response_pairs: Vec<RequestResponsePair> = Vec::new();
 
