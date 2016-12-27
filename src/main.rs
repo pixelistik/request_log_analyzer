@@ -13,6 +13,7 @@ use clap::{Arg, App, ArgMatches};
 
 mod http_status;
 mod log_parser;
+use log_parser::parse_line;
 use log_parser::log_events::*;
 mod request_response_matcher;
 use request_response_matcher::*;
@@ -107,23 +108,16 @@ fn main() {
     for line in lines {
         let line_value = &line.unwrap();
 
-        if line_value.contains("->") {
-            match Request::new_from_log_line(&line_value) {
-                Ok(request) => {
-                    if first_request.is_none() {
-                        first_request = Some(request.clone());
-                    }
-                    requests.push(request);
-                },
-                Err(err) => println_stderr!("Skipped a line: {}", err)
-            }
-        }
+        let event = parse_line(line_value).unwrap();
 
-        if line_value.contains("<-") {
-            match Response::new_from_log_line(&line_value) {
-                Ok(response) => responses.push(response),
-                Err(err) => println_stderr!("Skipped a line: {}", err)
-            }
+        match event {
+            LogEvent::Request(request) => {
+                if first_request.is_none() {
+                    first_request = Some(request.clone());
+                }
+                requests.push(request)
+            },
+            LogEvent::Response(response) => responses.push(response),
         }
 
         let pairs = extract_matching_request_response_pairs(&mut requests, &mut responses);
