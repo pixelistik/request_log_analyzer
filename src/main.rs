@@ -128,11 +128,7 @@ fn main() {
             }
         }
 
-        if requests.len() == 0 {
-            continue;
-        }
-        
-        for request_index in 0..(requests.len() - 1) {
+        for request_index in 0..requests.len() {
             let matching_response_index: Option<usize> = responses.iter().position(|response| requests[request_index].id == response.id );
 
             if matching_response_index.is_some() {
