@@ -16,15 +16,22 @@ fn get_matching_response<'a>(request: &log_events::Request, responses: &'a Vec<l
     }
 }
 
-pub fn pair_requests_responses(requests: Vec<log_events::Request>, responses: Vec<log_events::Response>) -> Vec<RequestResponsePair> {
+pub fn pair_requests_responses(requests: &mut Vec<log_events::Request>, responses: &mut Vec<log_events::Response>) -> Vec<RequestResponsePair> {
     let mut request_response_pairs: Vec<RequestResponsePair> = Vec::new();
 
-    for request in requests  {
-        if let Some(response) = get_matching_response(&request, &responses) {
-            request_response_pairs.push(RequestResponsePair{
-                request: request.clone(),
-                response: response.clone()
-            })
+    for request_index in 0..requests.len() {
+        let matching_response_index: Option<usize> = responses.iter().position(|response| requests[request_index].id == response.id );
+
+        if matching_response_index.is_some() {
+            let request = requests.remove(request_index);
+            let response = responses.remove(matching_response_index.unwrap());
+
+            let pair = RequestResponsePair {
+                request: request,
+                response: response
+            };
+
+            request_response_pairs.push(pair);
         }
     }
 
@@ -40,7 +47,7 @@ mod tests {
 
     #[test]
     fn test_pair_requests_responses() {
-        let requests = vec![
+        let mut requests = vec![
             log_parser::log_events::Request {
                 id: 1,
                 time: DateTime::parse_from_str("08/Apr/2016:09:57:47 +0200", "%d/%b/%Y:%H:%M:%S %z").unwrap(),
@@ -49,7 +56,7 @@ mod tests {
             },
         ];
 
-        let responses = vec![
+        let mut responses = vec![
             log_parser::log_events::Response {
                 id: 1,
                 time: DateTime::parse_from_str("08/Apr/2016:09:57:47 +0200", "%d/%b/%Y:%H:%M:%S %z").unwrap(),
@@ -68,11 +75,13 @@ mod tests {
             },
         ];
 
-        let result = pair_requests_responses(requests, responses);
+        let result = pair_requests_responses(&mut requests, &mut responses);
 
         assert_eq!(result.len(), 1);
-
         assert_eq!(result[0].request.id, 1);
         assert_eq!(result[0].response.id, 1);
+
+        assert_eq!(requests.len(), 0);
+        assert_eq!(responses.len(), 1);
     }
 }

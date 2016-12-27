@@ -15,7 +15,7 @@ mod http_status;
 mod log_parser;
 use log_parser::log_events::*;
 mod request_response_matcher;
-use request_response_matcher::RequestResponsePair;
+use request_response_matcher::*;
 mod filter;
 mod analyzer;
 mod render;
@@ -128,23 +128,14 @@ fn main() {
             }
         }
 
-        for request_index in 0..requests.len() {
-            let matching_response_index: Option<usize> = responses.iter().position(|response| requests[request_index].id == response.id );
+        let pairs = pair_requests_responses(&mut requests, &mut responses);
 
-            if matching_response_index.is_some() {
-                let request = requests.remove(request_index);
-                let response = responses.remove(matching_response_index.unwrap());
+        let mut new_times: Vec<i64> = pairs.iter()
+            .filter(|pair| filter::matches_filter(&pair, &conditions) )
+            .map(|pair| pair.response.response_time.num_milliseconds())
+            .collect();
 
-                let pair = RequestResponsePair {
-                    request: request,
-                    response: response
-                };
-
-                if filter::matches_filter(&pair, &conditions) {
-                    times.push(pair.response.response_time.num_milliseconds());
-                }
-            }
-        }
+        times.append(&mut new_times);
     }
 
     let result = analyzer::analyze(&times);
