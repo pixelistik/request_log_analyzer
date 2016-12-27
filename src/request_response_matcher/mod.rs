@@ -16,7 +16,7 @@ fn get_matching_response<'a>(request: &log_events::Request, responses: &'a Vec<l
     }
 }
 
-pub fn pair_requests_responses(requests:Vec<log_events::Request>, responses: Vec<log_events::Response>) -> Vec<RequestResponsePair> {
+pub fn pair_requests_responses(requests: Vec<log_events::Request>, responses: Vec<log_events::Response>) -> Vec<RequestResponsePair> {
     let mut request_response_pairs: Vec<RequestResponsePair> = Vec::new();
 
     for request in requests  {

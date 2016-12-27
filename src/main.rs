@@ -79,23 +79,6 @@ fn main() {
         None => None
     };
 
-    let mut input: Box<io::Read> = match filename {
-        "-" => Box::new(io::stdin()),
-        _ => Box::new(File::open(filename).unwrap())
-    };
-
-
-    let reader = io::BufReader::new(input);
-
-    let lines = reader.lines();
-
-    let mut requests: Vec<Request> = Vec::new();
-    let mut responses: Vec<Response> = Vec::new();
-    let mut times: Vec<i64> = Vec::new();
-
-    // We need to store 1 Request in order to determine the timezone later
-    let mut first_request: Option<Request> = None;
-
     let conditions = filter::FilterConditions {
         include_terms: match args.value_of("include_term") {
             Some(value) => Some(vec![value.to_string()]),
@@ -107,6 +90,21 @@ fn main() {
         },
         latest_time: time_filter,
     };
+
+    let mut input: Box<io::Read> = match filename {
+        "-" => Box::new(io::stdin()),
+        _ => Box::new(File::open(filename).unwrap())
+    };
+
+    let reader = io::BufReader::new(input);
+    let lines = reader.lines();
+
+    let mut requests: Vec<Request> = Vec::new();
+    let mut responses: Vec<Response> = Vec::new();
+    let mut times: Vec<i64> = Vec::new();
+
+    // We need to store 1 Request in order to determine the timezone later
+    let mut first_request: Option<Request> = None;
 
     for line in lines {
         let line_value = &line.unwrap();
@@ -133,6 +131,7 @@ fn main() {
         if requests.len() == 0 {
             continue;
         }
+        
         for request_index in 0..(requests.len() - 1) {
             let matching_response_index: Option<usize> = responses.iter().position(|response| requests[request_index].id == response.id );
 
