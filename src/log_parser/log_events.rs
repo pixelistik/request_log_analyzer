@@ -3,10 +3,6 @@
 use chrono::*;
 use http_status::HttpStatus;
 
-trait LogEvent {
-    fn get_id(&self) -> i32;
-}
-
 #[derive(Eq, PartialEq, Clone)]
 #[derive(Debug)]
 pub struct Request {
@@ -53,12 +49,6 @@ impl Request {
             url: url.to_string(),
             original_log_line: log_line.clone()
         })
-    }
-}
-
-impl LogEvent for Request {
-    fn get_id(&self) -> i32 {
-        self.id
     }
 }
 
@@ -124,12 +114,6 @@ impl Response {
             http_status: status_code,
             original_log_line: log_line.clone(),
         })
-    }
-}
-
-impl LogEvent for Response {
-    fn get_id(&self) -> i32 {
-        self.id
     }
 }
 
