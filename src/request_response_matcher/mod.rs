@@ -16,7 +16,7 @@ fn get_matching_response<'a>(request: &log_events::Request, responses: &'a Vec<l
     }
 }
 
-pub fn pair_requests_responses(requests: &mut Vec<log_events::Request>, responses: &mut Vec<log_events::Response>) -> Vec<RequestResponsePair> {
+pub fn extract_matching_request_response_pairs(requests: &mut Vec<log_events::Request>, responses: &mut Vec<log_events::Response>) -> Vec<RequestResponsePair> {
     let mut request_response_pairs: Vec<RequestResponsePair> = Vec::new();
 
     for request_index in 0..requests.len() {
@@ -46,7 +46,7 @@ mod tests {
     use log_parser;
 
     #[test]
-    fn test_pair_requests_responses() {
+    fn test_extract_matching_request_response_pairs() {
         let mut requests = vec![
             log_parser::log_events::Request {
                 id: 1,
@@ -75,7 +75,7 @@ mod tests {
             },
         ];
 
-        let result = pair_requests_responses(&mut requests, &mut responses);
+        let result = extract_matching_request_response_pairs(&mut requests, &mut responses);
 
         assert_eq!(result.len(), 1);
         assert_eq!(result[0].request.id, 1);

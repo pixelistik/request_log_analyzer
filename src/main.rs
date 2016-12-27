@@ -128,7 +128,7 @@ fn main() {
             }
         }
 
-        let pairs = pair_requests_responses(&mut requests, &mut responses);
+        let pairs = extract_matching_request_response_pairs(&mut requests, &mut responses);
 
         let mut new_times: Vec<i64> = pairs.iter()
             .filter(|pair| filter::matches_filter(&pair, &conditions) )
