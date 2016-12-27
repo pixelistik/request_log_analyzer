@@ -74,11 +74,6 @@ fn main() {
 
     let filename = args.value_of("filename").unwrap_or("-");
 
-    let time_filter = match args.value_of("time_filter_minutes") {
-        Some(minutes) => Some(Duration::minutes(minutes.parse().unwrap())),
-        None => None
-    };
-
     let conditions = filter::FilterConditions {
         include_terms: match args.value_of("include_term") {
             Some(value) => Some(vec![value.to_string()]),
@@ -88,7 +83,10 @@ fn main() {
             Some(value) => Some(vec![value.to_string()]),
             None => None
         },
-        latest_time: time_filter,
+        latest_time: match args.value_of("time_filter_minutes") {
+            Some(minutes) => Some(Duration::minutes(minutes.parse().unwrap())),
+            None => None
+        }
     };
 
     let input: Box<io::Read> = match filename {
