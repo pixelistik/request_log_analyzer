@@ -1,5 +1,4 @@
 use stats::median;
-use request_response_matcher::*;
 
 pub mod percentile;
 
