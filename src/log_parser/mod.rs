@@ -48,10 +48,33 @@ pub fn parse(reader: &mut io::Read) -> (Vec<Request>,Vec<Response>) {
     (requests, responses)
 }
 
+pub fn parse_line(line: &String) -> Result<LogEvent, &'static str> {
+    if line.contains("->") {
+        let request = Request::new_from_log_line(line);
+
+        return match request {
+            Ok(request) => Ok(LogEvent::Request(request)),
+            Err(err) => Err(err)
+        }
+    }
+
+    if line.contains("<-") {
+        let response = Response::new_from_log_line(line);
+
+        return match response {
+            Ok(response) => Ok(LogEvent::Response(response)),
+            Err(err) => Err(err)
+        }
+    }
+
+    Err("Line is neither a Request nor a Response")
+}
+
 #[cfg(test)]
 mod tests {
     use std::fs::File;
     use super::*;
+    use super::log_events::*;
 
     #[test]
     fn test_parse_simple() {
@@ -71,5 +94,29 @@ mod tests {
 
         assert_eq!(requests.len(), 1);
         assert_eq!(responses.len(), 1);
+    }
+
+    #[test]
+    fn test_parse_line_request() {
+        let line = "08/Apr/2016:09:58:47 +0200 [02] -> GET /content/some/other.html HTTP/1.1".to_string();
+
+        let event = match parse_line(&line).unwrap() {
+            LogEvent::Request(request) => request,
+            LogEvent::Response(_) => unreachable!(),
+        };
+
+        assert_eq!(event.id, 2);
+    }
+
+    #[test]
+    fn test_parse_line_response() {
+        let line = "08/Apr/2016:09:58:48 +0200 [05] <- 200 text/html 10ms".to_string();
+
+        let event = match parse_line(&line).unwrap() {
+            LogEvent::Request(_) => unreachable!(),
+            LogEvent::Response(response) => response,
+        };
+
+        assert_eq!(event.id, 5);
     }
 }

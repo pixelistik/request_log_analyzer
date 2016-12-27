@@ -3,6 +3,11 @@
 use chrono::*;
 use http_status::HttpStatus;
 
+pub enum LogEvent {
+    Request(Request),
+    Response(Response),
+}
+
 #[derive(Eq, PartialEq, Clone)]
 #[derive(Debug)]
 pub struct Request {
@@ -284,5 +289,14 @@ mod tests {
 
         assert_eq!(result.is_err(), true);
         assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_log_event_type() {
+        let request_line = "08/Apr/2016:09:58:47 +0200 [02] -> GET /content/some/other.html HTTP/1.1".to_string();
+        let response_line = "08/Apr/2016:09:58:48 +0200 [02] <- 200 text/html 10ms".to_string();
+
+        let _ = LogEvent::Request(Request::new_from_log_line(&request_line).unwrap());
+        let _ = LogEvent::Response(Response::new_from_log_line(&response_line).unwrap());
     }
 }
