@@ -40,8 +40,6 @@ pub fn analyze(times: &Vec<i64>) -> Option<RequestLogAnalyzerResult> {
 
 #[cfg(test)]
 mod tests {
-    use log_parser::log_events::*;
-    use request_response_matcher::*;
     use super::*;
 
     #[test]
