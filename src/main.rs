@@ -91,7 +91,7 @@ fn main() {
         latest_time: time_filter,
     };
 
-    let mut input: Box<io::Read> = match filename {
+    let input: Box<io::Read> = match filename {
         "-" => Box::new(io::stdin()),
         _ => Box::new(File::open(filename).unwrap())
     };
