@@ -13,6 +13,14 @@ pub fn extract_matching_request_response_pairs(requests: &mut Vec<log_events::Re
     let mut request_response_pairs: Vec<RequestResponsePair> = Vec::new();
 
     for request_index in 0..requests.len() {
+        {
+            let request = requests.get(request_index);
+
+            if request.is_none() {
+                continue;
+            }
+        }
+
         let matching_response_index: Option<usize> = responses.iter().position(|response| requests[request_index].id == response.id );
 
         if matching_response_index.is_some() {
@@ -47,6 +55,12 @@ mod tests {
                 url: "/some/path.html".to_string(),
                 original_log_line: "whatever".to_string(),
             },
+            log_parser::log_events::Request {
+                id: 77,
+                time: DateTime::parse_from_str("08/Apr/2016:09:57:47 +0200", "%d/%b/%Y:%H:%M:%S %z").unwrap(),
+                url: "/irrelevant.html".to_string(),
+                original_log_line: "whatever".to_string(),
+            },
         ];
 
         let mut responses = vec![
@@ -74,7 +88,7 @@ mod tests {
         assert_eq!(result[0].request.id, 1);
         assert_eq!(result[0].response.id, 1);
 
-        assert_eq!(requests.len(), 0);
+        assert_eq!(requests.len(), 1);
         assert_eq!(responses.len(), 1);
     }
 }
