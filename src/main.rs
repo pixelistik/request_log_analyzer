@@ -111,11 +111,11 @@ fn main() {
 
         if line_value.contains("->") {
             match Request::new_from_log_line(&line_value) {
-                Ok(r) => {
+                Ok(request) => {
                     if first_request.is_none() {
-                        first_request = Some(r.clone());
+                        first_request = Some(request.clone());
                     }
-                    requests.push(r);
+                    requests.push(request);
                 },
                 Err(err) => println_stderr!("Skipped a line: {}", err)
             }
@@ -123,7 +123,7 @@ fn main() {
 
         if line_value.contains("<-") {
             match Response::new_from_log_line(&line_value) {
-                Ok(r) => responses.push(r),
+                Ok(response) => responses.push(response),
                 Err(err) => println_stderr!("Skipped a line: {}", err)
             }
         }
