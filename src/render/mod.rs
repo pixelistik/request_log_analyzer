@@ -11,7 +11,10 @@ pub fn render_terminal(result: analyzer::RequestLogAnalyzerResult) {
     println!("time.max:\t{}", result.max);
 }
 
-pub fn render_graphite<T: Write>(result: analyzer::RequestLogAnalyzerResult, time: DateTime<FixedOffset>, prefix: Option<&str>, mut stream: T) {
+pub fn render_graphite<T: Write>(result: analyzer::RequestLogAnalyzerResult,
+                                 time: DateTime<FixedOffset>,
+                                 prefix: Option<&str>,
+                                 mut stream: T) {
     let prefix_text: &str;
     let prefix_separator: &str;
 
@@ -60,27 +63,28 @@ mod tests {
             Ok(1)
         }
 
-        fn flush(&mut self) -> io::Result<()> { Ok(()) }
+        fn flush(&mut self) -> io::Result<()> {
+            Ok(())
+        }
     }
 
     #[test]
     fn test_render_graphite() {
-        let mut mock_tcp_stream = MockTcpStream {
-            write_calls: vec![]
-        };
+        let mut mock_tcp_stream = MockTcpStream { write_calls: vec![] };
 
         render_graphite(analyzer::RequestLogAnalyzerResult {
-                count: 3,
-                max: 100,
-                min: 1,
-                avg: 37,
-                median: 10,
-                percentile90: 100,
-            },
-            DateTime::parse_from_str("22/Sep/2016:22:41:59 +0200", "%d/%b/%Y:%H:%M:%S %z").unwrap(),
-            None,
-            &mut mock_tcp_stream
-        );
+                            count: 3,
+                            max: 100,
+                            min: 1,
+                            avg: 37,
+                            median: 10,
+                            percentile90: 100,
+                        },
+                        DateTime::parse_from_str("22/Sep/2016:22:41:59 +0200",
+                                                 "%d/%b/%Y:%H:%M:%S %z")
+                            .unwrap(),
+                        None,
+                        &mut mock_tcp_stream);
 
         assert_eq!(&mock_tcp_stream.write_calls[0], "requests.count 3 1474576919\n");
         assert_eq!(&mock_tcp_stream.write_calls[1], "requests.time.max 100 1474576919\n");

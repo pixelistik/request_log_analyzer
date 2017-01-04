@@ -1,4 +1,4 @@
-pub fn percentile (data: &Vec<i64>, percent: f32) -> i64 {
+pub fn percentile(data: &Vec<i64>, percent: f32) -> i64 {
     let mut data_sorted = data.clone();
     data_sorted.sort();
 

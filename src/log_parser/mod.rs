@@ -15,8 +15,8 @@ pub fn parse_line(line: &String) -> Result<LogEvent, &'static str> {
 
         return match request {
             Ok(request) => Ok(LogEvent::Request(request)),
-            Err(err) => Err(err)
-        }
+            Err(err) => Err(err),
+        };
     }
 
     if line.contains("<-") {
@@ -24,8 +24,8 @@ pub fn parse_line(line: &String) -> Result<LogEvent, &'static str> {
 
         return match response {
             Ok(response) => Ok(LogEvent::Response(response)),
-            Err(err) => Err(err)
-        }
+            Err(err) => Err(err),
+        };
     }
 
     Err("Line is neither a Request nor a Response")
@@ -38,7 +38,8 @@ mod tests {
 
     #[test]
     fn test_parse_line_request() {
-        let line = "08/Apr/2016:09:58:47 +0200 [02] -> GET /content/some/other.html HTTP/1.1".to_string();
+        let line = "08/Apr/2016:09:58:47 +0200 [02] -> GET /content/some/other.html HTTP/1.1"
+            .to_string();
 
         let event = match parse_line(&line).unwrap() {
             LogEvent::Request(request) => request,

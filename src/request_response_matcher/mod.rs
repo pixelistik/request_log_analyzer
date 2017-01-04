@@ -9,7 +9,9 @@ pub struct RequestResponsePair {
     pub response: log_events::Response,
 }
 
-pub fn extract_matching_request_response_pairs(requests: &mut Vec<log_events::Request>, responses: &mut Vec<log_events::Response>) -> Vec<RequestResponsePair> {
+pub fn extract_matching_request_response_pairs(requests: &mut Vec<log_events::Request>,
+                                               responses: &mut Vec<log_events::Response>)
+                                               -> Vec<RequestResponsePair> {
     let mut request_response_pairs: Vec<RequestResponsePair> = Vec::new();
 
     for request_index in 0..requests.len() {
@@ -21,7 +23,8 @@ pub fn extract_matching_request_response_pairs(requests: &mut Vec<log_events::Re
             }
         }
 
-        let matching_response_index: Option<usize> = responses.iter().position(|response| requests[request_index].id == response.id );
+        let matching_response_index: Option<usize> = responses.iter()
+            .position(|response| requests[request_index].id == response.id);
 
         if matching_response_index.is_some() {
             let request = requests.remove(request_index);
@@ -29,7 +32,7 @@ pub fn extract_matching_request_response_pairs(requests: &mut Vec<log_events::Re
 
             let pair = RequestResponsePair {
                 request: request,
-                response: response
+                response: response,
             };
 
             request_response_pairs.push(pair);

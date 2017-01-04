@@ -14,7 +14,7 @@ pub struct Request {
     pub id: i32,
     pub time: DateTime<FixedOffset>,
     pub url: String,
-    pub original_log_line: String
+    pub original_log_line: String,
 }
 
 impl Request {
@@ -22,8 +22,8 @@ impl Request {
         let parts: Vec<&str> = log_line.split(" ").collect();
 
         let id = match parts.get(2) {
-            Some(id) =>  id,
-            None => return Err("Uncomprehensible request logline")
+            Some(id) => id,
+            None => return Err("Uncomprehensible request logline"),
         };
 
         // Shortest valid id format is "[1]"
@@ -31,28 +31,28 @@ impl Request {
             return Err("Uncomprehensible request logline");
         }
 
-        let id_parsed: i32 = match id[1..id.len()-1].parse() {
-            Ok(id) =>  id,
-            Err(_) => return Err("Uncomprehensible request logline")
+        let id_parsed: i32 = match id[1..id.len() - 1].parse() {
+            Ok(id) => id,
+            Err(_) => return Err("Uncomprehensible request logline"),
         };
 
         let url = match parts.get(5) {
-            Some(url) =>  url,
-            None => return Err("Uncomprehensible request logline")
+            Some(url) => url,
+            None => return Err("Uncomprehensible request logline"),
         };
 
         let date = &format!("{} {}", parts[0], parts[1]);
 
         let date_parsed = match DateTime::parse_from_str(date, "%d/%b/%Y:%H:%M:%S %z") {
             Ok(date_time) => date_time,
-            Err(_) => return Err("Uncomprehensible request logline")
+            Err(_) => return Err("Uncomprehensible request logline"),
         };
 
         Ok(Request {
             id: id_parsed,
             time: date_parsed,
             url: url.to_string(),
-            original_log_line: log_line.clone()
+            original_log_line: log_line.clone(),
         })
     }
 }
@@ -79,36 +79,37 @@ impl Response {
             return Err("Uncomprehensible response logline");
         }
 
-        let id_numeric: i32 = match id[1..id.len()-1].parse() {
+        let id_numeric: i32 = match id[1..id.len() - 1].parse() {
             Ok(number) => number,
-            Err(_) => return Err("Uncomprehensible response logline")
+            Err(_) => return Err("Uncomprehensible response logline"),
         };
 
-        let time = match DateTime::parse_from_str(&format!("{} {}", parts[0], parts[1]), "%d/%b/%Y:%H:%M:%S %z") {
+        let time = match DateTime::parse_from_str(&format!("{} {}", parts[0], parts[1]),
+                                                  "%d/%b/%Y:%H:%M:%S %z") {
             Ok(time) => time,
-            Err(_) => return Err("Uncomprehensible response logline")
+            Err(_) => return Err("Uncomprehensible response logline"),
         };
 
-        let response_time = parts[parts.len()-1];
+        let response_time = parts[parts.len() - 1];
         if response_time.len() < 3 {
             return Err("Uncomprehensible response logline");
         }
 
-        let response_time_duration = match response_time[0..response_time.len()-2].parse() {
+        let response_time_duration = match response_time[0..response_time.len() - 2].parse() {
             Ok(number) => Duration::milliseconds(number),
-            Err(_) => return Err("Uncomprehensible response logline")
+            Err(_) => return Err("Uncomprehensible response logline"),
         };
 
         // Handle special case where the mime type sometimes contains
         // a space, so we need to re-assemble it
         let mime_type = match parts.len() {
             8 => format!("{} {}", parts[5], parts[6]),
-            _ => parts[5].to_string()
+            _ => parts[5].to_string(),
         };
 
         let status_code = match parts[4].parse() {
             Ok(number) => HttpStatus::from_code(number),
-            Err(_) => return Err("Uncomprehensible response logline")
+            Err(_) => return Err("Uncomprehensible response logline"),
         };
 
         Ok(Response {
@@ -131,13 +132,15 @@ mod tests {
 
     #[test]
     fn test_parse_request_line() {
-        let line = "08/Apr/2016:09:58:47 +0200 [02] -> GET /content/some/other.html HTTP/1.1".to_string();
+        let line = "08/Apr/2016:09:58:47 +0200 [02] -> GET /content/some/other.html HTTP/1.1"
+            .to_string();
 
         let expected = Request {
             id: 2,
-            time: DateTime::parse_from_str("08/Apr/2016:09:58:47 +0200", "%d/%b/%Y:%H:%M:%S %z").unwrap(),
+            time: DateTime::parse_from_str("08/Apr/2016:09:58:47 +0200", "%d/%b/%Y:%H:%M:%S %z")
+                .unwrap(),
             url: "/content/some/other.html".to_string(),
-            original_log_line: line.clone()
+            original_log_line: line.clone(),
         };
 
         let result = Request::new_from_log_line(&line);
@@ -169,7 +172,8 @@ mod tests {
 
     #[test]
     fn test_parse_request_line_bad_date_format() {
-        let line = "99/XYZ/9999:09:99:99 +9900 [02] -> GET /content/some/other.html HTTP/1.1".to_string();
+        let line = "99/XYZ/9999:09:99:99 +9900 [02] -> GET /content/some/other.html HTTP/1.1"
+            .to_string();
 
         let expected: Result<Request, &'static str> = Err("Uncomprehensible request logline");
         let result: Result<Request, &'static str> = Request::new_from_log_line(&line);
@@ -180,7 +184,8 @@ mod tests {
 
     #[test]
     fn test_parse_request_line_bad_id_format() {
-        let line = "08/Apr/2016:09:58:47 +0200 2 -> GET /content/some/other.html HTTP/1.1".to_string();
+        let line = "08/Apr/2016:09:58:47 +0200 2 -> GET /content/some/other.html HTTP/1.1"
+            .to_string();
 
         let expected: Result<Request, &'static str> = Err("Uncomprehensible request logline");
         let result: Result<Request, &'static str> = Request::new_from_log_line(&line);
@@ -195,7 +200,8 @@ mod tests {
 
         let expected = Response {
             id: 2,
-            time: DateTime::parse_from_str("08/Apr/2016:09:58:48 +0200", "%d/%b/%Y:%H:%M:%S %z").unwrap(),
+            time: DateTime::parse_from_str("08/Apr/2016:09:58:48 +0200", "%d/%b/%Y:%H:%M:%S %z")
+                .unwrap(),
             mime_type: "text/html".to_string(),
             response_time: Duration::milliseconds(10),
             http_status: HttpStatus::OK,
@@ -209,11 +215,13 @@ mod tests {
 
     #[test]
     fn test_parse_response_line_inconsistent_space() {
-        let line = "06/Apr/2016:14:54:16 +0200 [200] <- 200 text/html; charset=utf-8 250ms".to_string();
+        let line = "06/Apr/2016:14:54:16 +0200 [200] <- 200 text/html; charset=utf-8 250ms"
+            .to_string();
 
         let expected = Response {
             id: 200,
-            time: DateTime::parse_from_str("06/Apr/2016:14:54:16 +0200", "%d/%b/%Y:%H:%M:%S %z").unwrap(),
+            time: DateTime::parse_from_str("06/Apr/2016:14:54:16 +0200", "%d/%b/%Y:%H:%M:%S %z")
+                .unwrap(),
             mime_type: "text/html; charset=utf-8".to_string(),
             response_time: Duration::milliseconds(250),
             http_status: HttpStatus::OK,
@@ -293,7 +301,8 @@ mod tests {
 
     #[test]
     fn test_log_event_type() {
-        let request_line = "08/Apr/2016:09:58:47 +0200 [02] -> GET /content/some/other.html HTTP/1.1".to_string();
+        let request_line =
+            "08/Apr/2016:09:58:47 +0200 [02] -> GET /content/some/other.html HTTP/1.1".to_string();
         let response_line = "08/Apr/2016:09:58:48 +0200 [02] <- 200 text/html 10ms".to_string();
 
         let _ = LogEvent::Request(Request::new_from_log_line(&request_line).unwrap());
