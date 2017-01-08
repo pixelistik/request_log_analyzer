@@ -2,6 +2,7 @@ use std::io;
 use std::io::prelude::*;
 use std::net::TcpStream;
 use std::fs::File;
+use std::env;
 
 extern crate chrono;
 use chrono::*;
@@ -29,8 +30,16 @@ macro_rules! println_stderr(
     } }
 );
 
-fn parse_args<'a>() -> ArgMatches<'a> {
-    App::new("Request.log Analyzer")
+#[derive(Debug)]
+#[derive(PartialEq)]
+struct RequestLogAnalyzerArgs {
+    filename: String,
+    conditions: filter::FilterConditions,
+
+}
+
+fn parse_args<'a, T>(args: T) -> Result<RequestLogAnalyzerArgs, &'a str> where T: IntoIterator<Item=String> {
+    let app = App::new("Request.log Analyzer")
         .arg(Arg::with_name("filename")
             .index(1)
             .value_name("FILE")
@@ -67,32 +76,37 @@ fn parse_args<'a>() -> ArgMatches<'a> {
             .long("graphite-prefix")
             .help("Prefix for Graphite key, e.g. 'servers.prod.publisher1'")
             .takes_value(true))
-        .get_matches()
+        .get_matches_from(args);
+
+        let filename = app.value_of("filename").unwrap_or("-").to_string();
+
+        let conditions = filter::FilterConditions {
+            include_terms: match app.value_of("include_term") {
+                Some(value) => Some(vec![value.to_string()]),
+                None => None,
+            },
+            exclude_terms: match app.value_of("exclude_term") {
+                Some(value) => Some(vec![value.to_string()]),
+                None => None,
+            },
+            latest_time: match app.value_of("time_filter_minutes") {
+                Some(minutes) => Some(Duration::minutes(minutes.parse().unwrap())),
+                None => None,
+            },
+        };
+
+        Ok(RequestLogAnalyzerArgs {
+            filename: filename,
+            conditions: conditions,
+        })
 }
 
 fn main() {
-    let args = parse_args();
+    let args = parse_args(env::args()).unwrap();
 
-    let filename = args.value_of("filename").unwrap_or("-");
-
-    let conditions = filter::FilterConditions {
-        include_terms: match args.value_of("include_term") {
-            Some(value) => Some(vec![value.to_string()]),
-            None => None,
-        },
-        exclude_terms: match args.value_of("exclude_term") {
-            Some(value) => Some(vec![value.to_string()]),
-            None => None,
-        },
-        latest_time: match args.value_of("time_filter_minutes") {
-            Some(minutes) => Some(Duration::minutes(minutes.parse().unwrap())),
-            None => None,
-        },
-    };
-
-    let input: Box<io::Read> = match filename {
+    let input: Box<io::Read> = match args.filename.as_ref() {
         "-" => Box::new(io::stdin()),
-        _ => Box::new(File::open(filename).unwrap()),
+        _ => Box::new(File::open(&args.filename).unwrap()),
     };
 
     let reader = io::BufReader::new(input);
@@ -123,7 +137,7 @@ fn main() {
         let pairs = extract_matching_request_response_pairs(&mut requests, &mut responses);
 
         let mut new_times: Vec<i64> = pairs.iter()
-            .filter(|pair| filter::matches_filter(&pair, &conditions))
+            .filter(|pair| filter::matches_filter(&pair, &args.conditions))
             .map(|pair| pair.response.response_time.num_milliseconds())
             .collect();
 
@@ -152,4 +166,44 @@ fn main() {
         }
         None => println_stderr!("No matching log lines in file."),
     }
+}
+
+#[test]
+fn test_parse_args_default() {
+    let raw_args = vec!["request_log_analyzer".to_string()];
+
+    let expected = RequestLogAnalyzerArgs {
+        filename: String::from("-"),
+        conditions: filter::FilterConditions {
+            include_terms: None,
+            exclude_terms: None,
+            latest_time: None,
+        },
+    };
+
+    let result = parse_args(raw_args).unwrap();
+
+    assert_eq!(result, expected);
+}
+
+#[test]
+fn test_parse_args_all() {
+    let raw_args = vec![String::from("request_log_analyzer"),
+                        String::from("--include"), String::from("one"),
+                        String::from("--exclude"), String::from("this other"),
+                        String::from("-t"), String::from("10"),
+                        String::from("my-logfile.log"),];
+
+    let expected = RequestLogAnalyzerArgs {
+        filename: String::from("my-logfile.log"),
+        conditions: filter::FilterConditions {
+            include_terms: Some(vec![String::from("one")]),
+            exclude_terms: Some(vec![String::from("this other")]),
+            latest_time: Some(Duration::minutes(10)),
+        },
+    };
+
+    let result = parse_args(raw_args).unwrap();
+
+    assert_eq!(result, expected);
 }

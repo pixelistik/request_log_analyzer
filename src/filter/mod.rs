@@ -1,6 +1,8 @@
 use request_response_matcher::*;
 use chrono::*;
 
+#[derive(Debug)]
+#[derive(PartialEq)]
 pub struct FilterConditions {
     pub include_terms: Option<Vec<String>>,
     pub exclude_terms: Option<Vec<String>>,
