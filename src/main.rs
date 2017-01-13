@@ -10,7 +10,7 @@ use chrono::*;
 extern crate stats;
 
 extern crate clap;
-use clap::{Arg, App, ArgMatches};
+use clap::{Arg, App};
 
 mod http_status;
 mod log_parser;
@@ -40,7 +40,9 @@ struct RequestLogAnalyzerArgs {
     graphite_prefix: Option<String>,
 }
 
-fn parse_args<'a, T>(args: T) -> Result<RequestLogAnalyzerArgs, &'a str> where T: IntoIterator<Item=String> {
+fn parse_args<'a, T>(args: T) -> Result<RequestLogAnalyzerArgs, &'a str>
+    where T: IntoIterator<Item = String>
+{
     let app = App::new("Request.log Analyzer")
         .arg(Arg::with_name("filename")
             .index(1)
@@ -80,45 +82,47 @@ fn parse_args<'a, T>(args: T) -> Result<RequestLogAnalyzerArgs, &'a str> where T
             .takes_value(true))
         .get_matches_from(args);
 
-        let filename = app.value_of("filename").unwrap_or("-").to_string();
+    let filename = app.value_of("filename").unwrap_or("-").to_string();
 
-        let conditions = filter::FilterConditions {
-            include_terms: match app.value_of("include_term") {
-                Some(value) => Some(vec![value.to_string()]),
-                None => None,
-            },
-            exclude_terms: match app.value_of("exclude_term") {
-                Some(value) => Some(vec![value.to_string()]),
-                None => None,
-            },
-            latest_time: match app.value_of("time_filter_minutes") {
-                Some(minutes) => Some(Duration::minutes(minutes.parse().expect("Minutes value must be numeric"))),
-                None => None,
-            },
-        };
-
-        let graphite_server = match app.value_of("graphite-server") {
-            Some(value) => Some(String::from(value)),
+    let conditions = filter::FilterConditions {
+        include_terms: match app.value_of("include_term") {
+            Some(value) => Some(vec![value.to_string()]),
             None => None,
-        };
-
-        let graphite_port: Option<u16> = match app.value_of("graphite-port") {
-            Some(value) => Some(value.parse().expect("Port number must be numeric.")),
+        },
+        exclude_terms: match app.value_of("exclude_term") {
+            Some(value) => Some(vec![value.to_string()]),
             None => None,
-        };
-
-        let graphite_prefix = match app.value_of("graphite-prefix") {
-            Some(value) => Some(String::from(value)),
+        },
+        latest_time: match app.value_of("time_filter_minutes") {
+            Some(minutes) => {
+                Some(Duration::minutes(minutes.parse().expect("Minutes value must be numeric")))
+            }
             None => None,
-        };
+        },
+    };
 
-        Ok(RequestLogAnalyzerArgs {
-            filename: filename,
-            conditions: conditions,
-            graphite_server: graphite_server,
-            graphite_port: graphite_port,
-            graphite_prefix: graphite_prefix,
-        })
+    let graphite_server = match app.value_of("graphite-server") {
+        Some(value) => Some(String::from(value)),
+        None => None,
+    };
+
+    let graphite_port: Option<u16> = match app.value_of("graphite-port") {
+        Some(value) => Some(value.parse().expect("Port number must be numeric.")),
+        None => None,
+    };
+
+    let graphite_prefix = match app.value_of("graphite-prefix") {
+        Some(value) => Some(String::from(value)),
+        None => None,
+    };
+
+    Ok(RequestLogAnalyzerArgs {
+        filename: filename,
+        conditions: conditions,
+        graphite_server: graphite_server,
+        graphite_port: graphite_port,
+        graphite_prefix: graphite_prefix,
+    })
 }
 
 fn main() {
@@ -169,9 +173,9 @@ fn main() {
     match result {
         Some(result) => {
             if args.graphite_server.is_some() {
-                let stream =
-                    TcpStream::connect((args.graphite_server.unwrap().as_ref(), args.graphite_port.unwrap()))
-                        .expect("Could not connect to the Graphite server");
+                let stream = TcpStream::connect((args.graphite_server.unwrap().as_ref(),
+                                                 args.graphite_port.unwrap()))
+                    .expect("Could not connect to the Graphite server");
                 let timezone = first_request.unwrap().time.timezone();
 
                 render::render_graphite(result,
