@@ -35,7 +35,9 @@ macro_rules! println_stderr(
 struct RequestLogAnalyzerArgs {
     filename: String,
     conditions: filter::FilterConditions,
-
+    graphite_server: Option<String>,
+    graphite_port: Option<u16>,
+    graphite_prefix: Option<String>,
 }
 
 fn parse_args<'a, T>(args: T) -> Result<RequestLogAnalyzerArgs, &'a str> where T: IntoIterator<Item=String> {
@@ -95,9 +97,27 @@ fn parse_args<'a, T>(args: T) -> Result<RequestLogAnalyzerArgs, &'a str> where T
             },
         };
 
+        let graphite_server = match app.value_of("graphite-server") {
+            Some(value) => Some(String::from(value)),
+            None => None,
+        };
+
+        let graphite_port: Option<u16> = match app.value_of("graphite-port") {
+            Some(value) => Some(value.parse().unwrap()),
+            None => None,
+        };
+
+        let graphite_prefix = match app.value_of("graphite-prefix") {
+            Some(value) => Some(String::from(value)),
+            None => None,
+        };
+
         Ok(RequestLogAnalyzerArgs {
             filename: filename,
             conditions: conditions,
+            graphite_server: graphite_server,
+            graphite_port: graphite_port,
+            graphite_prefix: graphite_prefix,
         })
 }
 
@@ -148,17 +168,15 @@ fn main() {
 
     match result {
         Some(result) => {
-            if args.is_present("graphite-server") {
+            if args.graphite_server.is_some() {
                 let stream =
-                    TcpStream::connect((args.value_of("graphite-server").unwrap(),
-                                        args.value_of("graphite-port").unwrap().parse().unwrap()))
+                    TcpStream::connect((args.graphite_server.unwrap().as_ref(), args.graphite_port.unwrap()))
                         .expect("Could not connect to the Graphite server");
-
                 let timezone = first_request.unwrap().time.timezone();
 
                 render::render_graphite(result,
                                         UTC::now().with_timezone(&timezone),
-                                        args.value_of("graphite-prefix"),
+                                        args.graphite_prefix,
                                         stream);
             } else {
                 render::render_terminal(result);
@@ -179,6 +197,9 @@ fn test_parse_args_default() {
             exclude_terms: None,
             latest_time: None,
         },
+        graphite_server: None,
+        graphite_port: Some(2003),
+        graphite_prefix: None,
     };
 
     let result = parse_args(raw_args).unwrap();
@@ -192,7 +213,11 @@ fn test_parse_args_all() {
                         String::from("--include"), String::from("one"),
                         String::from("--exclude"), String::from("this other"),
                         String::from("-t"), String::from("10"),
-                        String::from("my-logfile.log"),];
+                        String::from("my-logfile.log"),
+                        String::from("--graphite-server"), String::from("localhost"),
+                        String::from("--graphite-port"), String::from("4000"),
+                        String::from("--graphite-prefix"), String::from("prod"),
+                        ];
 
     let expected = RequestLogAnalyzerArgs {
         filename: String::from("my-logfile.log"),
@@ -201,6 +226,9 @@ fn test_parse_args_all() {
             exclude_terms: Some(vec![String::from("this other")]),
             latest_time: Some(Duration::minutes(10)),
         },
+        graphite_server: Some(String::from("localhost")),
+        graphite_port: Some(4000),
+        graphite_prefix: Some(String::from("prod")),
     };
 
     let result = parse_args(raw_args).unwrap();

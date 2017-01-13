@@ -13,9 +13,9 @@ pub fn render_terminal(result: analyzer::RequestLogAnalyzerResult) {
 
 pub fn render_graphite<T: Write>(result: analyzer::RequestLogAnalyzerResult,
                                  time: DateTime<FixedOffset>,
-                                 prefix: Option<&str>,
+                                 prefix: Option<String>,
                                  mut stream: T) {
-    let prefix_text: &str;
+    let prefix_text: String;
     let prefix_separator: &str;
 
     match prefix {
@@ -24,7 +24,7 @@ pub fn render_graphite<T: Write>(result: analyzer::RequestLogAnalyzerResult,
             prefix_separator = ".";
         }
         None => {
-            prefix_text = "";
+            prefix_text = String::from("");
             prefix_separator = "";
         }
     };
