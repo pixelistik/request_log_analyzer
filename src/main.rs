@@ -92,7 +92,7 @@ fn parse_args<'a, T>(args: T) -> Result<RequestLogAnalyzerArgs, &'a str> where T
                 None => None,
             },
             latest_time: match app.value_of("time_filter_minutes") {
-                Some(minutes) => Some(Duration::minutes(minutes.parse().unwrap())),
+                Some(minutes) => Some(Duration::minutes(minutes.parse().expect("Minutes value must be numeric"))),
                 None => None,
             },
         };
@@ -103,7 +103,7 @@ fn parse_args<'a, T>(args: T) -> Result<RequestLogAnalyzerArgs, &'a str> where T
         };
 
         let graphite_port: Option<u16> = match app.value_of("graphite-port") {
-            Some(value) => Some(value.parse().unwrap()),
+            Some(value) => Some(value.parse().expect("Port number must be numeric.")),
             None => None,
         };
 
