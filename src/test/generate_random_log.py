@@ -37,7 +37,7 @@ for i in range(0, count):
     id = randint(1, 99999)
     duration = randint(0, 20000)
     no_response_failure_rate = randint(0, 99)
-    mutation_rate = None # Set to e.g. 100 to damage every 100th line
+    mutation_rate = 1000 # Set to e.g. 100 to damage every 100th line, or to None
 
     line = "08/Apr/2016:%d:%d:47 +0200 [%d] -> GET /content/%s/page.html HTTP/1.1" % (hour, minute, id, "some")
     print mutate(line, mutation_rate)

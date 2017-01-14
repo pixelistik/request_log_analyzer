@@ -1,3 +1,4 @@
 target
 .vagrant
 *.bk
+src/test/random-*.log
