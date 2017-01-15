@@ -68,21 +68,29 @@ mod tests {
         }
     }
 
+    fn get_result_fixture() -> analyzer::RequestLogAnalyzerResult {
+        analyzer::RequestLogAnalyzerResult {
+            count: 3,
+            max: 100,
+            min: 1,
+            avg: 37,
+            median: 10,
+            percentile90: 100,
+        }
+    }
+
+    fn get_time_fixture() -> DateTime<FixedOffset> {
+        DateTime::parse_from_str("22/Sep/2016:22:41:59 +0200",
+                                 "%d/%b/%Y:%H:%M:%S %z")
+            .unwrap()
+    }
+
     #[test]
     fn test_render_graphite() {
         let mut mock_tcp_stream = MockTcpStream { write_calls: vec![] };
 
-        render_graphite(analyzer::RequestLogAnalyzerResult {
-                            count: 3,
-                            max: 100,
-                            min: 1,
-                            avg: 37,
-                            median: 10,
-                            percentile90: 100,
-                        },
-                        DateTime::parse_from_str("22/Sep/2016:22:41:59 +0200",
-                                                 "%d/%b/%Y:%H:%M:%S %z")
-                            .unwrap(),
+        render_graphite(get_result_fixture(),
+                        get_time_fixture(),
                         None,
                         &mut mock_tcp_stream);
 
@@ -92,5 +100,22 @@ mod tests {
         assert_eq!(&mock_tcp_stream.write_calls[3], "requests.time.avg 37 1474576919\n");
         assert_eq!(&mock_tcp_stream.write_calls[4], "requests.time.median 10 1474576919\n");
         assert_eq!(&mock_tcp_stream.write_calls[5], "requests.time.90percent 100 1474576919\n");
+    }
+
+    #[test]
+    fn test_render_graphite_with_prefix() {
+        let mut mock_tcp_stream = MockTcpStream { write_calls: vec![] };
+
+        render_graphite(get_result_fixture(),
+                        get_time_fixture(),
+                        Some(String::from("my_prefix")),
+                        &mut mock_tcp_stream);
+
+        assert_eq!(&mock_tcp_stream.write_calls[0], "my_prefix.requests.count 3 1474576919\n");
+        assert_eq!(&mock_tcp_stream.write_calls[1], "my_prefix.requests.time.max 100 1474576919\n");
+        assert_eq!(&mock_tcp_stream.write_calls[2], "my_prefix.requests.time.min 1 1474576919\n");
+        assert_eq!(&mock_tcp_stream.write_calls[3], "my_prefix.requests.time.avg 37 1474576919\n");
+        assert_eq!(&mock_tcp_stream.write_calls[4], "my_prefix.requests.time.median 10 1474576919\n");
+        assert_eq!(&mock_tcp_stream.write_calls[5], "my_prefix.requests.time.90percent 100 1474576919\n");
     }
 }
