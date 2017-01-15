@@ -1,5 +1,3 @@
-//! A module to parse invidual log lines into Requests and Responses
-
 use chrono::*;
 use http_status::HttpStatus;
 
