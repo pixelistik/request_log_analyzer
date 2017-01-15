@@ -52,4 +52,13 @@ mod tests {
 
         assert_eq!(event.id, 5);
     }
+
+    #[test]
+    fn test_parse_line_unrecognized() {
+        let line = "08/Apr/2016:09:58:48 +0200 [05] XY 200 text/html 10ms".to_string();
+
+        let event = parse_line(&line);
+
+        assert_eq!(event, Err("Line is neither a Request nor a Response"));
+    }
 }

@@ -1,6 +1,8 @@
 use chrono::*;
 use http_status::HttpStatus;
 
+#[derive(Debug)]
+#[derive(PartialEq)]
 pub enum LogEvent {
     Request(Request),
     Response(Response),
