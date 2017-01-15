@@ -171,28 +171,32 @@ fn extract_times(input: Box<io::Read>, conditions: &filter::FilterConditions) ->
     for line in lines {
         let line_value = &line.unwrap();
 
-        let event = parse_line(line_value).unwrap();
+        let parsed_line = parse_line(line_value);
 
-        match event {
-            LogEvent::Request(request) => {
-                if first_request.is_none() {
-                    first_request = Some(request.clone());
+        match parsed_line {
+            Ok(event) => {
+                match event {
+                    LogEvent::Request(request) => {
+                        if first_request.is_none() {
+                            first_request = Some(request.clone());
+                        }
+                        requests.push(request)
+                    }
+                    LogEvent::Response(response) => responses.push(response),
                 }
-                requests.push(request)
-            }
-            LogEvent::Response(response) => responses.push(response),
+
+                let pairs = extract_matching_request_response_pairs(&mut requests, &mut responses);
+
+                let mut new_times: Vec<i64> = pairs.iter()
+                    .filter(|pair| filter::matches_filter(&pair, conditions))
+                    .map(|pair| pair.response.response_time.num_milliseconds())
+                    .collect();
+
+                times.append(&mut new_times);
+            },
+            Err(err) => println_stderr!("{}", err),
         }
-
-        let pairs = extract_matching_request_response_pairs(&mut requests, &mut responses);
-
-        let mut new_times: Vec<i64> = pairs.iter()
-            .filter(|pair| filter::matches_filter(&pair, conditions))
-            .map(|pair| pair.response.response_time.num_milliseconds())
-            .collect();
-
-        times.append(&mut new_times);
     }
-
     (times, first_request)
 }
 
@@ -257,5 +261,19 @@ fn test_extract_times() {
     let (times, first_request) = extract_times(Box::new(File::open("src/test/simple-1.log").unwrap()), &conditions);
 
     assert_eq!(times, vec![7, 10]);
+    assert_eq!(first_request.unwrap().id, 1);
+}
+
+#[test]
+fn test_extract_times_ignore_broken_lines() {
+    let conditions = filter::FilterConditions {
+        include_terms: None,
+        exclude_terms: None,
+        latest_time: None,
+    };
+
+    let (times, first_request) = extract_times(Box::new(File::open("src/test/broken.log").unwrap()), &conditions);
+
+    assert_eq!(times, vec![7]);
     assert_eq!(first_request.unwrap().id, 1);
 }
