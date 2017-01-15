@@ -61,7 +61,9 @@ fn main() {
     }
 }
 
-fn extract_times(input: Box<io::Read>, conditions: &filter::FilterConditions) -> (Vec<i64>, Option<Request>) {
+fn extract_times(input: Box<io::Read>,
+                 conditions: &filter::FilterConditions)
+                 -> (Vec<i64>, Option<Request>) {
     let reader = io::BufReader::new(input);
     let lines = reader.lines();
 
@@ -97,7 +99,7 @@ fn extract_times(input: Box<io::Read>, conditions: &filter::FilterConditions) ->
                     .collect();
 
                 times.append(&mut new_times);
-            },
+            }
             Err(err) => println_stderr!("{}", err),
         }
     }
@@ -112,7 +114,9 @@ fn test_extract_times() {
         latest_time: None,
     };
 
-    let (times, first_request) = extract_times(Box::new(File::open("src/test/simple-1.log").unwrap()), &conditions);
+    let (times, first_request) = extract_times(Box::new(File::open("src/test/simple-1.log")
+                                                   .unwrap()),
+                                               &conditions);
 
     assert_eq!(times, vec![7, 10]);
     assert_eq!(first_request.unwrap().id, 1);
@@ -126,7 +130,9 @@ fn test_extract_times_ignore_broken_lines() {
         latest_time: None,
     };
 
-    let (times, first_request) = extract_times(Box::new(File::open("src/test/broken.log").unwrap()), &conditions);
+    let (times, first_request) = extract_times(Box::new(File::open("src/test/broken.log")
+                                                   .unwrap()),
+                                               &conditions);
 
     assert_eq!(times, vec![7]);
     assert_eq!(first_request.unwrap().id, 1);

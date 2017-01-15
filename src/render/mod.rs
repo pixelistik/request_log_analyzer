@@ -80,9 +80,7 @@ mod tests {
     }
 
     fn get_time_fixture() -> DateTime<FixedOffset> {
-        DateTime::parse_from_str("22/Sep/2016:22:41:59 +0200",
-                                 "%d/%b/%Y:%H:%M:%S %z")
-            .unwrap()
+        DateTime::parse_from_str("22/Sep/2016:22:41:59 +0200", "%d/%b/%Y:%H:%M:%S %z").unwrap()
     }
 
     #[test]
