@@ -1,14 +1,6 @@
 pub mod log_events;
 use self::log_events::*;
 
-// http://stackoverflow.com/a/27590832/376138
-macro_rules! println_stderr(
-    ($($arg:tt)*) => { {
-        let r = writeln!(&mut ::std::io::stderr(), $($arg)*);
-        r.expect("failed printing to stderr");
-    } }
-);
-
 pub fn parse_line(line: &String) -> Result<LogEvent, &'static str> {
     if line.contains("->") {
         let request = Request::new_from_log_line(line);
