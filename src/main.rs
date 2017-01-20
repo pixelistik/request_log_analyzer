@@ -42,24 +42,26 @@ fn main() {
 
     let result = analyzer::analyze(&times);
 
-    match result {
-        Some(result) => {
-            if args.graphite_server.is_some() {
-                let mut stream = TcpStream::connect((args.graphite_server.unwrap().as_ref(),
-                                                 args.graphite_port.unwrap()))
-                    .expect("Could not connect to the Graphite server");
-                let timezone = first_request.unwrap().time.timezone();
+    let mut stream;
+    let mut renderer: Box<Renderer>;
 
-                let mut renderer = render::GraphiteRenderer::new(
-                    UTC::now().with_timezone(&timezone),
+    if args.graphite_server.is_some() {
+        stream = TcpStream::connect((args.graphite_server.unwrap().as_ref(),
+                                             args.graphite_port.unwrap()))
+                .expect("Could not connect to the Graphite server");
+
+        renderer = Box::new(GraphiteRenderer::new(
+                    UTC::now().with_timezone(&first_request.unwrap().time.timezone()),
                     args.graphite_prefix,
                     &mut stream,
-                );
-                renderer.render(result);
-            } else {
-                let mut renderer = render::TerminalRenderer::new();
-                renderer.render(result);
-            }
+                ));
+    } else {
+        renderer = Box::new(TerminalRenderer::new());
+    }
+
+    match result {
+        Some(result) => {
+            renderer.render(result);
         }
         None => println_stderr!("No matching log lines in file."),
     }
