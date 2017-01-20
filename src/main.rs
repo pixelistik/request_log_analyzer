@@ -20,6 +20,7 @@ use request_response_matcher::*;
 mod filter;
 mod analyzer;
 mod render;
+use render::*;
 
 // http://stackoverflow.com/a/27590832/376138
 macro_rules! println_stderr(
@@ -44,17 +45,20 @@ fn main() {
     match result {
         Some(result) => {
             if args.graphite_server.is_some() {
-                let stream = TcpStream::connect((args.graphite_server.unwrap().as_ref(),
+                let mut stream = TcpStream::connect((args.graphite_server.unwrap().as_ref(),
                                                  args.graphite_port.unwrap()))
                     .expect("Could not connect to the Graphite server");
                 let timezone = first_request.unwrap().time.timezone();
 
-                render::render_graphite(result,
-                                        UTC::now().with_timezone(&timezone),
-                                        args.graphite_prefix,
-                                        stream);
+                let mut renderer = render::GraphiteRenderer::new(
+                    UTC::now().with_timezone(&timezone),
+                    args.graphite_prefix,
+                    &mut stream,
+                );
+                renderer.render(result);
             } else {
-                render::render_terminal(result);
+                let mut renderer = render::TerminalRenderer::new();
+                renderer.render(result);
             }
         }
         None => println_stderr!("No matching log lines in file."),
