@@ -12,6 +12,15 @@ test-no-run:
 perf: src/test/random-small.log src/test/random-big.log
 	src/test/perf_test
 
+target/perf/%.csv: target/release/archive/%
+	mkdir -p target/perf
+	src/test/perf_test_binary $< src/test/request.log.2016-04-06-Pub2-fixed > $@
+
+target/release/archive/%:
+	git checkout $(shell basename $@)
+	cargo build --release
+	cp target/release/request_log_analyzer $@
+
 coverage: test-no-run
 # Example file name: request_log_analyzer-751ef51155a898c3
 # We are interested in the test binaries with a hash postfix
