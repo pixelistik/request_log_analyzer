@@ -9,8 +9,8 @@ test:
 test-no-run:
 	cargo test --no-run
 
-perf: src/test/random-small.log src/test/random-big.log
-	src/test/perf_test
+perf: src/test/random-small.log src/test/random-big.log target/perf/v1.2.0.csv target/perf/v1.3.0.csv target/perf/master.csv
+	cat target/perf/*.csv > target/perf/all
 
 target/perf/%.csv: target/release/archive/%
 	mkdir -p target/perf
@@ -19,7 +19,7 @@ target/perf/%.csv: target/release/archive/%
 target/release/archive/%:
 	git checkout $(shell basename $@)
 	cargo build --release
-	git checkout performance-analysis
+	git checkout master
 	cp target/release/request_log_analyzer $@
 
 coverage: test-no-run
