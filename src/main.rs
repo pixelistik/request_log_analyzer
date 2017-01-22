@@ -45,19 +45,22 @@ fn main() {
     let mut stream;
     let mut renderer: Box<Renderer>;
 
-    if args.graphite_server.is_some() {
-        stream = TcpStream::connect((args.graphite_server.unwrap().as_ref(),
-                                             args.graphite_port.unwrap()))
-                .expect("Could not connect to the Graphite server");
+    renderer = match args.graphite_server {
+        Some(graphite_server) => {
+            stream = TcpStream::connect((graphite_server.as_ref(),
+                                         args.graphite_port.unwrap()))
+                 .expect("Could not connect to the Graphite server");
 
-        renderer = Box::new(GraphiteRenderer::new(
-                    UTC::now().with_timezone(&first_request.unwrap().time.timezone()),
-                    args.graphite_prefix,
-                    &mut stream,
-                ));
-    } else {
-        renderer = Box::new(TerminalRenderer::new());
-    }
+            Box::new(GraphiteRenderer::new(
+                UTC::now().with_timezone(&first_request.unwrap().time.timezone()),
+                args.graphite_prefix,
+                &mut stream,
+            ))
+        },
+        None => {
+            Box::new(TerminalRenderer::new())
+        }
+    };
 
     match result {
         Some(result) => {
