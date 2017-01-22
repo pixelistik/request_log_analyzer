@@ -7,6 +7,8 @@ authors = ["pixelistik"]
 chrono = "0.2"
 streaming-stats = "0.1"
 clap = "2.12"
+log = "*"
+env_logger = "*"
 
 [profile.release]
 # https://lifthrasiir.github.io/rustlog/why-is-a-rust-executable-large.html

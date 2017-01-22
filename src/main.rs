@@ -4,6 +4,10 @@ use std::net::TcpStream;
 use std::fs::File;
 use std::env;
 
+#[macro_use]
+extern crate log;
+extern crate env_logger;
+
 extern crate chrono;
 use chrono::*;
 
@@ -22,15 +26,9 @@ mod analyzer;
 mod render;
 use render::*;
 
-// http://stackoverflow.com/a/27590832/376138
-macro_rules! println_stderr(
-    ($($arg:tt)*) => { {
-        let r = writeln!(&mut ::std::io::stderr(), $($arg)*);
-        r.expect("failed printing to stderr");
-    } }
-);
-
 fn main() {
+    env_logger::init().unwrap();
+
     let args = args::parse_args(env::args()).unwrap();
 
     let input: Box<io::Read> = match args.filename.as_ref() {
@@ -66,7 +64,7 @@ fn main() {
         Some(result) => {
             renderer.render(result);
         }
-        None => println_stderr!("No matching log lines in file."),
+        None => warn!("No matching log lines in file."),
     }
 }
 
@@ -109,7 +107,7 @@ fn extract_times(input: Box<io::Read>,
 
                 times.append(&mut new_times);
             }
-            Err(err) => println_stderr!("{}", err),
+            Err(err) => warn!("{}", err),
         }
     }
     (times, first_request)
