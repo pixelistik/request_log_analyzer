@@ -19,6 +19,7 @@ target/perf/%.csv: target/release/archive/%
 target/release/archive/%:
 	git checkout $(shell basename $@)
 	cargo build --release
+	git checkout performance-analysis
 	cp target/release/request_log_analyzer $@
 
 coverage: test-no-run
