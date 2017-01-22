@@ -14,4 +14,4 @@ function get_ram_sys_user {
 read ram sys user <<< $(get_ram_sys_user "$binary")
 cpu_time_total=$(python -c "print $sys + $user")
 
-echo -e "$binary\t$ram\t$cpu_time_total"
+echo -e "$binary,$ram,$cpu_time_total"
