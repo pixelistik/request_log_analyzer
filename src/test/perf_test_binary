@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -o errexit
+
+binary="$@"
+
+function get_ram_sys_user {
+    local command=$1
+    # Get max memory usage, system CPU seconds, userland CPU seconds
+    local result=$(/usr/bin/time --format "%M\t%S\t%U" $command 2>&1 >/dev/null)
+    echo $result
+}
+
+
+read ram sys user <<< $(get_ram_sys_user "$binary")
+cpu_time_total=$(python -c "print $sys + $user")
+
+echo -e "$binary\t$ram\t$cpu_time_total"
