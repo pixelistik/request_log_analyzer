@@ -16,6 +16,8 @@ pub fn parse_args<'a, T>(args: T) -> Result<RequestLogAnalyzerArgs, &'a str>
     where T: IntoIterator<Item = String>
 {
     let app = App::new("Request.log Analyzer")
+        .author(crate_authors!())
+        .version(crate_version!())
         .arg(Arg::with_name("filename")
             .index(1)
             .value_name("FILE")

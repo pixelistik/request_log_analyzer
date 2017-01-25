@@ -12,6 +12,7 @@ extern crate chrono;
 use chrono::*;
 
 extern crate stats;
+#[macro_use]
 extern crate clap;
 
 mod args;
