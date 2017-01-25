@@ -9,25 +9,26 @@ Alternatively you can build from source, if you have a Rust toolchain set up:
 Clone the repository and run `cargo build`.
 
 ## Usage
+
     Request.log Analyzer
 
     USAGE:
-    request_log_analyzer [OPTIONS] [<FILE>]
+        request_log_analyzer [OPTIONS] [--] [<FILE>]
 
     FLAGS:
-    -h, --help       Prints help information
-    -V, --version    Prints version information
+        -h, --help       Prints help information
+        -V, --version    Prints version information
 
     OPTIONS:
-        --exclude <TERM>                       Excludes lines that contain this term
-        --graphite-port <GRAPHITE_PORT>         [default: 2003]
-        --graphite-prefix <GRAPHITE_PREFIX>    Prefix for Graphite key, e.g. 'servers.prod.publisher1'
-        --graphite-server <GRAPHITE_SERVER>    Send values to this Graphite server instead of stdout
-        --include <TERM>                       Only includes lines that contain this term
-    -t <MINUTES>                               Limit to the last n minutes
+            --exclude <TERM>...                    Exclude lines that contain one of these terms
+            --graphite-port <GRAPHITE_PORT>         [default: 2003]
+            --graphite-prefix <GRAPHITE_PREFIX>    Prefix for Graphite key, e.g. 'servers.prod.publisher1'
+            --graphite-server <GRAPHITE_SERVER>    Send values to this Graphite server instead of stdout
+            --include <TERM>...                    Only include lines that contain one of these terms
+        -t <MINUTES>                               Limit to the last n minutes
 
     ARGS:
-    <FILE>    Log file to analyze, defaults to stdin
+        <FILE>    Log file to analyze, defaults to stdin
 
 ## Example output
     $ request_log_analyzer crx-quickstart/logs/request.log
