@@ -30,13 +30,17 @@ pub fn parse_args<'a, T>(args: T) -> Result<RequestLogAnalyzerArgs, &'a str>
         .arg(Arg::with_name("include_term")
             .value_name("TERM")
             .long("include")
-            .help("Only includes lines that contain this term")
-            .takes_value(true))
+            .help("Only include lines that contain one of these terms")
+            .takes_value(true)
+            .multiple(true)
+            .number_of_values(1))
         .arg(Arg::with_name("exclude_term")
             .value_name("TERM")
             .long("exclude")
-            .help("Excludes lines that contain this term")
-            .takes_value(true))
+            .help("Exclude lines that contain one of these terms")
+            .takes_value(true)
+            .multiple(true)
+            .number_of_values(1))
         .arg(Arg::with_name("graphite-server")
             .value_name("GRAPHITE_SERVER")
             .long("graphite-server")
@@ -57,12 +61,12 @@ pub fn parse_args<'a, T>(args: T) -> Result<RequestLogAnalyzerArgs, &'a str>
     let filename = app.value_of("filename").unwrap_or("-").to_string();
 
     let conditions = filter::FilterConditions {
-        include_terms: match app.value_of("include_term") {
-            Some(value) => Some(vec![value.to_string()]),
+        include_terms: match app.values_of("include_term") {
+            Some(values) => Some(values.map(|v| v.to_string()).collect()),
             None => None,
         },
-        exclude_terms: match app.value_of("exclude_term") {
-            Some(value) => Some(vec![value.to_string()]),
+        exclude_terms: match app.values_of("exclude_term") {
+            Some(values) => Some(values.map(|v| v.to_string()).collect()),
             None => None,
         },
         latest_time: match app.value_of("time_filter_minutes") {
@@ -146,6 +150,35 @@ mod tests {
             graphite_server: Some(String::from("localhost")),
             graphite_port: Some(4000),
             graphite_prefix: Some(String::from("prod")),
+        };
+
+        let result = parse_args(raw_args).unwrap();
+
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_parse_args_mutliple_include_exclude() {
+        let raw_args = vec![String::from("request_log_analyzer"),
+                            String::from("--include"), String::from("one"),
+                            String::from("--include"), String::from("two"),
+                            String::from("--exclude"), String::from("this other"),
+                            String::from("--exclude"), String::from("more"),
+                            String::from("my-logfile.log"),
+                            ];
+
+        let expected = RequestLogAnalyzerArgs {
+            filename: String::from("my-logfile.log"),
+            conditions: filter::FilterConditions {
+                include_terms: Some(vec![String::from("one"),
+                                         String::from("two")]),
+                exclude_terms: Some(vec![String::from("this other"),
+                                         String::from("more")]),
+                latest_time: None,
+            },
+            graphite_server: None,
+            graphite_port: Some(2003),
+            graphite_prefix: None,
         };
 
         let result = parse_args(raw_args).unwrap();
