@@ -46,19 +46,16 @@ fn main() {
 
     renderer = match args.graphite_server {
         Some(graphite_server) => {
-            stream = TcpStream::connect((graphite_server.as_ref(),
-                                         args.graphite_port.unwrap()))
-                 .expect("Could not connect to the Graphite server");
+            stream = TcpStream::connect((graphite_server.as_ref(), args.graphite_port.unwrap()))
+                .expect("Could not connect to the Graphite server");
 
-            Box::new(GraphiteRenderer::new(
-                UTC::now().with_timezone(&first_request.unwrap().time.timezone()),
-                args.graphite_prefix,
-                &mut stream,
-            ))
-        },
-        None => {
-            Box::new(TerminalRenderer::new())
+            Box::new(GraphiteRenderer::new(UTC::now().with_timezone(&first_request.unwrap()
+                                               .time
+                                               .timezone()),
+                                           args.graphite_prefix,
+                                           &mut stream))
         }
+        None => Box::new(TerminalRenderer::new()),
     };
 
     match result {

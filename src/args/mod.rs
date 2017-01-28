@@ -133,14 +133,19 @@ mod tests {
     #[test]
     fn test_parse_args_all() {
         let raw_args = vec![String::from("request_log_analyzer"),
-                            String::from("--include"), String::from("one"),
-                            String::from("--exclude"), String::from("this other"),
-                            String::from("-t"), String::from("10"),
+                            String::from("--include"),
+                            String::from("one"),
+                            String::from("--exclude"),
+                            String::from("this other"),
+                            String::from("-t"),
+                            String::from("10"),
                             String::from("my-logfile.log"),
-                            String::from("--graphite-server"), String::from("localhost"),
-                            String::from("--graphite-port"), String::from("4000"),
-                            String::from("--graphite-prefix"), String::from("prod"),
-                            ];
+                            String::from("--graphite-server"),
+                            String::from("localhost"),
+                            String::from("--graphite-port"),
+                            String::from("4000"),
+                            String::from("--graphite-prefix"),
+                            String::from("prod")];
 
         let expected = RequestLogAnalyzerArgs {
             filename: String::from("my-logfile.log"),
@@ -162,20 +167,21 @@ mod tests {
     #[test]
     fn test_parse_args_mutliple_include_exclude() {
         let raw_args = vec![String::from("request_log_analyzer"),
-                            String::from("--include"), String::from("one"),
-                            String::from("--include"), String::from("two"),
-                            String::from("--exclude"), String::from("this other"),
-                            String::from("--exclude"), String::from("more"),
-                            String::from("my-logfile.log"),
-                            ];
+                            String::from("--include"),
+                            String::from("one"),
+                            String::from("--include"),
+                            String::from("two"),
+                            String::from("--exclude"),
+                            String::from("this other"),
+                            String::from("--exclude"),
+                            String::from("more"),
+                            String::from("my-logfile.log")];
 
         let expected = RequestLogAnalyzerArgs {
             filename: String::from("my-logfile.log"),
             conditions: filter::FilterConditions {
-                include_terms: Some(vec![String::from("one"),
-                                         String::from("two")]),
-                exclude_terms: Some(vec![String::from("this other"),
-                                         String::from("more")]),
+                include_terms: Some(vec![String::from("one"), String::from("two")]),
+                exclude_terms: Some(vec![String::from("this other"), String::from("more")]),
                 latest_time: None,
             },
             graphite_server: None,
