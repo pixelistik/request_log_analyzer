@@ -8,7 +8,7 @@ license = "MIT"
 [dependencies]
 chrono = "0.2"
 streaming-stats = "0.1"
-clap = "2.12"
+clap = "2.20"
 log = "*"
 env_logger = "*"
 
