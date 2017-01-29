@@ -190,7 +190,7 @@ mod tests {
     fn test_filter_time_matches_not() {
         let mut pair = get_fixture();
         pair.request.time = UTC::now().with_timezone(&pair.request.time.timezone()) -
-                            Duration::minutes(12);;
+                            Duration::minutes(12);
 
         let conditions = FilterConditions {
             include_terms: None,
