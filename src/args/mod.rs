@@ -18,6 +18,7 @@ pub fn parse_args<'a, T>(args: T) -> Result<RequestLogAnalyzerArgs, &'a str>
     let app = App::new("Request.log Analyzer")
         .author(crate_authors!())
         .version(crate_version!())
+        .after_help(crate_description!())
         .arg(Arg::with_name("filename")
             .index(1)
             .value_name("FILE")

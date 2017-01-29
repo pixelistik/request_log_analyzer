@@ -4,6 +4,23 @@ version = "1.4.0"
 authors = ["pixelistik"]
 repository = "https://github.com/pixelistik/request_log_analyzer"
 license = "MIT"
+description = """
+Extracts some performance metrics from the request.log of a CQ/AEM instance.
+
+Example output:
+count:          54510 (number of analyzed requests)
+time.avg:       127
+time.min:       1
+time.median:    6
+time.90percent: 27
+time.max:       15747 (times are in milliseconds)
+
+License: MIT, see
+https://github.com/pixelistik/request_log_analyzer/blob/master/LICENSE
+https://crates.io/crates/clap
+https://crates.io/crates/chrono
+https://crates.io/crates/streaming-stats
+"""
 
 [dependencies]
 chrono = "0.2"
