@@ -37,9 +37,9 @@ fn main() {
         _ => Box::new(File::open(&args.filename).unwrap()),
     };
 
-    let (times, first_request_timezone) = extract_times(input, &args.conditions);
+    let (timings, first_request_timezone) = extract_timings(input, &args.conditions);
 
-    let result = analyzer::analyze(&times);
+    let result = analyzer::analyze(&timings);
 
     let mut stream;
     let mut renderer: Box<Renderer>;
@@ -65,15 +65,15 @@ fn main() {
     }
 }
 
-fn extract_times(input: Box<io::Read>,
-                 conditions: &filter::FilterConditions)
-                 -> (Vec<i64>, Option<chrono::FixedOffset>) {
+fn extract_timings(input: Box<io::Read>,
+                   conditions: &filter::FilterConditions)
+                   -> (Vec<i64>, Option<chrono::FixedOffset>) {
     let reader = io::BufReader::new(input);
     let lines = reader.lines();
 
     let mut requests: Vec<Request> = Vec::new();
     let mut responses: Vec<Response> = Vec::new();
-    let mut times: Vec<i64> = Vec::new();
+    let mut timings: Vec<i64> = Vec::new();
 
     // Store the timezone of the first Request
     let mut first_request_timezone: Option<chrono::FixedOffset> = None;
@@ -97,61 +97,62 @@ fn extract_times(input: Box<io::Read>,
 
                 let pairs = extract_matching_request_response_pairs(&mut requests, &mut responses);
 
-                let mut new_times: Vec<i64> = pairs.iter()
+                let mut new_timings: Vec<i64> = pairs.iter()
                     .filter(|pair| filter::matches_filter(&pair, conditions))
                     .map(|pair| pair.response.response_time.num_milliseconds())
                     .collect();
 
-                times.append(&mut new_times);
+                timings.append(&mut new_timings);
             }
             Err(err) => warn!("{}", err),
         }
     }
-    (times, first_request_timezone)
+    (timings, first_request_timezone)
 }
 
 #[test]
-fn test_extract_times() {
+fn test_extract_timings() {
     let conditions = filter::FilterConditions {
         include_terms: None,
         exclude_terms: None,
         latest_time: None,
     };
 
-    let (times, timezone) = extract_times(Box::new(File::open("src/test/simple-1.log").unwrap()),
-                                          &conditions);
+    let (timings, timezone) = extract_timings(Box::new(File::open("src/test/simple-1.log")
+                                                  .unwrap()),
+                                              &conditions);
 
     let expected_timezone = Some(chrono::FixedOffset::east(2 * 60 * 60));
 
-    assert_eq!(times, vec![7, 10]);
+    assert_eq!(timings, vec![7, 10]);
     assert_eq!(timezone, expected_timezone);
 }
 
 #[test]
-fn test_extract_times_ignore_broken_lines() {
+fn test_extract_timings_ignore_broken_lines() {
     let conditions = filter::FilterConditions {
         include_terms: None,
         exclude_terms: None,
         latest_time: None,
     };
 
-    let (times, _) = extract_times(Box::new(File::open("src/test/broken.log").unwrap()),
-                                   &conditions);
+    let (timings, _) = extract_timings(Box::new(File::open("src/test/broken.log").unwrap()),
+                                       &conditions);
 
-    assert_eq!(times, vec![7]);
+    assert_eq!(timings, vec![7]);
 }
 
 #[test]
-fn test_extract_times_different_timezone() {
+fn test_extract_timings_different_timezone() {
     let conditions = filter::FilterConditions {
         include_terms: None,
         exclude_terms: None,
         latest_time: None,
     };
 
-    let (_, timezone) = extract_times(Box::new(File::open("src/test/different-timezone.log")
-                                          .unwrap()),
-                                      &conditions);
+    let (_, timezone) = extract_timings(Box::new(File::open("src/test/different-timezone.log")
+                                            .unwrap()),
+                                        &conditions);
 
     let expected_timezone = Some(chrono::FixedOffset::east(-1 * 60 * 60));
 
