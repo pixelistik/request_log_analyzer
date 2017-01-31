@@ -6,9 +6,7 @@ pub trait Renderer {
     fn render(&mut self, result: analyzer::RequestLogAnalyzerResult) -> ();
 }
 
-pub struct TerminalRenderer {
-
-}
+pub struct TerminalRenderer {}
 
 impl TerminalRenderer {
     pub fn new() -> TerminalRenderer {
@@ -28,13 +26,13 @@ impl Renderer for TerminalRenderer {
 }
 
 pub struct GraphiteRenderer<'a> {
-    time: DateTime<FixedOffset>,
+    time: DateTime<UTC>,
     prefix: Option<String>,
     stream: &'a mut Write,
 }
 
 impl<'a> GraphiteRenderer<'a> {
-    pub fn new(time: DateTime<FixedOffset>,
+    pub fn new(time: DateTime<UTC>,
                prefix: Option<String>,
                stream: &'a mut Write)
                -> GraphiteRenderer<'a> {
@@ -115,8 +113,13 @@ mod tests {
         }
     }
 
-    fn get_time_fixture() -> DateTime<FixedOffset> {
-        DateTime::parse_from_str("22/Sep/2016:22:41:59 +0200", "%d/%b/%Y:%H:%M:%S %z").unwrap()
+    fn get_time_fixture() -> DateTime<UTC> {
+        let time: DateTime<UTC> = DateTime::parse_from_str("22/Sep/2016:22:41:59 +0200",
+                                                           "%d/%b/%Y:%H:%M:%S %z")
+            .unwrap()
+            .with_timezone(&UTC);
+
+        time
     }
 
     #[test]
