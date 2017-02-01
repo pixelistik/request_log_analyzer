@@ -16,7 +16,6 @@ extern crate stats;
 extern crate clap;
 
 mod args;
-mod http_status;
 mod log_parser;
 use log_parser::parse_line;
 use log_parser::log_events::*;

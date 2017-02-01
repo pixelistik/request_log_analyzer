@@ -45,7 +45,6 @@ pub fn extract_matching_request_response_pairs(requests: &mut Vec<log_events::Re
 #[cfg(test)]
 mod tests {
     use chrono::*;
-    use http_status::*;
     use super::*;
     use log_parser;
 
@@ -56,7 +55,6 @@ mod tests {
                                     time: DateTime::parse_from_str("08/Apr/2016:09:57:47 +0200",
                                                                    "%d/%b/%Y:%H:%M:%S %z")
                                         .unwrap(),
-                                    url: "/some/path.html".to_string(),
                                     original_log_line: "whatever".to_string(),
                                 },
                                 log_parser::log_events::Request {
@@ -64,28 +62,17 @@ mod tests {
                                     time: DateTime::parse_from_str("08/Apr/2016:09:57:47 +0200",
                                                                    "%d/%b/%Y:%H:%M:%S %z")
                                         .unwrap(),
-                                    url: "/irrelevant.html".to_string(),
                                     original_log_line: "whatever".to_string(),
                                 }];
 
         let mut responses = vec![log_parser::log_events::Response {
                                      id: 1,
-                                     time: DateTime::parse_from_str("08/Apr/2016:09:57:47 +0200",
-                                                                    "%d/%b/%Y:%H:%M:%S %z")
-                                         .unwrap(),
-                                     mime_type: "text/html".to_string(),
                                      response_time: Duration::milliseconds(7),
-                                     http_status: HttpStatus::OK,
                                      original_log_line: "whatever".to_string(),
                                  },
                                  log_parser::log_events::Response {
                                      id: 99,
-                                     time: DateTime::parse_from_str("08/Apr/2016:09:58:47 +0200",
-                                                                    "%d/%b/%Y:%H:%M:%S %z")
-                                         .unwrap(),
-                                     mime_type: "text/html".to_string(),
                                      response_time: Duration::milliseconds(10),
-                                     http_status: HttpStatus::OK,
                                      original_log_line: "whatever".to_string(),
                                  }];
 
