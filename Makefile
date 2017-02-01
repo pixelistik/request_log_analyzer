@@ -11,7 +11,7 @@ test-no-run:
 
 .SECONDARY:
 
-perf: src/test/random-small.log src/test/random-big.log target/perf/v1.2.0.csv target/perf/v1.3.0.csv target/perf/master.csv
+perf: src/test/random-small.log src/test/random-big.log target/perf/v1.2.0.csv target/perf/v1.3.0.csv target/perf/v1.4.1.csv target/perf/master.csv
 	cat target/perf/*.csv > target/perf/all
 
 target/perf/%.csv: target/release/archive/%
