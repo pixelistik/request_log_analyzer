@@ -9,6 +9,8 @@ test:
 test-no-run:
 	cargo test --no-run
 
+.SECONDARY:
+
 perf: src/test/random-small.log src/test/random-big.log target/perf/v1.2.0.csv target/perf/v1.3.0.csv target/perf/master.csv
 	cat target/perf/*.csv > target/perf/all
 
