@@ -1,5 +1,3 @@
-//! A module to match and filter Request and Response events
-
 use log_parser::*;
 
 #[derive(Clone)]
