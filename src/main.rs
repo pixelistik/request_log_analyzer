@@ -63,16 +63,13 @@ fn main() {
 
 fn extract_timings(input: Box<io::Read>, conditions: &filter::FilterConditions) -> Vec<i64> {
     let reader = io::BufReader::new(input);
-    let lines = reader.lines();
 
     let mut requests: Vec<Request> = Vec::new();
     let mut responses: Vec<Response> = Vec::new();
     let mut timings: Vec<i64> = Vec::new();
 
-    for line in lines {
-        let line_value = &line.unwrap();
-
-        let parsed_line = parse_line(line_value);
+    for line in reader.lines() {
+        let parsed_line = parse_line(&line.unwrap());
 
         match parsed_line {
             Ok(event) => {
