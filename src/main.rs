@@ -4,27 +4,26 @@ use std::net::TcpStream;
 use std::fs::File;
 use std::env;
 
-#[macro_use]
-extern crate log;
-extern crate env_logger;
-
 extern crate chrono;
 use chrono::*;
 
-extern crate stats;
 #[macro_use]
 extern crate clap;
 
+extern crate env_logger;
+#[macro_use]
+extern crate log;
+
+extern crate stats;
+
+mod analyzer;
 mod args;
+mod filter;
 mod log_parser;
-use log_parser::parse_line;
 use log_parser::log_events::*;
+mod render;
 mod request_response_matcher;
 use request_response_matcher::*;
-mod filter;
-mod analyzer;
-mod render;
-use render::*;
 
 fn main() {
     env_logger::init().expect("Failed to initialize logging.");
@@ -37,20 +36,19 @@ fn main() {
     };
 
     let timings = extract_timings(input, &args.conditions);
-
     let result = analyzer::analyze(&timings);
 
     let mut stream;
-    let mut renderer: Box<Renderer>;
+    let mut renderer: Box<render::Renderer>;
 
     renderer = match args.graphite_server {
         Some(graphite_server) => {
             stream = TcpStream::connect((graphite_server.as_ref(), args.graphite_port.unwrap()))
                 .expect("Could not connect to the Graphite server");
 
-            Box::new(GraphiteRenderer::new(UTC::now(), args.graphite_prefix, &mut stream))
+            Box::new(render::GraphiteRenderer::new(UTC::now(), args.graphite_prefix, &mut stream))
         }
-        None => Box::new(TerminalRenderer::new()),
+        None => Box::new(render::TerminalRenderer::new()),
     };
 
     match result {
@@ -69,7 +67,7 @@ fn extract_timings(input: Box<io::Read>, conditions: &filter::FilterConditions) 
     let mut timings: Vec<i64> = Vec::new();
 
     for line in reader.lines() {
-        let parsed_line = parse_line(&line.expect("Failed to read line."));
+        let parsed_line = log_parser::parse_line(&line.expect("Failed to read line."));
 
         match parsed_line {
             Ok(event) => {
