@@ -27,13 +27,13 @@ mod render;
 use render::*;
 
 fn main() {
-    env_logger::init().unwrap();
+    env_logger::init().expect("Failed to initialize logging.");
 
-    let args = args::parse_args(env::args()).unwrap();
+    let args = args::parse_args(env::args()).expect("Failed to parse arguments.");
 
     let input: Box<io::Read> = match args.filename.as_ref() {
         "-" => Box::new(io::stdin()),
-        _ => Box::new(File::open(&args.filename).unwrap()),
+        _ => Box::new(File::open(&args.filename).expect("Failed to open file.")),
     };
 
     let timings = extract_timings(input, &args.conditions);
@@ -69,7 +69,7 @@ fn extract_timings(input: Box<io::Read>, conditions: &filter::FilterConditions) 
     let mut timings: Vec<i64> = Vec::new();
 
     for line in reader.lines() {
-        let parsed_line = parse_line(&line.unwrap());
+        let parsed_line = parse_line(&line.expect("Failed to read line."));
 
         match parsed_line {
             Ok(event) => {
