@@ -26,7 +26,6 @@ pub fn parse_line(line: &String) -> Result<LogEvent, &'static str> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use super::log_events::*;
 
     #[test]
     fn test_parse_line_request() {

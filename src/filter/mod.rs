@@ -48,7 +48,6 @@ pub fn matches_filter(pair: &RequestResponsePair, conditions: &FilterConditions)
 #[cfg(test)]
 mod tests {
     use log_parser::log_events::*;
-    use request_response_matcher::*;
     use chrono::*;
     use super::*;
 
