@@ -30,33 +30,41 @@ fn main() {
 
     let args = args::parse_args(env::args()).expect("Failed to parse arguments.");
 
-    let input: Box<io::Read> = match args.filename.as_ref() {
-        "-" => Box::new(io::stdin()),
-        _ => Box::new(File::open(&args.filename).expect("Failed to open file.")),
+    fn run(args: &args::RequestLogAnalyzerArgs) {
+        let input: Box<io::Read> = match args.filename.as_ref() {
+            "-" => Box::new(io::stdin()),
+            _ => Box::new(File::open(&args.filename).expect("Failed to open file.")),
+        };
+
+        let timings = extract_timings(input, &args.conditions);
+        let result = analyzer::analyze(&timings);
+
+        let mut stream;
+        let mut renderer: Box<render::Renderer>;
+
+        renderer = match args.graphite_server {
+            Some(ref graphite_server) => {
+                stream = TcpStream::connect((graphite_server.as_ref(),
+                                             args.graphite_port.unwrap()))
+                    .expect("Could not connect to the Graphite server");
+
+                Box::new(render::GraphiteRenderer::new(UTC::now(),
+                                                       args.graphite_prefix.clone(),
+                                                       &mut stream))
+            }
+            None => Box::new(render::TerminalRenderer::new()),
+        };
+
+        match result {
+            Some(result) => {
+                renderer.render(result);
+            }
+            None => warn!("No matching log lines in file."),
+        }
     };
 
-    let timings = extract_timings(input, &args.conditions);
-    let result = analyzer::analyze(&timings);
-
-    let mut stream;
-    let mut renderer: Box<render::Renderer>;
-
-    renderer = match args.graphite_server {
-        Some(graphite_server) => {
-            stream = TcpStream::connect((graphite_server.as_ref(), args.graphite_port.unwrap()))
-                .expect("Could not connect to the Graphite server");
-
-            Box::new(render::GraphiteRenderer::new(UTC::now(), args.graphite_prefix, &mut stream))
-        }
-        None => Box::new(render::TerminalRenderer::new()),
-    };
-
-    match result {
-        Some(result) => {
-            renderer.render(result);
-        }
-        None => warn!("No matching log lines in file."),
-    }
+    run(&args);
+    run(&args);
 }
 
 fn extract_timings(input: Box<io::Read>, conditions: &filter::FilterConditions) -> Vec<i64> {
