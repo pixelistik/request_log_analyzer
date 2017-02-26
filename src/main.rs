@@ -16,6 +16,16 @@ extern crate log;
 
 extern crate stats;
 
+#[macro_use]
+extern crate prometheus;
+extern crate hyper;
+
+use hyper::header::ContentType;
+use hyper::server;
+use hyper::mime::Mime;
+
+use prometheus::{Gauge, Encoder, TextEncoder};
+
 mod analyzer;
 mod args;
 mod filter;
@@ -30,7 +40,7 @@ fn main() {
 
     let args = args::parse_args(env::args()).expect("Failed to parse arguments.");
 
-    fn run(args: &args::RequestLogAnalyzerArgs) {
+    fn run(args: &args::RequestLogAnalyzerArgs) -> Option<analyzer::RequestLogAnalyzerResult> {
         let input: Box<io::Read> = match args.filename.as_ref() {
             "-" => Box::new(io::stdin()),
             _ => Box::new(File::open(&args.filename).expect("Failed to open file.")),
@@ -39,32 +49,60 @@ fn main() {
         let timings = extract_timings(input, &args.conditions);
         let result = analyzer::analyze(&timings);
 
-        let mut stream;
-        let mut renderer: Box<render::Renderer>;
-
-        renderer = match args.graphite_server {
-            Some(ref graphite_server) => {
-                stream = TcpStream::connect((graphite_server.as_ref(),
-                                             args.graphite_port.unwrap()))
-                    .expect("Could not connect to the Graphite server");
-
-                Box::new(render::GraphiteRenderer::new(UTC::now(),
-                                                       args.graphite_prefix.clone(),
-                                                       &mut stream))
-            }
-            None => Box::new(render::TerminalRenderer::new()),
-        };
-
-        match result {
-            Some(result) => {
-                renderer.render(result);
-            }
-            None => warn!("No matching log lines in file."),
-        }
+        result
     };
 
+    let result = run(&args);
     run(&args);
-    run(&args);
+
+    let mut stream;
+    let mut renderer: Box<render::Renderer>;
+
+    renderer = match args.graphite_server {
+        Some(ref graphite_server) => {
+            stream = TcpStream::connect((graphite_server.as_ref(), args.graphite_port.unwrap()))
+                .expect("Could not connect to the Graphite server");
+
+            Box::new(render::GraphiteRenderer::new(UTC::now(),
+                                                   args.graphite_prefix.clone(),
+                                                   &mut stream))
+        }
+        None => Box::new(render::TerminalRenderer::new()),
+    };
+
+    match result {
+        Some(result) => {
+            renderer.render(result);
+        }
+        None => warn!("No matching log lines in file."),
+    }
+
+    let http_body_gauge: Gauge = register_gauge!(opts!("example_http_response_size_bytes",
+                                                       "The HTTP response sizes in bytes.",
+                                                       labels!{"handler" => "all",}))
+        .unwrap();
+
+    let encoder = TextEncoder::new();
+    let addr = "127.0.0.1:9898";
+    println!("listening addr {:?}", addr);
+    hyper::server::Server::http(addr)
+        .unwrap()
+        .handle(move |_: hyper::server::Request, mut res: hyper::server::Response| {
+
+            let result = run(&args);
+
+            http_body_gauge.set(result.unwrap().count as f64);
+
+            let metric_familys = prometheus::gather();
+            let mut buffer = vec![];
+
+            encoder.encode(&metric_familys, &mut buffer).unwrap();
+
+            res.headers_mut()
+                .set(ContentType(encoder.format_type().parse::<Mime>().unwrap()));
+            res.send(&buffer).unwrap();
+        })
+        .unwrap();
 }
 
 fn extract_timings(input: Box<io::Read>, conditions: &filter::FilterConditions) -> Vec<i64> {
