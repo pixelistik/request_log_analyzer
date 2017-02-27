@@ -17,11 +17,8 @@ extern crate log;
 extern crate stats;
 
 extern crate prometheus;
+use prometheus::Encoder;
 extern crate hyper;
-
-use hyper::header::ContentType;
-use hyper::server;
-use hyper::mime::Mime;
 
 mod analyzer;
 mod args;
@@ -85,8 +82,11 @@ fn main() {
 
             let mut renderer = render::prometheus::PrometheusRenderer::new();
             renderer.render(result.unwrap());
-            // res.headers_mut()
-            //     .set(ContentType(encoder.format_type().parse::<Mime>().unwrap()));
+            res.headers_mut()
+                .set(hyper::header::ContentType(renderer.encoder
+                    .format_type()
+                    .parse::<hyper::mime::Mime>()
+                    .unwrap()));
             res.send(&renderer.buffer).unwrap();
         })
         .unwrap();

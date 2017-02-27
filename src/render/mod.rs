@@ -1,5 +1,4 @@
 pub mod prometheus;
-use prometheus::*;
 
 use std::io::prelude::*;
 use chrono::*;

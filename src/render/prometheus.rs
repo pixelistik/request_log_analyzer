@@ -1,11 +1,10 @@
 use prometheus::{Registry, Gauge, Encoder, TextEncoder};
-use std::collections::HashMap;
 
 use super::*;
 pub struct PrometheusRenderer {
     pub buffer: Vec<u8>,
     registry: prometheus::Registry,
-    encoder: prometheus::TextEncoder,
+    pub encoder: prometheus::TextEncoder,
     count: prometheus::Gauge,
     max: prometheus::Gauge,
     min: prometheus::Gauge,
