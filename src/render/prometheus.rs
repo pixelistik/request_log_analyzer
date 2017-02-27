@@ -16,31 +16,29 @@ pub struct PrometheusRenderer {
 
 impl PrometheusRenderer {
     pub fn new() -> PrometheusRenderer {
-        let registry = prometheus::Registry::new();
-
-        let gauge_names =
-            vec!["count", "time_max", "time_min", "time_avg", "time_median", "time_percentile90"];
-        let mut gauges = HashMap::new();
-
-        for gauge_name in gauge_names {
-            let gauge_name = format!("request_{}", gauge_name);
-            let gauge = prometheus::Gauge::new(gauge_name.clone(),
+        fn make_and_register_gauge(gauge_name: &str,
+                                   registry: &prometheus::Registry)
+                                   -> prometheus::Gauge {
+            let gauge = prometheus::Gauge::new(String::from(gauge_name),
                                                format!("The {} of response times.", gauge_name))
-                .unwrap();
+                .expect("Failed to create Prometheus gauge.");
+
             registry.register(Box::new(gauge.clone()));
-            gauges.insert(gauge_name, gauge);
+            gauge
         }
 
+        let registry = prometheus::Registry::new();
+
         PrometheusRenderer {
-            registry: registry,
             buffer: Vec::new(),
             encoder: prometheus::TextEncoder::new(),
-            count: gauges.remove("request_count").unwrap(),
-            max: gauges.remove("request_time_max").unwrap(),
-            min: gauges.remove("request_time_min").unwrap(),
-            avg: gauges.remove("request_time_avg").unwrap(),
-            median: gauges.remove("request_time_median").unwrap(),
-            percentile90: gauges.remove("request_time_percentile90").unwrap(),
+            count: make_and_register_gauge("request_count", &registry),
+            max: make_and_register_gauge("request_time_max", &registry),
+            min: make_and_register_gauge("request_time_min", &registry),
+            avg: make_and_register_gauge("request_time_avg", &registry),
+            median: make_and_register_gauge("request_time_median", &registry),
+            percentile90: make_and_register_gauge("request_time_percentile90", &registry),
+            registry: registry,
         }
     }
 }
@@ -62,49 +60,21 @@ impl Renderer for PrometheusRenderer {
 
 #[cfg(test)]
 mod tests {
-    use std::io;
-    use std::io::prelude::*;
     use std::str;
-
     use super::*;
 
-    struct MockBuffer {
-        write_calls: Vec<String>,
-    }
-
-    impl Write for MockBuffer {
-        fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-            self.write_calls.push(str::from_utf8(buf).unwrap().to_string());
-            Ok(buf.len())
-        }
-
-        fn flush(&mut self) -> io::Result<()> {
-            Ok(())
-        }
-    }
-
-    fn get_result_fixture() -> analyzer::RequestLogAnalyzerResult {
-        analyzer::RequestLogAnalyzerResult {
+    #[test]
+    fn test_render_1() {
+        let result = analyzer::RequestLogAnalyzerResult {
             count: 3,
             max: 100,
             min: 1,
             avg: 37,
             median: 10,
             percentile90: 100,
-        }
-    }
-
-    #[test]
-    fn test_instantiation() {
-        let renderer = PrometheusRenderer::new();
-    }
-
-    #[test]
-    fn test_render() {
-        let result = get_result_fixture();
+        };
 
         let mut renderer = PrometheusRenderer::new();
-
         renderer.render(result);
 
         let buffer_text = str::from_utf8(&renderer.buffer).unwrap();
@@ -114,5 +84,28 @@ mod tests {
         assert!(buffer_text.contains("request_time_avg 37"));
         assert!(buffer_text.contains("request_time_median 10"));
         assert!(buffer_text.contains("request_time_percentile90 100"));
+    }
+
+    #[test]
+    fn test_render_2() {
+        let result = analyzer::RequestLogAnalyzerResult {
+            count: 300,
+            max: 1000,
+            min: 10,
+            avg: 42,
+            median: 75,
+            percentile90: 900,
+        };
+
+        let mut renderer = PrometheusRenderer::new();
+        renderer.render(result);
+
+        let buffer_text = str::from_utf8(&renderer.buffer).unwrap();
+        assert!(buffer_text.contains("request_count 300"));
+        assert!(buffer_text.contains("request_time_max 1000"));
+        assert!(buffer_text.contains("request_time_min 10"));
+        assert!(buffer_text.contains("request_time_avg 42"));
+        assert!(buffer_text.contains("request_time_median 75"));
+        assert!(buffer_text.contains("request_time_percentile90 900"));
     }
 }
