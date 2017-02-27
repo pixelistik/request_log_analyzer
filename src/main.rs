@@ -16,7 +16,6 @@ extern crate log;
 
 extern crate stats;
 
-#[macro_use]
 extern crate prometheus;
 extern crate hyper;
 
@@ -24,14 +23,13 @@ use hyper::header::ContentType;
 use hyper::server;
 use hyper::mime::Mime;
 
-use prometheus::{Gauge, Encoder, TextEncoder};
-
 mod analyzer;
 mod args;
 mod filter;
 mod log_parser;
 use log_parser::log_events::*;
 mod render;
+use render::Renderer;
 mod request_response_matcher;
 use request_response_matcher::*;
 
@@ -77,12 +75,6 @@ fn main() {
         None => warn!("No matching log lines in file."),
     }
 
-    let http_body_gauge: Gauge = register_gauge!(opts!("example_http_response_size_bytes",
-                                                       "The HTTP response sizes in bytes.",
-                                                       labels!{"handler" => "all",}))
-        .unwrap();
-
-    let encoder = TextEncoder::new();
     let addr = "127.0.0.1:9898";
     println!("listening addr {:?}", addr);
     hyper::server::Server::http(addr)
@@ -91,15 +83,14 @@ fn main() {
 
             let result = run(&args);
 
-            http_body_gauge.set(result.unwrap().count as f64);
-
-            let metric_familys = prometheus::gather();
             let mut buffer = vec![];
 
-            encoder.encode(&metric_familys, &mut buffer).unwrap();
-
-            res.headers_mut()
-                .set(ContentType(encoder.format_type().parse::<Mime>().unwrap()));
+            {
+                let mut renderer = render::prometheus::PrometheusRenderer::new(&mut buffer);
+                renderer.render(result.unwrap());
+            }
+            // res.headers_mut()
+            //     .set(ContentType(encoder.format_type().parse::<Mime>().unwrap()));
             res.send(&buffer).unwrap();
         })
         .unwrap();
