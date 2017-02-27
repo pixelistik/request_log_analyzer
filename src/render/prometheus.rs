@@ -1,6 +1,3 @@
-extern crate prometheus;
-extern crate hyper;
-
 use prometheus::{Registry, Gauge, Encoder, TextEncoder};
 
 use super::*;
@@ -15,7 +12,8 @@ impl<'a> PrometheusRenderer<'a> {
     pub fn new(stream: &'a mut Write) -> PrometheusRenderer<'a> {
         let registry = prometheus::Registry::new();
 
-        let count = prometheus::Gauge::new("count", "The number of responses observed").unwrap();
+        let count = prometheus::Gauge::new("request_count", "The number of responses observed")
+            .unwrap();
 
         registry.register(Box::new(count.clone()));
 
@@ -94,17 +92,17 @@ mod tests {
         println!("{:?}", mock_buffer.write_calls);
 
         assert_eq!(&mock_buffer.write_calls[0], "# HELP ");
-        assert_eq!(&mock_buffer.write_calls[1], "count");
+        assert_eq!(&mock_buffer.write_calls[1], "request_count");
         assert_eq!(&mock_buffer.write_calls[2], " ");
         assert_eq!(&mock_buffer.write_calls[3],
                    "The number of responses observed");
         assert_eq!(&mock_buffer.write_calls[4], "\n");
         assert_eq!(&mock_buffer.write_calls[5], "# TYPE ");
-        assert_eq!(&mock_buffer.write_calls[6], "count");
+        assert_eq!(&mock_buffer.write_calls[6], "request_count");
         assert_eq!(&mock_buffer.write_calls[7], " ");
         assert_eq!(&mock_buffer.write_calls[8], "gauge");
         assert_eq!(&mock_buffer.write_calls[9], "\n");
-        assert_eq!(&mock_buffer.write_calls[10], "count");
+        assert_eq!(&mock_buffer.write_calls[10], "request_count");
         assert_eq!(&mock_buffer.write_calls[11], " ");
         assert_eq!(&mock_buffer.write_calls[12], "3");
         assert_eq!(&mock_buffer.write_calls[13], "\n");
