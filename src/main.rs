@@ -83,15 +83,11 @@ fn main() {
 
             let result = run(&args);
 
-            let mut buffer = vec![];
-
-            {
-                let mut renderer = render::prometheus::PrometheusRenderer::new(&mut buffer);
-                renderer.render(result.unwrap());
-            }
+            let mut renderer = render::prometheus::PrometheusRenderer::new();
+            renderer.render(result.unwrap());
             // res.headers_mut()
             //     .set(ContentType(encoder.format_type().parse::<Mime>().unwrap()));
-            res.send(&buffer).unwrap();
+            res.send(&renderer.buffer).unwrap();
         })
         .unwrap();
 }
