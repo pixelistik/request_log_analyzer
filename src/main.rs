@@ -59,9 +59,12 @@ fn main() {
         None => warn!("No matching log lines in file."),
     }
 
-    let addr = "127.0.0.1:9898";
-    println!("listening addr {:?}", addr);
-    hyper::server::Server::http(addr)
+    listen_http(args, "127.0.0.1:9898");
+}
+
+fn listen_http(args: args::RequestLogAnalyzerArgs, binding_address: &str) {
+    info!("listening addr {:?}", binding_address);
+    hyper::server::Server::http(binding_address)
         .unwrap()
         .handle(move |_: hyper::server::Request, mut res: hyper::server::Response| {
 
