@@ -35,20 +35,7 @@ fn main() {
 
     let args = args::parse_args(env::args()).expect("Failed to parse arguments.");
 
-    fn run(args: &args::RequestLogAnalyzerArgs) -> Option<analyzer::RequestLogAnalyzerResult> {
-        let input: Box<io::Read> = match args.filename.as_ref() {
-            "-" => Box::new(io::stdin()),
-            _ => Box::new(File::open(&args.filename).expect("Failed to open file.")),
-        };
-
-        let timings = extract_timings(input, &args.conditions);
-        let result = analyzer::analyze(&timings);
-
-        result
-    };
-
     let result = run(&args);
-    run(&args);
 
     let mut stream;
     let mut renderer: Box<render::Renderer>;
@@ -90,6 +77,18 @@ fn main() {
             res.send(&renderer.buffer).unwrap();
         })
         .unwrap();
+}
+
+fn run(args: &args::RequestLogAnalyzerArgs) -> Option<analyzer::RequestLogAnalyzerResult> {
+    let input: Box<io::Read> = match args.filename.as_ref() {
+        "-" => Box::new(io::stdin()),
+        _ => Box::new(File::open(&args.filename).expect("Failed to open file.")),
+    };
+
+    let timings = extract_timings(input, &args.conditions);
+    let result = analyzer::analyze(&timings);
+
+    result
 }
 
 fn extract_timings(input: Box<io::Read>, conditions: &filter::FilterConditions) -> Vec<i64> {
