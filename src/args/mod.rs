@@ -166,7 +166,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_args_mutliple_include_exclude() {
+    fn test_parse_args_multiple_include_exclude() {
         let raw_args = vec![String::from("request_log_analyzer"),
                             String::from("--include"),
                             String::from("one"),
