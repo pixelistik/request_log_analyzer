@@ -150,3 +150,21 @@ fn test_extract_timings_ignore_broken_lines() {
 
     assert_eq!(timings, vec![7]);
 }
+
+#[test]
+fn test_run() {
+    let args = args::RequestLogAnalyzerArgs {
+        filename: String::from("src/test/simple-1.log"),
+        conditions: filter::FilterConditions {
+            include_terms: None,
+            exclude_terms: None,
+            latest_time: None,
+        },
+        graphite_server: None,
+        graphite_port: Some(2003),
+        graphite_prefix: None,
+    };
+
+    let result = run(&args).unwrap();
+    assert_eq!(result.count, 2);
+}
