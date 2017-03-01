@@ -59,7 +59,11 @@ fn main() {
         None => warn!("No matching log lines in file."),
     }
 
-    listen_http(args, "127.0.0.1:9898");
+    if args.prometheus_listen.is_some() {
+        let binding_address = args.prometheus_listen.clone().unwrap();
+        listen_http(args, &binding_address);
+    }
+
 }
 
 fn listen_http(args: args::RequestLogAnalyzerArgs, binding_address: &str) {
@@ -166,6 +170,7 @@ fn test_run() {
         graphite_server: None,
         graphite_port: Some(2003),
         graphite_prefix: None,
+        prometheus_listen: None,
     };
 
     let result = run(&args).unwrap();

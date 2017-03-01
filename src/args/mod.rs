@@ -10,6 +10,7 @@ pub struct RequestLogAnalyzerArgs {
     pub graphite_server: Option<String>,
     pub graphite_port: Option<u16>,
     pub graphite_prefix: Option<String>,
+    pub prometheus_listen: Option<String>,
 }
 
 pub fn parse_args<'a, T>(args: T) -> Result<RequestLogAnalyzerArgs, &'a str>
@@ -59,6 +60,11 @@ pub fn parse_args<'a, T>(args: T) -> Result<RequestLogAnalyzerArgs, &'a str>
             .long("graphite-prefix")
             .help("Prefix for Graphite key, e.g. 'servers.prod.publisher1'")
             .takes_value(true))
+        .arg(Arg::with_name("prometheus-listen")
+            .value_name("BINDING_ADDRESS")
+            .long("prometheus-listen")
+            .help("Address and port to bind Prometheus HTTP server to, e.g. 'localhost:9898'")
+            .takes_value(true))
         .get_matches_from(args);
 
     let filename = app.value_of("filename").unwrap_or("-").to_string();
@@ -95,12 +101,18 @@ pub fn parse_args<'a, T>(args: T) -> Result<RequestLogAnalyzerArgs, &'a str>
         None => None,
     };
 
+    let prometheus_listen = match app.value_of("prometheus-listen") {
+        Some(value) => Some(String::from(value)),
+        None => None,
+    };
+
     Ok(RequestLogAnalyzerArgs {
         filename: filename,
         conditions: conditions,
         graphite_server: graphite_server,
         graphite_port: graphite_port,
         graphite_prefix: graphite_prefix,
+        prometheus_listen: prometheus_listen,
     })
 }
 
@@ -124,6 +136,7 @@ mod tests {
             graphite_server: None,
             graphite_port: Some(2003),
             graphite_prefix: None,
+            prometheus_listen: None,
         };
 
         let result = parse_args(raw_args).unwrap();
@@ -146,7 +159,9 @@ mod tests {
                             String::from("--graphite-port"),
                             String::from("4000"),
                             String::from("--graphite-prefix"),
-                            String::from("prod")];
+                            String::from("prod"),
+                            String::from("--prometheus-listen"),
+                            String::from("0.0.0.0:9898")];
 
         let expected = RequestLogAnalyzerArgs {
             filename: String::from("my-logfile.log"),
@@ -158,6 +173,7 @@ mod tests {
             graphite_server: Some(String::from("localhost")),
             graphite_port: Some(4000),
             graphite_prefix: Some(String::from("prod")),
+            prometheus_listen: Some(String::from("0.0.0.0:9898")),
         };
 
         let result = parse_args(raw_args).unwrap();
@@ -188,6 +204,7 @@ mod tests {
             graphite_server: None,
             graphite_port: Some(2003),
             graphite_prefix: None,
+            prometheus_listen: None,
         };
 
         let result = parse_args(raw_args).unwrap();
