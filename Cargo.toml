@@ -20,6 +20,8 @@ https://github.com/pixelistik/request_log_analyzer/blob/master/LICENSE
 https://crates.io/crates/clap
 https://crates.io/crates/chrono
 https://crates.io/crates/streaming-stats
+https://crates.io/crates/hyper
+https://crates.io/crates/prometheus
 """
 
 [dependencies]
