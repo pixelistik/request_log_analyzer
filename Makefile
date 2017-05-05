@@ -1,5 +1,7 @@
 all: test target/release/request_log_analyzer
 
+travis: coverage target/release/request_log_analyzer
+
 target/release/request_log_analyzer: src/
 	cargo build --release --verbose
 
