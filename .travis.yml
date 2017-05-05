@@ -1,5 +1,5 @@
 language: rust
-script: make travis
+script: make all
 rust:
   - stable
   - beta
