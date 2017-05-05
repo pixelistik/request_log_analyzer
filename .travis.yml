@@ -8,6 +8,11 @@ matrix:
   allow_failures:
     - rust: nightly
 
+addons:
+  apt:
+    packages:
+      - kcov
+
 deploy:
   provider: releases
   api_key: '$GITHUB_API_KEY'
