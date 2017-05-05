@@ -28,7 +28,7 @@ coverage: test-no-run
 # Example file name: request_log_analyzer-751ef51155a898c3
 # We are interested in the test binaries with a hash postfix
 # In this case, we simply look for the dash that separates the postfix...
-	$(eval LATEST_TEST_BINARY := $(shell ls target/debug/*-* -t1 | head -1))
+	$(eval LATEST_TEST_BINARY := $(shell ls -t1 `find target/debug -maxdepth 1 -type f -executable -name "*-*"` | head -1))
 # http://sunjay.ca/2016/07/25/rust-code-coverage
 	kcov --exclude-pattern=/.cargo,/usr/lib --verify target/cov $(LATEST_TEST_BINARY)
 
