@@ -7,7 +7,7 @@ test:
 	cargo test --verbose
 
 test-no-run:
-	cargo test --no-run
+	RUSTFLAGS='-C link-dead-code' cargo test --no-run
 
 .SECONDARY:
 
