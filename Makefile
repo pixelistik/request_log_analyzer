@@ -30,7 +30,7 @@ coverage: test-no-run
 # In this case, we simply look for the dash that separates the postfix...
 	$(eval LATEST_TEST_BINARY := $(shell ls -t1 `find target/debug -maxdepth 1 -type f -executable -name "*-*"` | head -1))
 # http://sunjay.ca/2016/07/25/rust-code-coverage
-	kcov --exclude-pattern=/.cargo,/usr/lib --verify target/cov $(LATEST_TEST_BINARY)
+	kcov --coveralls-id=$(COVERALLS_ID) --exclude-pattern=/.cargo,/usr/lib --verify target/cov $(LATEST_TEST_BINARY)
 
 src/test/random-small.log:
 	python src/test/generate_random_log.py 1000 > src/test/random-small.log
