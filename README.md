@@ -25,7 +25,9 @@ Clone the repository and run `cargo build`.
             --graphite-prefix <GRAPHITE_PREFIX>    Prefix for Graphite key, e.g. 'servers.prod.publisher1'
             --graphite-server <GRAPHITE_SERVER>    Send values to this Graphite server instead of stdout
             --include <TERM>...                    Only include lines that contain one of these terms
-        -t <MINUTES>                               Limit to the last n minutes
+            --prometheus-listen <BINDING_ADDRESS>
+            Address and port to bind Prometheus HTTP server to, e.g. 'localhost:9898'
+            -t <MINUTES>                           Limit to the last n minutes
 
     ARGS:
         <FILE>    Log file to analyze, defaults to stdin
