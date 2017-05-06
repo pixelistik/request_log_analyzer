@@ -17,7 +17,6 @@ extern crate log;
 extern crate stats;
 
 extern crate prometheus;
-use prometheus::Encoder;
 extern crate hyper;
 
 mod analyzer;
@@ -26,9 +25,9 @@ mod filter;
 mod log_parser;
 use log_parser::log_events::*;
 mod render;
-use render::Renderer;
 mod request_response_matcher;
 use request_response_matcher::*;
+mod http_handler;
 
 fn main() {
     env_logger::init().expect("Failed to initialize logging.");
@@ -56,39 +55,9 @@ fn main() {
 
     if args.prometheus_listen.is_some() {
         let binding_address = args.prometheus_listen.clone().unwrap();
-        listen_http(args, &binding_address);
+        http_handler::listen_http(args, &binding_address);
     }
 
-}
-
-struct HttpHandler {
-    args: args::RequestLogAnalyzerArgs,
-    run: fn(&args::RequestLogAnalyzerArgs) -> Option<analyzer::RequestLogAnalyzerResult>,
-}
-
-impl hyper::server::Handler for HttpHandler {
-    fn handle(&self, _: hyper::server::Request, mut res: hyper::server::Response) {
-        let result = (self.run)(&self.args);
-
-        let mut renderer = render::prometheus::PrometheusRenderer::new();
-        renderer.render(result);
-        res.headers_mut()
-            .set(hyper::header::ContentType(renderer.encoder
-                .format_type()
-                .parse::<hyper::mime::Mime>()
-                .unwrap()));
-        res.send(&renderer.buffer).unwrap();
-    }
-}
-
-fn listen_http(args: args::RequestLogAnalyzerArgs, binding_address: &str) {
-    let handler = HttpHandler {
-        args: args,
-        run: run,
-    };
-
-    info!("listening addr {:?}", binding_address);
-    hyper::server::Server::http(binding_address).unwrap().handle(handler).unwrap();
 }
 
 fn run(args: &args::RequestLogAnalyzerArgs) -> Option<analyzer::RequestLogAnalyzerResult> {
