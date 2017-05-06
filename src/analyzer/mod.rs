@@ -2,8 +2,7 @@ use stats::median;
 
 pub mod percentile;
 
-#[derive(PartialEq)]
-#[derive(Debug)]
+#[derive(PartialEq, Debug)]
 pub struct RequestLogAnalyzerResult {
     pub count: usize,
     pub max: usize,

@@ -1,14 +1,12 @@
 use chrono::*;
 
-#[derive(Debug)]
-#[derive(PartialEq)]
+#[derive(PartialEq,Debug)]
 pub enum LogEvent {
     Request(Request),
     Response(Response),
 }
 
-#[derive(Eq, PartialEq, Clone)]
-#[derive(Debug)]
+#[derive(Eq, PartialEq, Clone, Debug)]
 pub struct Request {
     pub id: i32,
     pub time: DateTime<FixedOffset>,
@@ -49,8 +47,7 @@ impl Request {
     }
 }
 
-#[derive(Eq, PartialEq, Clone)]
-#[derive(Debug)]
+#[derive(Eq, PartialEq, Clone, Debug)]
 pub struct Response {
     pub id: i32,
     pub response_time: Duration,

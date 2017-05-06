@@ -2,8 +2,7 @@ use clap::{Arg, App};
 use chrono::*;
 use filter;
 
-#[derive(Debug)]
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 pub struct RequestLogAnalyzerArgs {
     pub filename: String,
     pub conditions: filter::FilterConditions,
