@@ -25,7 +25,7 @@ https://crates.io/crates/prometheus
 """
 
 [dependencies]
-chrono = "0.2"
+chrono = "0.3"
 streaming-stats = "0.1"
 clap = "2.20"
 log = "*"
