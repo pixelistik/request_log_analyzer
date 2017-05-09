@@ -40,3 +40,95 @@ Clone the repository and run `cargo build`.
     time.median:	6
     time.90percent:	27
     time.max:	15747
+
+## Getting started
+
+### Analyze an entire log file
+
+Run the tool on a request.log file
+
+	$ request_log_analyzer crx-quickstart/logs/request.log
+	count:  1221
+	time.avg:       840
+	time.min:       0
+	time.median:    841
+	time.90percent: 1537
+	time.max:       1709
+
+Let's run through the results:
+
+There are 1218 request/response pairs in the log file.  
+The average response time was 840ms.  
+The fastest response was 0ms.  
+The median response time was 841ms.  
+The 90 percentile response time was 1537ms. That means that 90% of all requests were finished after 1537ms.  
+The slowest response was 1709ms.  
+
+### Include only certain requests
+
+Let's say we only care about the rendering of HTML pages, so we want to ignore anything else.
+
+	$ request_log_analyzer --include "text/html" crx-quickstart/logs/request.log
+
+Now the result only refers to data where either request or response line contains the specified `--include` term, in this case the MIME type "text/html"
+
+### Restrict to latest period
+
+Now we specifically want to look at the latest hour, because we suspect a recent problem:
+
+	$ request_log_analyzer -t 60 crx-quickstart/logs/request.log
+
+With the `-t` param, only the most recent _n_ minutes will be taken into account.
+
+### Combine everything
+
+	$ request_log_analyzer --include "text/html" \
+		--include "content/dam/" \
+		--exclude "POST" \
+		-t 180 \
+		crx-quickstart/logs/request.log
+
+We look at request/resonse lines that contain "text/html" (the MIME type) or a path from the DAM, but we exclude POST requests. Also, we are only interested in the latest 3 hours.
+
+### Piped log data
+
+If the built-in filtering options are not enough, we can use other tools for filtering the log lines and the pipe them into the tool for analysis:
+
+	$ grep "09:..:.." crx-quickstart/logs/request.log | request_log_analyzer
+
+Here we only look at the request/response lines from a specific hour.
+
+## Continuous monitoring
+
+### Graphite
+
+In the examples above, we used `request_log_analyzer` for individual insights.
+
+But it can also be used to continuously feed data into a Graphite or Prometheus data store, in order to be used for monitoring.
+
+	$ request_log_analyzer -t 5 \
+		--graphite-server localhost \
+		--graphite-prefix my-app.production.5min \
+		crx-quickstart/logs/request.log
+
+This will analyze the latest 5 minutes of the log file, then push it to a Graphite server running on localhost, storing the results under the keys
+
+	my-app.production.5min.requests.count
+	my-app.production.5min.requests.time.max
+	my-app.production.5min.requests.time.min
+
+etc.
+
+If you set this command up as a cronjob to run every 1 minute, you can constantly monitor the data for the previous 5 minute window.
+
+### Prometheus
+
+	$ request_log_analyzer -t 5 --prometheus-listen localhost:9898 crx-quickstart/logs/request.log
+
+This will start a Prometheus endpoint (a small HTTP server) on port 9898. Whenever the Prometheus server queries this endpoint, the latest 5 minutes of the `request.log` will be analyzed and the results will be provided under the keys
+
+	request_count
+	request_time_max
+	request_time_min
+
+etc. If you set up your Prometheus server to pull data from this endpoint, you can constantly monitor the data for the previous 5 minute window.
