@@ -52,12 +52,7 @@ fn main() {
         None => Box::new(render::TerminalRenderer::new()),
     };
 
-    match result {
-        Some(result) => {
-            renderer.render(result);
-        }
-        None => warn!("No matching log lines in file."),
-    }
+    renderer.render(result);
 
     if args.prometheus_listen.is_some() {
         let binding_address = args.prometheus_listen.clone().unwrap();
@@ -76,7 +71,7 @@ impl hyper::server::Handler for HttpHandler {
         let result = (self.run)(&self.args);
 
         let mut renderer = render::prometheus::PrometheusRenderer::new();
-        renderer.render(result.unwrap());
+        renderer.render(result);
         res.headers_mut()
             .set(hyper::header::ContentType(renderer.encoder
                 .format_type()

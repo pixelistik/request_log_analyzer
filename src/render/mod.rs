@@ -5,7 +5,7 @@ use chrono::*;
 use analyzer;
 
 pub trait Renderer {
-    fn render(&mut self, result: analyzer::RequestLogAnalyzerResult) -> ();
+    fn render(&mut self, result: Option<analyzer::RequestLogAnalyzerResult>) -> ();
 }
 
 pub struct TerminalRenderer {}
@@ -17,13 +17,18 @@ impl TerminalRenderer {
 }
 
 impl Renderer for TerminalRenderer {
-    fn render(&mut self, result: analyzer::RequestLogAnalyzerResult) -> () {
-        println!("count:\t{}", result.count);
-        println!("time.avg:\t{}", result.avg);
-        println!("time.min:\t{}", result.min);
-        println!("time.median:\t{}", result.median);
-        println!("time.90percent:\t{}", result.percentile90);
-        println!("time.max:\t{}", result.max);
+    fn render(&mut self, result: Option<analyzer::RequestLogAnalyzerResult>) -> () {
+        match result {
+            Some(result) => {
+                println!("count:\t{}", result.count);
+                println!("time.avg:\t{}", result.avg);
+                println!("time.min:\t{}", result.min);
+                println!("time.median:\t{}", result.median);
+                println!("time.90percent:\t{}", result.percentile90);
+                println!("time.max:\t{}", result.max);
+            }
+            None => warn!("No matching log lines in file."),
+        }
     }
 }
 
@@ -47,36 +52,41 @@ impl<'a> GraphiteRenderer<'a> {
 }
 
 impl<'a> Renderer for GraphiteRenderer<'a> {
-    fn render(&mut self, result: analyzer::RequestLogAnalyzerResult) -> () {
-        let prefix_text: String;
-        let prefix_separator: &str;
+    fn render(&mut self, result: Option<analyzer::RequestLogAnalyzerResult>) -> () {
+        match result {
+            Some(result) => {
+                let prefix_text: String;
+                let prefix_separator: &str;
 
-        match self.prefix {
-            Some(ref p) => {
-                prefix_text = p.clone();
-                prefix_separator = ".";
+                match self.prefix {
+                    Some(ref p) => {
+                        prefix_text = p.clone();
+                        prefix_separator = ".";
+                    }
+                    None => {
+                        prefix_text = String::from("");
+                        prefix_separator = "";
+                    }
+                };
+
+                let mut write = |text: String| {
+                    let _ = self.stream.write(format!("{}{}{} {}\n",
+                                                      prefix_text,
+                                                      prefix_separator,
+                                                      text,
+                                                      self.time.timestamp())
+                        .as_bytes());
+                };
+
+                write(format!("requests.count {}", result.count));
+                write(format!("requests.time.max {}", result.max));
+                write(format!("requests.time.min {}", result.min));
+                write(format!("requests.time.avg {}", result.avg));
+                write(format!("requests.time.median {}", result.median));
+                write(format!("requests.time.90percent {}", result.percentile90));
             }
-            None => {
-                prefix_text = String::from("");
-                prefix_separator = "";
-            }
-        };
-
-        let mut write = |text: String| {
-            let _ = self.stream.write(format!("{}{}{} {}\n",
-                                              prefix_text,
-                                              prefix_separator,
-                                              text,
-                                              self.time.timestamp())
-                .as_bytes());
-        };
-
-        write(format!("requests.count {}", result.count));
-        write(format!("requests.time.max {}", result.max));
-        write(format!("requests.time.min {}", result.min));
-        write(format!("requests.time.avg {}", result.avg));
-        write(format!("requests.time.median {}", result.median));
-        write(format!("requests.time.90percent {}", result.percentile90));
+            None => warn!("No matching log lines in file."),
+        }
     }
 }
 
@@ -104,15 +114,15 @@ mod tests {
         }
     }
 
-    fn get_result_fixture() -> analyzer::RequestLogAnalyzerResult {
-        analyzer::RequestLogAnalyzerResult {
+    fn get_result_fixture() -> Option<analyzer::RequestLogAnalyzerResult> {
+        Some(analyzer::RequestLogAnalyzerResult {
             count: 3,
             max: 100,
             min: 1,
             avg: 37,
             median: 10,
             percentile90: 100,
-        }
+        })
     }
 
     fn get_time_fixture() -> DateTime<UTC> {

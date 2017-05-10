@@ -44,19 +44,24 @@ impl PrometheusRenderer {
 }
 
 impl Renderer for PrometheusRenderer {
-    fn render(&mut self, result: analyzer::RequestLogAnalyzerResult) {
-        self.count.set(result.count as f64);
-        self.max.set(result.max as f64);
-        self.min.set(result.min as f64);
-        self.avg.set(result.avg as f64);
-        self.median.set(result.median as f64);
-        self.percentile90.set(result.percentile90 as f64);
+    fn render(&mut self, result: Option<analyzer::RequestLogAnalyzerResult>) {
+        match result {
+            Some(result) => {
+                self.count.set(result.count as f64);
+                self.max.set(result.max as f64);
+                self.min.set(result.min as f64);
+                self.avg.set(result.avg as f64);
+                self.median.set(result.median as f64);
+                self.percentile90.set(result.percentile90 as f64);
 
-        let metric_familys = self.registry.gather();
+                let metric_familys = self.registry.gather();
 
-        let _ = self.encoder
-            .encode(&metric_familys, &mut self.buffer)
-            .expect("Failed to encode Prometheus metrics.");
+                let _ = self.encoder
+                    .encode(&metric_familys, &mut self.buffer)
+                    .expect("Failed to encode Prometheus metrics.");
+            }
+            None => warn!("No matching log lines in file."),
+        }
     }
 }
 
@@ -67,14 +72,14 @@ mod tests {
 
     #[test]
     fn test_render_1() {
-        let result = analyzer::RequestLogAnalyzerResult {
+        let result = Some(analyzer::RequestLogAnalyzerResult {
             count: 3,
             max: 100,
             min: 1,
             avg: 37,
             median: 10,
             percentile90: 100,
-        };
+        });
 
         let mut renderer = PrometheusRenderer::new();
         renderer.render(result);
@@ -90,14 +95,14 @@ mod tests {
 
     #[test]
     fn test_render_2() {
-        let result = analyzer::RequestLogAnalyzerResult {
+        let result = Some(analyzer::RequestLogAnalyzerResult {
             count: 300,
             max: 1000,
             min: 10,
             avg: 42,
             median: 75,
             percentile90: 900,
-        };
+        });
 
         let mut renderer = PrometheusRenderer::new();
         renderer.render(result);
