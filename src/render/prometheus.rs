@@ -53,15 +53,16 @@ impl Renderer for PrometheusRenderer {
                 self.avg.set(result.avg as f64);
                 self.median.set(result.median as f64);
                 self.percentile90.set(result.percentile90 as f64);
-
-                let metric_familys = self.registry.gather();
-
-                let _ = self.encoder
-                    .encode(&metric_familys, &mut self.buffer)
-                    .expect("Failed to encode Prometheus metrics.");
             }
-            None => warn!("No matching log lines in file."),
+            None => {
+                warn!("No matching log lines in file.");
+            }
         }
+        let metric_familys = self.registry.gather();
+
+        let _ = self.encoder
+            .encode(&metric_familys, &mut self.buffer)
+            .expect("Failed to encode Prometheus metrics.");
     }
 }
 
@@ -114,5 +115,23 @@ mod tests {
         assert!(buffer_text.contains("request_time_avg 42"));
         assert!(buffer_text.contains("request_time_median 75"));
         assert!(buffer_text.contains("request_time_percentile90 900"));
+    }
+
+    #[test]
+    fn test_render_empty() {
+        let result = None;
+
+        let mut renderer = PrometheusRenderer::new();
+        renderer.render(result);
+
+        let buffer_text = str::from_utf8(&renderer.buffer).unwrap();
+        assert!(buffer_text.contains("request_count 0"));
+        // @TODO: Does NaN really exist with Prometheus?
+        // https://prometheus.io/docs/practices/instrumentation/#avoid-missing-metrics
+        // assert!(buffer_text.contains("request_time_max NaN"));
+        // assert!(buffer_text.contains("request_time_min NaN"));
+        // assert!(buffer_text.contains("request_time_avg NaN"));
+        // assert!(buffer_text.contains("request_time_median NaN"));
+        // assert!(buffer_text.contains("request_time_percentile90 NaN"));
     }
 }
