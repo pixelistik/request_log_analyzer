@@ -144,6 +144,13 @@ mod tests {
     }
 
     #[test]
+    fn test_terminal_renderer_empty() {
+        let mut renderer = TerminalRenderer::new();
+
+        renderer.render(None);
+    }
+
+    #[test]
     fn test_render_graphite() {
         let mut mock_tcp_stream = MockTcpStream { write_calls: vec![] };
 
@@ -190,5 +197,18 @@ mod tests {
                    "my_prefix.requests.time.median 10 1474576919\n");
         assert_eq!(&mock_tcp_stream.write_calls[5],
                    "my_prefix.requests.time.90percent 100 1474576919\n");
+    }
+
+    #[test]
+    fn test_render_graphite_empty() {
+        let mut mock_tcp_stream = MockTcpStream { write_calls: vec![] };
+
+        {
+            let mut renderer =
+                GraphiteRenderer::new(get_time_fixture(), None, &mut mock_tcp_stream);
+            renderer.render(None);
+        }
+
+        assert_eq!(mock_tcp_stream.write_calls.len(), 0);
     }
 }
