@@ -21,6 +21,7 @@ extern crate hyper;
 
 mod analyzer;
 mod timing_analyzer;
+use timing_analyzer::Timing;
 mod args;
 mod filter;
 mod log_parser;
@@ -94,7 +95,7 @@ fn extract_timings(input: Box<io::Read>, conditions: &filter::FilterConditions) 
 
                 let mut new_timings: Vec<i64> = pairs.iter()
                     .filter(|pair| filter::matches_filter(&pair, conditions))
-                    .map(|pair| pair.response.response_time.num_milliseconds())
+                    .map(|pair| pair.num_milliseconds())
                     .collect();
 
                 timings.append(&mut new_timings);

@@ -1,4 +1,5 @@
 use log_parser::*;
+use timing_analyzer::Timing;
 
 #[derive(Clone, Debug)]
 pub struct RequestResponsePair {
@@ -39,11 +40,18 @@ pub fn extract_matching_request_response_pairs(requests: &mut Vec<log_events::Re
     request_response_pairs
 }
 
+impl Timing for RequestResponsePair {
+    fn num_milliseconds(&self) -> i64 {
+        self.response.response_time.num_milliseconds()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use chrono::*;
     use super::*;
     use log_parser;
+    use timing_analyzer::Timing;
 
     #[test]
     fn test_extract_matching_request_response_pairs() {
@@ -81,5 +89,26 @@ mod tests {
 
         assert_eq!(requests.len(), 1);
         assert_eq!(responses.len(), 1);
+    }
+
+    #[test]
+    fn test_timing_trait() {
+        let timing: &Timing = &RequestResponsePair {
+            request: log_parser::log_events::Request {
+                id: 1,
+                time: DateTime::parse_from_str("08/Apr/2016:09:57:47 +0200",
+                                               "%d/%b/%Y:%H:%M:%S %z")
+                    .unwrap(),
+                original_log_line: "whatever".to_string(),
+            },
+            response: log_parser::log_events::Response {
+                id: 1,
+                response_time: Duration::milliseconds(7),
+                original_log_line: "whatever".to_string(),
+            },
+        } as &Timing;
+
+        let result: i64 = timing.num_milliseconds();
+        assert_eq!(result, 7);
     }
 }
