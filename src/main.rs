@@ -20,6 +20,7 @@ extern crate prometheus;
 extern crate hyper;
 
 mod analyzer;
+mod timing_analyzer;
 mod args;
 mod filter;
 mod log_parser;
