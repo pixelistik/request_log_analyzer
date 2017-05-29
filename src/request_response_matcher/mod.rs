@@ -1,5 +1,5 @@
 use log_parser::*;
-use timing_analyzer::Timing;
+use analyzer::Timing;
 
 #[derive(Clone, Debug)]
 pub struct RequestResponsePair {
@@ -57,7 +57,7 @@ mod tests {
     use chrono::*;
     use super::*;
     use log_parser;
-    use timing_analyzer::Timing;
+    use analyzer::Timing;
 
     #[test]
     fn test_extract_matching_request_response_pairs() {

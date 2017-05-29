@@ -1,4 +1,5 @@
 use stats::median;
+use request_response_matcher;
 
 pub mod percentile;
 
@@ -12,10 +13,22 @@ pub struct RequestLogAnalyzerResult {
     pub percentile90: usize,
 }
 
-pub fn analyze(times: &Vec<i64>) -> Option<RequestLogAnalyzerResult> {
-    if times.len() == 0 {
+pub trait Timing {
+    fn num_milliseconds(&self) -> i64;
+}
+
+pub fn analyze<T>(timings: &Vec<T>) -> Option<RequestLogAnalyzerResult>
+    where T: Timing
+{
+
+    if timings.len() == 0 {
         return None;
     }
+
+    let times: Vec<i64> = timings.iter()
+        .map(|timing| timing.num_milliseconds())
+        .collect();
+
 
     let sum: usize = times.iter().sum::<i64>() as usize;
     let avg: usize = sum / times.len();
@@ -41,6 +54,12 @@ pub fn analyze(times: &Vec<i64>) -> Option<RequestLogAnalyzerResult> {
 mod tests {
     use super::*;
 
+    impl Timing for i64 {
+        fn num_milliseconds(&self) -> i64 {
+            self.clone()
+        }
+    }
+
     #[test]
     fn test_analyze() {
         let times: Vec<i64> = vec![1, 10, 100];
@@ -61,7 +80,7 @@ mod tests {
 
     #[test]
     fn test_analyze_empty() {
-        let times = vec![];
+        let times: Vec<i64> = vec![];
 
         let result = analyze(&times);
 
