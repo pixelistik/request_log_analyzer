@@ -46,6 +46,12 @@ impl Timing for RequestResponsePair {
     }
 }
 
+impl Timing for Box<Timing> {
+    fn num_milliseconds(&self) -> i64 {
+        (**self).num_milliseconds()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use chrono::*;
@@ -109,6 +115,11 @@ mod tests {
         } as &Timing;
 
         let result: i64 = timing.num_milliseconds();
+        assert_eq!(result, 7);
+
+        let boxed_timing = Box::new(timing);
+
+        let result: i64 = boxed_timing.num_milliseconds();
         assert_eq!(result, 7);
     }
 }
