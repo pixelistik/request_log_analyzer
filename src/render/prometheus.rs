@@ -22,7 +22,7 @@ impl PrometheusRenderer {
                                                format!("The {} of response times.", gauge_name))
                 .expect("Failed to create Prometheus gauge.");
 
-            let _ = registry.register(Box::new(gauge.clone()))
+            registry.register(Box::new(gauge.clone()))
                 .expect("Failed to register Prometheus gauge.");
             gauge
         }
@@ -60,7 +60,7 @@ impl Renderer for PrometheusRenderer {
         }
         let metric_familys = self.registry.gather();
 
-        let _ = self.encoder
+        self.encoder
             .encode(&metric_familys, &mut self.buffer)
             .expect("Failed to encode Prometheus metrics.");
     }

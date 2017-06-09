@@ -20,7 +20,7 @@ pub fn analyze<T>(timings: &Vec<T>) -> Option<RequestLogAnalyzerResult>
     where T: Timing
 {
 
-    if timings.len() == 0 {
+    if timings.is_empty() {
         return None;
     }
 

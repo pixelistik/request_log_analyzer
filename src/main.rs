@@ -68,9 +68,7 @@ fn run(args: &args::RequestLogAnalyzerArgs) -> Option<analyzer::RequestLogAnalyz
     };
 
     let timings = extract_timings(input, &args.conditions);
-    let result = analyzer::analyze(&timings);
-
-    result
+    analyzer::analyze(&timings)
 }
 
 fn extract_timings(input: Box<io::Read>,
@@ -95,7 +93,7 @@ fn extract_timings(input: Box<io::Read>,
                 let pairs = extract_matching_request_response_pairs(&mut requests, &mut responses);
 
                 let mut new_timings: Vec<Box<Timing>> = pairs.into_iter()
-                    .filter(|pair| filter::matches_filter(&pair, conditions))
+                    .filter(|pair| filter::matches_filter(pair, conditions))
                     .map(|pair| Box::new(pair) as Box<Timing>)
                     .collect();
 

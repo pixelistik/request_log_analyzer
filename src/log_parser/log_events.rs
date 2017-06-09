@@ -21,7 +21,7 @@ pub struct Request {
 
 impl Request {
     pub fn new_from_log_line(log_line: &String) -> Result<Request, &'static str> {
-        let parts: Vec<&str> = log_line.split(" ").collect();
+        let parts: Vec<&str> = log_line.split(' ').collect();
 
         let id = match parts.get(2) {
             Some(id) => id,
@@ -63,7 +63,7 @@ pub struct Response {
 
 impl Response {
     pub fn new_from_log_line(log_line: &String) -> Result<Response, &'static str> {
-        let parts: Vec<&str> = log_line.split(" ").collect();
+        let parts: Vec<&str> = log_line.split(' ').collect();
 
         let id = parts[2];
 
