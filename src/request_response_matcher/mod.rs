@@ -80,11 +80,13 @@ mod tests {
                                      id: 1,
                                      response_time: Duration::milliseconds(7),
                                      original_log_line: "whatever".to_string(),
+                                     http_error: None,
                                  },
                                  log_parser::log_events::Response {
                                      id: 99,
                                      response_time: Duration::milliseconds(10),
                                      original_log_line: "whatever".to_string(),
+                                     http_error: None,
                                  }];
 
         let result = extract_matching_request_response_pairs(&mut requests, &mut responses);
@@ -111,6 +113,7 @@ mod tests {
                 id: 1,
                 response_time: Duration::milliseconds(7),
                 original_log_line: "whatever".to_string(),
+                http_error: None,
             },
         } as &Timing;
 

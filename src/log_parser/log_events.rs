@@ -1,5 +1,11 @@
 use chrono::*;
 
+#[derive(Eq, PartialEq, Clone, Debug)]
+pub enum HttpError {
+    ClientError4xx,
+    ServerError5xx,
+}
+
 #[derive(PartialEq,Debug)]
 pub enum LogEvent {
     Request(Request),
@@ -52,6 +58,7 @@ pub struct Response {
     pub id: i32,
     pub response_time: Duration,
     pub original_log_line: String,
+    pub http_error: Option<HttpError>,
 }
 
 impl Response {
@@ -80,9 +87,16 @@ impl Response {
             Err(_) => return Err("Uncomprehensible response logline"),
         };
 
+        let http_error = match parts[4].chars().nth(0) {
+            Some('4') => Some(HttpError::ClientError4xx),
+            Some('5') => Some(HttpError::ServerError5xx),
+            _ => None,
+        };
+
         Ok(Response {
             id: id_numeric,
             response_time: response_time_duration,
+            http_error: http_error,
             original_log_line: log_line.clone(),
         })
     }
@@ -164,6 +178,7 @@ mod tests {
             id: 2,
             response_time: Duration::milliseconds(10),
             original_log_line: line.clone(),
+            http_error: None,
         };
 
         let result = Response::new_from_log_line(&line);
@@ -180,6 +195,7 @@ mod tests {
             id: 200,
             response_time: Duration::milliseconds(250),
             original_log_line: line.clone(),
+            http_error: None,
         };
 
         let result = Response::new_from_log_line(&line);
@@ -228,6 +244,26 @@ mod tests {
         let result: Result<Response, &'static str> = Response::new_from_log_line(&line);
 
         assert_eq!(result.is_err(), true);
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_parse_response_line_client_error() {
+        let line = "08/Apr/2016:09:58:48 +0200 [02] <- 400 text/html 10ms".to_string();
+
+        let result = Response::new_from_log_line(&line).unwrap().http_error;
+        let expected = Some(HttpError::ClientError4xx);
+
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_parse_response_line_server_error() {
+        let line = "08/Apr/2016:09:58:48 +0200 [02] <- 500 text/html 10ms".to_string();
+
+        let result = Response::new_from_log_line(&line).unwrap().http_error;
+        let expected = Some(HttpError::ServerError5xx);
+
         assert_eq!(result, expected);
     }
 
