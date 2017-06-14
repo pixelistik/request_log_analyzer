@@ -16,7 +16,9 @@ perf: src/test/random-small.log src/test/random-big.log target/perf/v1.2.0.csv t
 
 target/perf/%.csv: target/release/archive/%
 	mkdir -p target/perf
-	src/test/perf_test_binary $< src/test/request.log.2016-04-06-Pub2-fixed > $@
+	src/test/perf_test_binary $< src/test/random-small.log > $@
+	src/test/perf_test_binary $< src/test/request.log.2016-04-06-Pub2-fixed >> $@
+	src/test/perf_test_binary $< src/test/random-big.log >> $@
 
 target/release/archive/%:
 	git checkout $(shell basename $@)
