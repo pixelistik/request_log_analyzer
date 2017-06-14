@@ -1,5 +1,5 @@
 use args;
-use analyzer;
+use timing_analyzer;
 use hyper;
 use prometheus::Encoder;
 use render;
@@ -8,7 +8,7 @@ use run;
 
 struct HttpHandler {
     args: args::RequestLogAnalyzerArgs,
-    run: fn(&args::RequestLogAnalyzerArgs) -> Option<analyzer::RequestLogAnalyzerResult>,
+    run: fn(&args::RequestLogAnalyzerArgs) -> Option<timing_analyzer::RequestLogAnalyzerResult>,
 }
 
 impl hyper::server::Handler for HttpHandler {
@@ -44,7 +44,7 @@ mod tests {
     use hyper;
 
     use filter;
-    use analyzer;
+    use timing_analyzer;
     use super::*;
 
     mod mock;
@@ -64,8 +64,8 @@ mod tests {
             prometheus_listen: None,
         };
 
-        fn run_fn(_: &args::RequestLogAnalyzerArgs) -> Option<analyzer::RequestLogAnalyzerResult> {
-            Some(analyzer::RequestLogAnalyzerResult {
+        fn run_fn(_: &args::RequestLogAnalyzerArgs) -> Option<timing_analyzer::RequestLogAnalyzerResult> {
+            Some(timing_analyzer::RequestLogAnalyzerResult {
                 count: 3,
                 max: 100,
                 min: 1,

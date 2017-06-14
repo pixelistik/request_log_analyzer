@@ -44,7 +44,7 @@ impl PrometheusRenderer {
 }
 
 impl Renderer for PrometheusRenderer {
-    fn render(&mut self, result: Option<analyzer::RequestLogAnalyzerResult>) {
+    fn render(&mut self, result: Option<timing_analyzer::RequestLogAnalyzerResult>) {
         match result {
             Some(result) => {
                 self.count.set(result.count as f64);
@@ -73,7 +73,7 @@ mod tests {
 
     #[test]
     fn test_render_1() {
-        let result = Some(analyzer::RequestLogAnalyzerResult {
+        let result = Some(timing_analyzer::RequestLogAnalyzerResult {
             count: 3,
             max: 100,
             min: 1,
@@ -96,7 +96,7 @@ mod tests {
 
     #[test]
     fn test_render_2() {
-        let result = Some(analyzer::RequestLogAnalyzerResult {
+        let result = Some(timing_analyzer::RequestLogAnalyzerResult {
             count: 300,
             max: 1000,
             min: 10,

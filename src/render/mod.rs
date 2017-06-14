@@ -2,10 +2,10 @@ pub mod prometheus;
 
 use std::io::prelude::*;
 use chrono::*;
-use analyzer;
+use timing_analyzer;
 
 pub trait Renderer {
-    fn render(&mut self, result: Option<analyzer::RequestLogAnalyzerResult>) -> ();
+    fn render(&mut self, result: Option<timing_analyzer::RequestLogAnalyzerResult>) -> ();
 }
 
 pub struct TerminalRenderer {}
@@ -17,7 +17,7 @@ impl TerminalRenderer {
 }
 
 impl Renderer for TerminalRenderer {
-    fn render(&mut self, result: Option<analyzer::RequestLogAnalyzerResult>) -> () {
+    fn render(&mut self, result: Option<timing_analyzer::RequestLogAnalyzerResult>) -> () {
         match result {
             Some(result) => {
                 println!("count:\t{}", result.count);
@@ -52,7 +52,7 @@ impl<'a> GraphiteRenderer<'a> {
 }
 
 impl<'a> Renderer for GraphiteRenderer<'a> {
-    fn render(&mut self, result: Option<analyzer::RequestLogAnalyzerResult>) -> () {
+    fn render(&mut self, result: Option<timing_analyzer::RequestLogAnalyzerResult>) -> () {
         match result {
             Some(result) => {
                 let prefix_text: String;
@@ -96,7 +96,7 @@ mod tests {
     use std::io::prelude::*;
     use std::str;
     use chrono::*;
-    use analyzer;
+    use timing_analyzer;
     use super::*;
 
     struct MockTcpStream {
@@ -114,8 +114,8 @@ mod tests {
         }
     }
 
-    fn get_result_fixture() -> Option<analyzer::RequestLogAnalyzerResult> {
-        Some(analyzer::RequestLogAnalyzerResult {
+    fn get_result_fixture() -> Option<timing_analyzer::RequestLogAnalyzerResult> {
+        Some(timing_analyzer::RequestLogAnalyzerResult {
             count: 3,
             max: 100,
             min: 1,

@@ -19,8 +19,8 @@ extern crate stats;
 extern crate prometheus;
 extern crate hyper;
 
-mod analyzer;
-use analyzer::Timing;
+mod timing_analyzer;
+use timing_analyzer::Timing;
 mod args;
 mod filter;
 mod log_parser;
@@ -61,14 +61,14 @@ fn main() {
 
 }
 
-fn run(args: &args::RequestLogAnalyzerArgs) -> Option<analyzer::RequestLogAnalyzerResult> {
+fn run(args: &args::RequestLogAnalyzerArgs) -> Option<timing_analyzer::RequestLogAnalyzerResult> {
     let input: Box<io::Read> = match args.filename.as_ref() {
         "-" => Box::new(io::stdin()),
         _ => Box::new(File::open(&args.filename).expect("Failed to open file.")),
     };
 
     let timings = extract_timings(input, &args.conditions);
-    analyzer::analyze(&timings)
+    timing_analyzer::analyze(&timings)
 }
 
 fn extract_timings(input: Box<io::Read>,
