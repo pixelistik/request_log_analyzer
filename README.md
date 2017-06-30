@@ -57,7 +57,7 @@ Run the tool on a request.log file
 
 Let's run through the results:
 
-There are 1218 request/response pairs in the log file.  
+There are 1221 request/response pairs in the log file.  
 The average response time was 840ms.  
 The fastest response was 0ms.  
 The median response time was 841ms.  
