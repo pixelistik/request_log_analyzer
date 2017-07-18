@@ -2,10 +2,11 @@ pub mod prometheus;
 
 use std::io::prelude::*;
 use chrono::*;
+use result;
 use timing_analyzer;
 
 pub trait Renderer {
-    fn render(&mut self, result: Option<timing_analyzer::RequestLogAnalyzerResult>) -> ();
+    fn render(&mut self, result: result::RequestLogAnalyzerResult) -> ();
 }
 
 pub struct TerminalRenderer {}
@@ -17,15 +18,15 @@ impl TerminalRenderer {
 }
 
 impl Renderer for TerminalRenderer {
-    fn render(&mut self, result: Option<timing_analyzer::RequestLogAnalyzerResult>) -> () {
-        match result {
-            Some(result) => {
-                println!("count:\t{}", result.count);
-                println!("time.avg:\t{}", result.avg);
-                println!("time.min:\t{}", result.min);
-                println!("time.median:\t{}", result.median);
-                println!("time.90percent:\t{}", result.percentile90);
-                println!("time.max:\t{}", result.max);
+    fn render(&mut self, result: result::RequestLogAnalyzerResult) -> () {
+        println!("count:\t{}", result.count);
+        match result.timing {
+            Some(timing) => {
+                println!("time.avg:\t{}", timing.avg);
+                println!("time.min:\t{}", timing.min);
+                println!("time.median:\t{}", timing.median);
+                println!("time.90percent:\t{}", timing.percentile90);
+                println!("time.max:\t{}", timing.max);
             }
             None => warn!("No matching log lines in file."),
         }
@@ -52,38 +53,39 @@ impl<'a> GraphiteRenderer<'a> {
 }
 
 impl<'a> Renderer for GraphiteRenderer<'a> {
-    fn render(&mut self, result: Option<timing_analyzer::RequestLogAnalyzerResult>) -> () {
-        match result {
-            Some(result) => {
-                let prefix_text: String;
-                let prefix_separator: &str;
+    fn render(&mut self, result: result::RequestLogAnalyzerResult) -> () {
+        let prefix_text: String;
+        let prefix_separator: &str;
 
-                match self.prefix {
-                    Some(ref p) => {
-                        prefix_text = p.clone();
-                        prefix_separator = ".";
-                    }
-                    None => {
-                        prefix_text = String::from("");
-                        prefix_separator = "";
-                    }
-                };
+        match self.prefix {
+            Some(ref p) => {
+                prefix_text = p.clone();
+                prefix_separator = ".";
+            }
+            None => {
+                prefix_text = String::from("");
+                prefix_separator = "";
+            }
+        };
 
-                let mut write = |text: String| {
-                    let _ = self.stream.write(format!("{}{}{} {}\n",
-                                                      prefix_text,
-                                                      prefix_separator,
-                                                      text,
-                                                      self.time.timestamp())
-                        .as_bytes());
-                };
+        let mut write = |text: String| {
+            let _ = self.stream.write(format!("{}{}{} {}\n",
+                                              prefix_text,
+                                              prefix_separator,
+                                              text,
+                                              self.time.timestamp())
+                .as_bytes());
+        };
 
-                write(format!("requests.count {}", result.count));
-                write(format!("requests.time.max {}", result.max));
-                write(format!("requests.time.min {}", result.min));
-                write(format!("requests.time.avg {}", result.avg));
-                write(format!("requests.time.median {}", result.median));
-                write(format!("requests.time.90percent {}", result.percentile90));
+        write(format!("requests.count {}", result.count));
+
+        match result.timing {
+            Some(timing) => {
+                write(format!("requests.time.max {}", timing.max));
+                write(format!("requests.time.min {}", timing.min));
+                write(format!("requests.time.avg {}", timing.avg));
+                write(format!("requests.time.median {}", timing.median));
+                write(format!("requests.time.90percent {}", timing.percentile90));
             }
             None => warn!("No matching log lines in file."),
         }
@@ -114,15 +116,18 @@ mod tests {
         }
     }
 
-    fn get_result_fixture() -> Option<timing_analyzer::RequestLogAnalyzerResult> {
-        Some(timing_analyzer::RequestLogAnalyzerResult {
+    fn get_result_fixture() -> result::RequestLogAnalyzerResult {
+        result::RequestLogAnalyzerResult {
             count: 3,
-            max: 100,
-            min: 1,
-            avg: 37,
-            median: 10,
-            percentile90: 100,
-        })
+            timing: Some(timing_analyzer::RequestLogAnalyzerResult {
+                max: 100,
+                min: 1,
+                avg: 37,
+                median: 10,
+                percentile90: 100,
+            }),
+            error: None,
+        }
     }
 
     fn get_time_fixture() -> DateTime<UTC> {
@@ -141,13 +146,6 @@ mod tests {
         let result = get_result_fixture();
 
         renderer.render(result);
-    }
-
-    #[test]
-    fn test_terminal_renderer_empty() {
-        let mut renderer = TerminalRenderer::new();
-
-        renderer.render(None);
     }
 
     #[test]
@@ -197,18 +195,5 @@ mod tests {
                    "my_prefix.requests.time.median 10 1474576919\n");
         assert_eq!(&mock_tcp_stream.write_calls[5],
                    "my_prefix.requests.time.90percent 100 1474576919\n");
-    }
-
-    #[test]
-    fn test_render_graphite_empty() {
-        let mut mock_tcp_stream = MockTcpStream { write_calls: vec![] };
-
-        {
-            let mut renderer =
-                GraphiteRenderer::new(get_time_fixture(), None, &mut mock_tcp_stream);
-            renderer.render(None);
-        }
-
-        assert_eq!(mock_tcp_stream.write_calls.len(), 0);
     }
 }

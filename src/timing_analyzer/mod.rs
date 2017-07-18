@@ -4,7 +4,6 @@ pub mod percentile;
 
 #[derive(PartialEq, Debug)]
 pub struct RequestLogAnalyzerResult {
-    pub count: usize,
     pub max: usize,
     pub min: usize,
     pub avg: usize,
@@ -40,7 +39,6 @@ pub fn analyze<T>(timings: &Vec<T>) -> Option<RequestLogAnalyzerResult>
     let median = median(times.iter().cloned()).unwrap() as usize;
 
     Some(RequestLogAnalyzerResult {
-        count: times.len().into(),
         max: max,
         min: min,
         avg: avg,
@@ -66,7 +64,6 @@ mod tests {
         let result = analyze(&times);
 
         let expected = Some(RequestLogAnalyzerResult {
-            count: 3,
             max: 100,
             min: 1,
             avg: 37,

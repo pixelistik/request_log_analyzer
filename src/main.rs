@@ -63,14 +63,21 @@ fn main() {
 
 }
 
-fn run(args: &args::RequestLogAnalyzerArgs) -> Option<timing_analyzer::RequestLogAnalyzerResult> {
+fn run(args: &args::RequestLogAnalyzerArgs) -> result::RequestLogAnalyzerResult {
     let input: Box<io::Read> = match args.filename.as_ref() {
         "-" => Box::new(io::stdin()),
         _ => Box::new(File::open(&args.filename).expect("Failed to open file.")),
     };
 
     let pairs = extract_pairs(input, &args.conditions);
-    timing_analyzer::analyze(&pairs)
+    let timing_result = timing_analyzer::analyze(&pairs);
+    let error_result = error_analyzer::analyze(&pairs);
+
+    result::RequestLogAnalyzerResult {
+        count: pairs.len(),
+        timing: timing_result,
+        error: error_result,
+    }
 }
 
 fn extract_pairs(input: Box<io::Read>,
@@ -153,6 +160,6 @@ fn test_run() {
         prometheus_listen: None,
     };
 
-    let result = run(&args).unwrap();
+    let result = run(&args);
     assert_eq!(result.count, 2);
 }
