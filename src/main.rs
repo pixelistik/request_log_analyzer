@@ -30,6 +30,7 @@ mod render;
 mod request_response_matcher;
 use request_response_matcher::*;
 mod http_handler;
+mod result;
 
 fn main() {
     env_logger::init().expect("Failed to initialize logging.");
