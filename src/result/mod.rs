@@ -7,9 +7,3 @@ pub struct RequestLogAnalyzerResult {
     pub timing: Option<timing_analyzer::TimingResult>,
     pub error: Option<error_analyzer::ErrorRatesResult>,
 }
-
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-}
