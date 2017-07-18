@@ -68,8 +68,8 @@ fn run(args: &args::RequestLogAnalyzerArgs) -> Option<timing_analyzer::RequestLo
         _ => Box::new(File::open(&args.filename).expect("Failed to open file.")),
     };
 
-    let timings = extract_pairs(input, &args.conditions);
-    timing_analyzer::analyze(&timings)
+    let pairs = extract_pairs(input, &args.conditions);
+    timing_analyzer::analyze(&pairs)
 }
 
 fn extract_pairs(input: Box<io::Read>,
@@ -79,7 +79,7 @@ fn extract_pairs(input: Box<io::Read>,
 
     let mut requests: Vec<Request> = Vec::new();
     let mut responses: Vec<Response> = Vec::new();
-    let mut timings: Vec<Box<RequestResponsePair>> = Vec::new();
+    let mut pairs: Vec<Box<RequestResponsePair>> = Vec::new();
 
     for line in reader.lines() {
         let parsed_line = log_parser::parse_line(&line.expect("Failed to read line."));
@@ -91,19 +91,19 @@ fn extract_pairs(input: Box<io::Read>,
                     LogEvent::Response(response) => responses.push(response),
                 }
 
-                let pairs = extract_matching_request_response_pairs(&mut requests, &mut responses);
+                let mut new_pairs: Vec<Box<RequestResponsePair>> =
+                    extract_matching_request_response_pairs(&mut requests, &mut responses)
+                        .into_iter()
+                        .filter(|pair| filter::matches_filter(pair, conditions))
+                        .map(|pair| Box::new(pair))
+                        .collect();
 
-                let mut new_timings: Vec<Box<RequestResponsePair>> = pairs.into_iter()
-                    .filter(|pair| filter::matches_filter(pair, conditions))
-                    .map(|pair| Box::new(pair))
-                    .collect();
-
-                timings.append(&mut new_timings);
+                pairs.append(&mut new_pairs);
             }
             Err(err) => warn!("{}", err),
         }
     }
-    timings
+    pairs
 }
 
 #[test]
