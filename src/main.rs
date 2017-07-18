@@ -68,18 +68,18 @@ fn run(args: &args::RequestLogAnalyzerArgs) -> Option<timing_analyzer::RequestLo
         _ => Box::new(File::open(&args.filename).expect("Failed to open file.")),
     };
 
-    let timings = extract_timings(input, &args.conditions);
+    let timings = extract_pairs(input, &args.conditions);
     timing_analyzer::analyze(&timings)
 }
 
-fn extract_timings(input: Box<io::Read>,
-                   conditions: &filter::FilterConditions)
-                   -> Vec<Box<Timing>> {
+fn extract_pairs(input: Box<io::Read>,
+                 conditions: &filter::FilterConditions)
+                 -> Vec<Box<RequestResponsePair>> {
     let reader = io::BufReader::new(input);
 
     let mut requests: Vec<Request> = Vec::new();
     let mut responses: Vec<Response> = Vec::new();
-    let mut timings: Vec<Box<Timing>> = Vec::new();
+    let mut timings: Vec<Box<RequestResponsePair>> = Vec::new();
 
     for line in reader.lines() {
         let parsed_line = log_parser::parse_line(&line.expect("Failed to read line."));
@@ -93,9 +93,9 @@ fn extract_timings(input: Box<io::Read>,
 
                 let pairs = extract_matching_request_response_pairs(&mut requests, &mut responses);
 
-                let mut new_timings: Vec<Box<Timing>> = pairs.into_iter()
+                let mut new_timings: Vec<Box<RequestResponsePair>> = pairs.into_iter()
                     .filter(|pair| filter::matches_filter(pair, conditions))
-                    .map(|pair| Box::new(pair) as Box<Timing>)
+                    .map(|pair| Box::new(pair))
                     .collect();
 
                 timings.append(&mut new_timings);
@@ -107,15 +107,15 @@ fn extract_timings(input: Box<io::Read>,
 }
 
 #[test]
-fn test_extract_timings() {
+fn test_extract_pairs() {
     let conditions = filter::FilterConditions {
         include_terms: None,
         exclude_terms: None,
         latest_time: None,
     };
 
-    let timings = extract_timings(Box::new(File::open("src/test/simple-1.log").unwrap()),
-                                  &conditions);
+    let timings = extract_pairs(Box::new(File::open("src/test/simple-1.log").unwrap()),
+                                &conditions);
 
     assert_eq!(timings[0].num_milliseconds(), 7);
     assert_eq!(timings[1].num_milliseconds(), 10);
@@ -130,8 +130,8 @@ fn test_extract_timings_ignore_broken_lines() {
         latest_time: None,
     };
 
-    let timings = extract_timings(Box::new(File::open("src/test/broken.log").unwrap()),
-                                  &conditions);
+    let timings = extract_pairs(Box::new(File::open("src/test/broken.log").unwrap()),
+                                &conditions);
 
     assert_eq!(timings[0].num_milliseconds(), 7);
     assert_eq!(timings.len(), 1);
