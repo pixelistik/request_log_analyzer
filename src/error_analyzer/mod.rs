@@ -12,8 +12,8 @@ pub struct RequestLogAnalyzerResult {
 
 #[derive(PartialEq, Debug)]
 pub struct ErrorRatesResult {
-    client_error_4xx: f32,
-    server_error_5xx: f32,
+    pub client_error_4xx: f32,
+    pub server_error_5xx: f32,
 }
 
 pub trait HttpErrorState {
