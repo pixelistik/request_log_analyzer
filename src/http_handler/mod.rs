@@ -1,5 +1,4 @@
 use args;
-use timing_analyzer;
 use result;
 use hyper;
 use prometheus::Encoder;
