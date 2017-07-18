@@ -3,7 +3,7 @@ use stats::median;
 pub mod percentile;
 
 #[derive(PartialEq, Debug)]
-pub struct RequestLogAnalyzerResult {
+pub struct TimingResult {
     pub max: usize,
     pub min: usize,
     pub avg: usize,
@@ -15,7 +15,7 @@ pub trait Timing {
     fn num_milliseconds(&self) -> i64;
 }
 
-pub fn analyze<T>(timings: &Vec<T>) -> Option<RequestLogAnalyzerResult>
+pub fn analyze<T>(timings: &Vec<T>) -> Option<TimingResult>
     where T: Timing
 {
 
@@ -38,7 +38,7 @@ pub fn analyze<T>(timings: &Vec<T>) -> Option<RequestLogAnalyzerResult>
 
     let median = median(times.iter().cloned()).unwrap() as usize;
 
-    Some(RequestLogAnalyzerResult {
+    Some(TimingResult {
         max: max,
         min: min,
         avg: avg,
@@ -63,7 +63,7 @@ mod tests {
 
         let result = analyze(&times);
 
-        let expected = Some(RequestLogAnalyzerResult {
+        let expected = Some(TimingResult {
             max: 100,
             min: 1,
             avg: 37,

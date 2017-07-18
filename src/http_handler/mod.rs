@@ -68,7 +68,7 @@ mod tests {
         fn run_fn(_: &args::RequestLogAnalyzerArgs) -> result::RequestLogAnalyzerResult {
             result::RequestLogAnalyzerResult {
                 count: 3,
-                timing: Some(timing_analyzer::RequestLogAnalyzerResult {
+                timing: Some(timing_analyzer::TimingResult {
                     max: 100,
                     min: 1,
                     avg: 37,

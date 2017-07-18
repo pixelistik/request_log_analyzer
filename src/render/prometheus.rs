@@ -76,7 +76,7 @@ mod tests {
     fn test_render_1() {
         let result = result::RequestLogAnalyzerResult {
             count: 3,
-            timing: Some(timing_analyzer::RequestLogAnalyzerResult {
+            timing: Some(timing_analyzer::TimingResult {
                 max: 100,
                 min: 1,
                 avg: 37,
@@ -102,7 +102,7 @@ mod tests {
     fn test_render_2() {
         let result = result::RequestLogAnalyzerResult {
             count: 300,
-            timing: Some(timing_analyzer::RequestLogAnalyzerResult {
+            timing: Some(timing_analyzer::TimingResult {
                 max: 1000,
                 min: 10,
                 avg: 42,
