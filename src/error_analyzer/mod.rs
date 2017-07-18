@@ -1,14 +1,5 @@
 use log_parser::log_events::HttpError;
 
-#[derive(PartialEq, Debug)]
-pub struct RequestLogAnalyzerResult {
-    pub count: usize,
-    pub max: usize,
-    pub min: usize,
-    pub avg: usize,
-    pub median: usize,
-    pub percentile90: usize,
-}
 
 #[derive(PartialEq, Debug)]
 pub struct ErrorRatesResult {
