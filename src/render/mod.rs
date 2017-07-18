@@ -28,7 +28,15 @@ impl Renderer for TerminalRenderer {
                 println!("time.90percent:\t{}", timing.percentile90);
                 println!("time.max:\t{}", timing.max);
             }
-            None => warn!("No matching log lines in file."),
+            None => warn!("No matching log lines for timing results."),
+        }
+
+        match result.error {
+            Some(error) => {
+                println!("error.client_error_4xx_rate:\t{}", error.client_error_4xx);
+                println!("error.server_error_5xx_rate:\t{}", error.server_error_5xx);
+            }
+            None => warn!("No matching log lines for error rate results."),
         }
     }
 }
@@ -99,6 +107,7 @@ mod tests {
     use std::str;
     use chrono::*;
     use timing_analyzer;
+    use error_analyzer;
     use super::*;
 
     struct MockTcpStream {
@@ -126,7 +135,10 @@ mod tests {
                 median: 10,
                 percentile90: 100,
             }),
-            error: None,
+            error: Some(error_analyzer::ErrorRatesResult {
+                client_error_4xx: 0.1,
+                server_error_5xx: 0.2,
+            }),
         }
     }
 
