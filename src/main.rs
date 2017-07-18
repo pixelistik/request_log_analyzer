@@ -114,27 +114,27 @@ fn test_extract_pairs() {
         latest_time: None,
     };
 
-    let timings = extract_pairs(Box::new(File::open("src/test/simple-1.log").unwrap()),
-                                &conditions);
+    let pairs = extract_pairs(Box::new(File::open("src/test/simple-1.log").unwrap()),
+                              &conditions);
 
-    assert_eq!(timings[0].num_milliseconds(), 7);
-    assert_eq!(timings[1].num_milliseconds(), 10);
-    assert_eq!(timings.len(), 2);
+    assert_eq!(pairs[0].num_milliseconds(), 7);
+    assert_eq!(pairs[1].num_milliseconds(), 10);
+    assert_eq!(pairs.len(), 2);
 }
 
 #[test]
-fn test_extract_timings_ignore_broken_lines() {
+fn test_extract_pairs_ignore_broken_lines() {
     let conditions = filter::FilterConditions {
         include_terms: None,
         exclude_terms: None,
         latest_time: None,
     };
 
-    let timings = extract_pairs(Box::new(File::open("src/test/broken.log").unwrap()),
-                                &conditions);
+    let pairs = extract_pairs(Box::new(File::open("src/test/broken.log").unwrap()),
+                              &conditions);
 
-    assert_eq!(timings[0].num_milliseconds(), 7);
-    assert_eq!(timings.len(), 1);
+    assert_eq!(pairs[0].num_milliseconds(), 7);
+    assert_eq!(pairs.len(), 1);
 }
 
 #[test]
