@@ -47,9 +47,9 @@ fn main() {
             stream = TcpStream::connect((graphite_server.as_ref(), args.graphite_port.unwrap()))
                 .expect("Could not connect to the Graphite server");
 
-            Box::new(render::GraphiteRenderer::new(UTC::now(),
-                                                   args.graphite_prefix.clone(),
-                                                   &mut stream))
+            Box::new(render::graphite::GraphiteRenderer::new(UTC::now(),
+                                                             args.graphite_prefix.clone(),
+                                                             &mut stream))
         }
         None => Box::new(render::TerminalRenderer::new()),
     };
