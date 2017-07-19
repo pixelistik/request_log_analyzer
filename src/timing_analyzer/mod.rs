@@ -18,7 +18,6 @@ pub trait Timing {
 pub fn analyze<T>(timings: &Vec<T>) -> Option<TimingResult>
     where T: Timing
 {
-
     if timings.is_empty() {
         return None;
     }

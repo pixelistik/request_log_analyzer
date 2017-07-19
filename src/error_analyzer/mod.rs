@@ -1,6 +1,5 @@
 use log_parser::log_events::HttpError;
 
-
 #[derive(PartialEq, Debug)]
 pub struct ErrorRatesResult {
     pub client_error_4xx: f32,
@@ -14,7 +13,6 @@ pub trait HttpErrorState {
 pub fn analyze<T>(statuses: &Vec<T>) -> Option<ErrorRatesResult>
     where T: HttpErrorState
 {
-
     if statuses.is_empty() {
         return None;
     }
