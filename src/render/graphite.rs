@@ -59,6 +59,16 @@ impl<'a> Renderer for GraphiteRenderer<'a> {
             }
             None => warn!("No matching log lines in file."),
         }
+
+        match result.error {
+            Some(error) => {
+                write(format!("requests.error.client_error_4xx_rate {}",
+                              error.client_error_4xx));
+                write(format!("requests.error.server_error_5xx_rate {}",
+                              error.server_error_5xx));
+            }
+            None => warn!("No matching log lines in file."),
+        }
     }
 }
 
@@ -135,6 +145,10 @@ mod tests {
                    "requests.time.median 10 1474576919\n");
         assert_eq!(&mock_tcp_stream.write_calls[5],
                    "requests.time.90percent 100 1474576919\n");
+        assert_eq!(&mock_tcp_stream.write_calls[6],
+                   "requests.error.client_error_4xx_rate 0.1 1474576919\n");
+        assert_eq!(&mock_tcp_stream.write_calls[7],
+                   "requests.error.server_error_5xx_rate 0.2 1474576919\n");
     }
 
     #[test]
@@ -160,5 +174,9 @@ mod tests {
                    "my_prefix.requests.time.median 10 1474576919\n");
         assert_eq!(&mock_tcp_stream.write_calls[5],
                    "my_prefix.requests.time.90percent 100 1474576919\n");
+        assert_eq!(&mock_tcp_stream.write_calls[6],
+                   "my_prefix.requests.error.client_error_4xx_rate 0.1 1474576919\n");
+        assert_eq!(&mock_tcp_stream.write_calls[7],
+                   "my_prefix.requests.error.server_error_5xx_rate 0.2 1474576919\n");
     }
 }
