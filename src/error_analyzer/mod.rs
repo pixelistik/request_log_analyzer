@@ -110,4 +110,15 @@ mod tests {
 
         assert_eq!(result, expected);
     }
+
+    #[test]
+    fn test_analyze_empty() {
+        let statuses: Vec<String> = vec![];
+
+        let result = analyze(&statuses);
+
+        let expected = None;
+
+        assert_eq!(result, expected);
+    }
 }
