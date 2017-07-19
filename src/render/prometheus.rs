@@ -11,6 +11,8 @@ pub struct PrometheusRenderer {
     avg: prometheus::Gauge,
     median: prometheus::Gauge,
     percentile90: prometheus::Gauge,
+    client_error_4xx_rate: prometheus::Gauge,
+    server_error_5xx_rate: prometheus::Gauge,
 }
 
 impl PrometheusRenderer {
@@ -19,7 +21,7 @@ impl PrometheusRenderer {
                                    registry: &prometheus::Registry)
                                    -> prometheus::Gauge {
             let gauge = prometheus::Gauge::new(String::from(gauge_name),
-                                               format!("The {} of response times.", gauge_name))
+                                               format!("The {} of responses.", gauge_name))
                 .expect("Failed to create Prometheus gauge.");
 
             registry.register(Box::new(gauge.clone()))
@@ -38,6 +40,10 @@ impl PrometheusRenderer {
             avg: make_and_register_gauge("request_time_avg", &registry),
             median: make_and_register_gauge("request_time_median", &registry),
             percentile90: make_and_register_gauge("request_time_percentile90", &registry),
+            client_error_4xx_rate: make_and_register_gauge("request_error_client_error_4xx_rate",
+                                                           &registry),
+            server_error_5xx_rate: make_and_register_gauge("request_error_server_error_5xx_rate",
+                                                           &registry),
             registry: registry,
         }
     }
@@ -54,6 +60,16 @@ impl Renderer for PrometheusRenderer {
                 self.avg.set(timing.avg as f64);
                 self.median.set(timing.median as f64);
                 self.percentile90.set(timing.percentile90 as f64);
+            }
+            None => {
+                warn!("No matching log lines in file.");
+            }
+        }
+
+        match result.error {
+            Some(error) => {
+                self.client_error_4xx_rate.set(error.client_error_4xx as f64);
+                self.server_error_5xx_rate.set(error.server_error_5xx as f64);
             }
             None => {
                 warn!("No matching log lines in file.");
@@ -83,7 +99,10 @@ mod tests {
                 median: 10,
                 percentile90: 100,
             }),
-            error: None,
+            error: Some(error_analyzer::ErrorRatesResult {
+                client_error_4xx: 0.1,
+                server_error_5xx: 0.2,
+            }),
         };
 
         let mut renderer = PrometheusRenderer::new();
@@ -96,6 +115,8 @@ mod tests {
         assert!(buffer_text.contains("request_time_avg 37"));
         assert!(buffer_text.contains("request_time_median 10"));
         assert!(buffer_text.contains("request_time_percentile90 100"));
+        assert!(buffer_text.contains("request_error_client_error_4xx_rate 0.1"));
+        assert!(buffer_text.contains("request_error_server_error_5xx_rate 0.2"));
     }
 
     #[test]
