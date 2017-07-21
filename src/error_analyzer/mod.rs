@@ -29,9 +29,12 @@ pub fn analyze<T>(statuses: &Vec<T>) -> Option<ErrorRatesResult>
         .filter(|status| *status == Some(HttpError::ServerError5xx))
         .count() as f32;
 
+    let client_error_4xx_rate = (client_error_4xx_count / total_count * 10000.0).round() / 10000.0;
+    let server_error_4xx_rate = (server_error_5xx_count / total_count * 10000.0).round() / 10000.0;
+
     Some(ErrorRatesResult {
-        client_error_4xx: client_error_4xx_count / total_count,
-        server_error_5xx: server_error_5xx_count / total_count,
+        client_error_4xx: client_error_4xx_rate,
+        server_error_5xx: server_error_4xx_rate,
     })
 
 }
@@ -116,6 +119,21 @@ mod tests {
         let result = analyze(&statuses);
 
         let expected = None;
+
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_analyze_rounding() {
+        let statuses: Vec<String> =
+            vec![String::from("404"), String::from("200"), String::from("500")];
+
+        let result = analyze(&statuses);
+
+        let expected = Some(ErrorRatesResult {
+            client_error_4xx: 0.3333,
+            server_error_5xx: 0.3333,
+        });
 
         assert_eq!(result, expected);
     }
