@@ -2,8 +2,6 @@ pub mod graphite;
 pub mod prometheus;
 
 use result;
-use timing_analyzer;
-use error_analyzer;
 
 pub trait Renderer {
     fn render(&mut self, result: result::RequestLogAnalyzerResult) -> ();
