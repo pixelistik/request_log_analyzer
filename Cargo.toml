@@ -30,7 +30,7 @@ streaming-stats = "0.1"
 clap = "2.20"
 log = "*"
 env_logger = "*"
-prometheus = "0.2"
+prometheus = { git = "https://github.com/pingcap/rust-prometheus" }
 hyper = "0.10"
 
 [profile.release]
