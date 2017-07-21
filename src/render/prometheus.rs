@@ -1,6 +1,7 @@
 use prometheus::{Registry, Gauge, Encoder, TextEncoder};
 
 use super::*;
+
 pub struct PrometheusRenderer {
     pub buffer: Vec<u8>,
     registry: prometheus::Registry,
@@ -87,6 +88,8 @@ impl Renderer for PrometheusRenderer {
 mod tests {
     use std::str;
     use super::*;
+    use timing_analyzer;
+    use error_analyzer;
 
     #[test]
     fn test_render_1() {
