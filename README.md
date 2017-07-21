@@ -40,6 +40,8 @@ Clone the repository and run `cargo build`.
     time.median:	6
     time.90percent:	27
     time.max:	15747
+    error.client_error_4xx_rate:	0.023
+    error.server_error_5xx_rate:	0.0002
 
 ## Getting started
 
@@ -54,6 +56,8 @@ Run the tool on a request.log file
 	time.median:    841
 	time.90percent: 1537
 	time.max:       1709
+    error.client_error_4xx_rate:	0.02
+    error.server_error_5xx_rate:	0.01
 
 Let's run through the results:
 
@@ -63,6 +67,8 @@ The fastest response was 0ms.
 The median response time was 841ms.  
 The 90 percentile response time was 1537ms. That means that 90% of all requests were finished after 1537ms.  
 The slowest response was 1709ms.  
+2% of all requests have failed with a 4xx HTTP error code (client error).  
+1% of all requests have failed with a 5xx HTTP error code (server error).  
 
 ### Include only certain requests
 
