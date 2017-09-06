@@ -88,9 +88,12 @@ fn extract_pairs(input: Box<io::Read>,
     let mut responses: Vec<Response> = Vec::new();
     let mut pairs: Vec<Box<RequestResponsePair>> = Vec::new();
 
-    for line in reader.lines() {
-        let parsed_line = log_parser::parse_line(&line.expect("Failed to read line."));
+    // reader.lines()
+    //     .map(parse_event)
+    //     .match_events()
+    //     .collect()
 
+    for parsed_line in reader.lines().map(parse_event) {
         match parsed_line {
             Ok(event) => {
                 match event {
@@ -111,6 +114,13 @@ fn extract_pairs(input: Box<io::Read>,
         }
     }
     pairs
+}
+
+fn parse_event(line: Result<String, std::io::Error>) -> Result<LogEvent, &'static str> {
+    match line {
+        Ok(line) => log_parser::parse_line(&line),
+        Err(_) => Err("Failed to read line."),
+    }
 }
 
 #[cfg(test)]
@@ -166,5 +176,15 @@ mod tests {
 
         let result = run(&args);
         assert_eq!(result.count, 2);
+    }
+
+    #[test]
+    fn test_parse_event() {
+        let lines = vec![Ok(String::from("08/Apr/2016:09:57:47 +0200 [001] -> GET \
+                                          /content/some/page.html HTTP/1.1")),
+                         Ok(String::from("08/Apr/2016:09:57:47 +0200 [001] <- 200 text/html 7ms"))];
+
+        let result: Vec<Result<LogEvent, &str>> = lines.into_iter().map(parse_event).collect();
+        assert_eq!(result.len(), 2);
     }
 }
