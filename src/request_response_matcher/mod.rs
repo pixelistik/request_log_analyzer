@@ -1,8 +1,9 @@
 use log_parser::*;
 use timing_analyzer::Timing;
 use error_analyzer::HttpErrorState;
+use chrono::*;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct RequestResponsePair {
     pub request: log_events::Request,
     pub response: log_events::Response,
@@ -71,6 +72,41 @@ impl HttpErrorState for Box<RequestResponsePair> {
     }
 }
 
+pub struct RequestResponsePairIterator<'a> {
+    // events: Iterator<Item = log_events::LogEvent>,
+    // pairs: Vec<RequestResponsePair>,
+    pairs: &'a mut Iterator<Item = RequestResponsePair>,
+}
+
+impl<'a> Iterator for RequestResponsePairIterator<'a> {
+    type Item = RequestResponsePair;
+    fn next(&mut self) -> Option<RequestResponsePair> {
+        self.pairs.next()
+    }
+}
+
+// fn extract_matching_request_response_pairs_iter<T, U>(events: T) -> U
+//     where T: Iterator<Item = log_events::LogEvent>,
+//           U: Iterator<Item = RequestResponsePair>
+// {
+//     vec![RequestResponsePair {
+//              request: log_events::Request {
+//                  id: 1,
+//                  time: DateTime::parse_from_str("08/Apr/2016:09:57:47 +0200",
+//                                                 "%d/%b/%Y:%H:%M:%S %z")
+//                      .unwrap(),
+//                  original_log_line: "whatever".to_string(),
+//              },
+//              response: log_events::Response {
+//                  id: 1,
+//                  response_time: Duration::milliseconds(7),
+//                  original_log_line: "whatever".to_string(),
+//                  http_error: None,
+//              },
+//          }]
+//         .iter() as U
+// }
+
 #[cfg(test)]
 mod tests {
     use chrono::*;
@@ -117,6 +153,53 @@ mod tests {
 
         assert_eq!(requests.len(), 1);
         assert_eq!(responses.len(), 1);
+    }
+
+    #[test]
+    fn test_extract_matching_request_response_pairs_iterator() {
+        // let events =
+        //     vec![log_parser::log_events::LogEvent::Request(log_parser::log_events::Request {
+        //              id: 1,
+        //              time: DateTime::parse_from_str("08/Apr/2016:09:57:47 +0200",
+        //                                             "%d/%b/%Y:%H:%M:%S %z")
+        //                  .unwrap(),
+        //              original_log_line: "whatever".to_string(),
+        //          }),
+        //          log_parser::log_events::LogEvent::Response(log_parser::log_events::Response {
+        //              id: 1,
+        //              response_time: Duration::milliseconds(7),
+        //              original_log_line: "whatever".to_string(),
+        //              http_error: None,
+        //          })];
+        //
+        //
+        // // let result = extract_matching_request_response_pairs(&mut requests, &mut responses);
+        // let result = extract_matching_request_response_pairs_iter(events.iter()).collect();
+        //
+        // assert_eq!(result.len(), 1);
+        // assert_eq!(result[0].request.id, 1);
+        // assert_eq!(result[0].response.id, 1);
+
+        let mut iterator = RequestResponsePairIterator {
+            pairs: &mut vec![RequestResponsePair {
+                                 request: log_events::Request {
+                                     id: 1,
+                                     time: DateTime::parse_from_str("08/Apr/2016:09:57:47 +0200",
+                                                                    "%d/%b/%Y:%H:%M:%S %z")
+                                         .unwrap(),
+                                     original_log_line: "whatever".to_string(),
+                                 },
+                                 response: log_events::Response {
+                                     id: 1,
+                                     response_time: Duration::milliseconds(7),
+                                     original_log_line: "whatever".to_string(),
+                                     http_error: None,
+                                 },
+                             }]
+                .into_iter() as &mut Iterator<Item = RequestResponsePair>,
+        };
+
+        assert_eq!(iterator.next(), None);
     }
 
     #[test]
