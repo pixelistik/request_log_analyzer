@@ -77,6 +77,16 @@ pub struct RequestResponsePairIterator<'a> {
     responses: Vec<log_events::Response>,
 }
 
+impl<'a> RequestResponsePairIterator<'a> {
+    fn new(events: &'a mut Iterator<Item = log_events::LogEvent>) -> Self {
+        RequestResponsePairIterator {
+            events: events,
+            requests: vec![],
+            responses: vec![],
+        }
+    }
+}
+
 impl<'a> Iterator for RequestResponsePairIterator<'a> {
     type Item = RequestResponsePair;
 
@@ -194,12 +204,8 @@ mod tests {
                      http_error: None,
                  })];
 
-        let mut iterator = RequestResponsePairIterator {
-            events: &mut events.into_iter() as
-                    &mut Iterator<Item = log_parser::log_events::LogEvent>,
-            requests: vec![],
-            responses: vec![],
-        };
+        let mut events_iter = events.into_iter();
+        let mut iterator = RequestResponsePairIterator::new(&mut events_iter);
 
         let result = iterator.next().unwrap();
         assert_eq!(result.request.id, 1);
