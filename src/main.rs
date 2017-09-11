@@ -84,35 +84,19 @@ fn extract_pairs(input: Box<io::Read>,
                  -> Vec<Box<RequestResponsePair>> {
     let reader = io::BufReader::new(input);
 
-    let mut requests: Vec<Request> = Vec::new();
-    let mut responses: Vec<Response> = Vec::new();
-    let mut pairs: Vec<Box<RequestResponsePair>> = Vec::new();
+    let mut events_iterator = reader.lines()
+        .map(parse_event)
+        .filter(|event| event.is_ok())
+        .map(|event| event.unwrap());
 
-    // reader.lines()
-    //     .map(parse_event)
-    //     .match_events()
-    //     .collect()
+    let pairs_iterator =
+        request_response_matcher::RequestResponsePairIterator::new(&mut events_iterator);
 
-    for parsed_line in reader.lines().map(parse_event) {
-        match parsed_line {
-            Ok(event) => {
-                match event {
-                    LogEvent::Request(request) => requests.push(request),
-                    LogEvent::Response(response) => responses.push(response),
-                }
+    let pairs: Vec<Box<RequestResponsePair>> =
+        pairs_iterator.filter(|pair| filter::matches_filter(pair, conditions))
+            .map(|pair| Box::new(pair))
+            .collect();
 
-                let mut new_pairs: Vec<Box<RequestResponsePair>> =
-                    extract_matching_request_response_pairs(&mut requests, &mut responses)
-                        .into_iter()
-                        .filter(|pair| filter::matches_filter(pair, conditions))
-                        .map(|pair| Box::new(pair))
-                        .collect();
-
-                pairs.append(&mut new_pairs);
-            }
-            Err(err) => warn!("{}", err),
-        }
-    }
     pairs
 }
 

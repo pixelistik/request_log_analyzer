@@ -78,7 +78,7 @@ pub struct RequestResponsePairIterator<'a> {
 }
 
 impl<'a> RequestResponsePairIterator<'a> {
-    fn new(events: &'a mut Iterator<Item = log_events::LogEvent>) -> Self {
+    pub fn new(events: &'a mut Iterator<Item = log_events::LogEvent>) -> Self {
         RequestResponsePairIterator {
             events: events,
             requests: vec![],
