@@ -110,38 +110,6 @@ fn parse_event(line: Result<String, std::io::Error>) -> Result<LogEvent, &'stati
 #[cfg(test)]
 mod tests {
     use super::*;
-    use timing_analyzer::Timing;
-
-    #[test]
-    fn test_extract_pairs() {
-        let conditions = filter::FilterConditions {
-            include_terms: None,
-            exclude_terms: None,
-            latest_time: None,
-        };
-
-        let pairs = extract_pairs(Box::new(File::open("src/test/simple-1.log").unwrap()),
-                                  &conditions);
-
-        assert_eq!(pairs[0].num_milliseconds(), 7);
-        assert_eq!(pairs[1].num_milliseconds(), 10);
-        assert_eq!(pairs.len(), 2);
-    }
-
-    #[test]
-    fn test_extract_pairs_ignore_broken_lines() {
-        let conditions = filter::FilterConditions {
-            include_terms: None,
-            exclude_terms: None,
-            latest_time: None,
-        };
-
-        let pairs = extract_pairs(Box::new(File::open("src/test/broken.log").unwrap()),
-                                  &conditions);
-
-        assert_eq!(pairs[0].num_milliseconds(), 7);
-        assert_eq!(pairs.len(), 1);
-    }
 
     #[test]
     fn test_run() {
@@ -160,6 +128,29 @@ mod tests {
 
         let result = run(&args);
         assert_eq!(result.count, 2);
+
+        let timing = result.timing.unwrap();
+        assert_eq!(timing.min, 7);
+        assert_eq!(timing.max, 10);
+    }
+
+    #[test]
+    fn test_run_ignore_broken_lines() {
+        let args = args::RequestLogAnalyzerArgs {
+            filename: String::from("src/test/broken.log"),
+            conditions: filter::FilterConditions {
+                include_terms: None,
+                exclude_terms: None,
+                latest_time: None,
+            },
+            graphite_server: None,
+            graphite_port: Some(2003),
+            graphite_prefix: None,
+            prometheus_listen: None,
+        };
+
+        let result = run(&args);
+        assert_eq!(result.count, 1);
     }
 
     #[test]
