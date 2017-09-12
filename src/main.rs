@@ -68,20 +68,6 @@ fn run(args: &args::RequestLogAnalyzerArgs) -> result::RequestLogAnalyzerResult 
         _ => Box::new(File::open(&args.filename).expect("Failed to open file.")),
     };
 
-    let pairs = extract_pairs(input, &args.conditions);
-    let timing_result = timing_analyzer::analyze(&pairs);
-    let error_result = error_analyzer::analyze(&pairs);
-
-    result::RequestLogAnalyzerResult {
-        count: pairs.len(),
-        timing: timing_result,
-        error: error_result,
-    }
-}
-
-fn extract_pairs(input: Box<io::Read>,
-                 conditions: &filter::FilterConditions)
-                 -> Vec<Box<RequestResponsePair>> {
     let reader = io::BufReader::new(input);
 
     let mut events_iterator = reader.lines()
@@ -93,11 +79,18 @@ fn extract_pairs(input: Box<io::Read>,
         request_response_matcher::RequestResponsePairIterator::new(&mut events_iterator);
 
     let pairs: Vec<Box<RequestResponsePair>> =
-        pairs_iterator.filter(|pair| filter::matches_filter(pair, conditions))
+        pairs_iterator.filter(|pair| filter::matches_filter(pair, &args.conditions))
             .map(|pair| Box::new(pair))
             .collect();
 
-    pairs
+    let timing_result = timing_analyzer::analyze(&pairs);
+    let error_result = error_analyzer::analyze(&pairs);
+
+    result::RequestLogAnalyzerResult {
+        count: pairs.len(),
+        timing: timing_result,
+        error: error_result,
+    }
 }
 
 fn parse_event(line: Result<String, std::io::Error>) -> Result<LogEvent, &'static str> {
