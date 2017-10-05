@@ -7,6 +7,8 @@ use std::env;
 extern crate chrono;
 use chrono::*;
 
+extern crate aggregated_stats;
+
 #[macro_use]
 extern crate clap;
 

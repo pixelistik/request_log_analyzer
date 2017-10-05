@@ -2,6 +2,7 @@
 name = "request_log_analyzer"
 version = "2.0.1"
 dependencies = [
+ "aggregated_stats 0.1.0 (git+https://github.com/pixelistik/aggregated_stats)",
  "chrono 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "clap 2.24.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "env_logger 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -10,6 +11,11 @@ dependencies = [
  "prometheus 0.2.10 (git+https://github.com/pingcap/rust-prometheus)",
  "streaming-stats 0.1.28 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
+
+[[package]]
+name = "aggregated_stats"
+version = "0.1.0"
+source = "git+https://github.com/pixelistik/aggregated_stats#d6c8604aff6e42a191690ea2de811b22d049923b"
 
 [[package]]
 name = "aho-corasick"
@@ -446,6 +452,7 @@ version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [metadata]
+"checksum aggregated_stats 0.1.0 (git+https://github.com/pixelistik/aggregated_stats)" = "<none>"
 "checksum aho-corasick 0.6.3 (registry+https://github.com/rust-lang/crates.io-index)" = "500909c4f87a9e52355b26626d890833e9e1d53ac566db76c36faa984b889699"
 "checksum ansi_term 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)" = "23ac7c30002a5accbf7e8987d0632fa6de155b7c3d39d0067317a391e00a2ef6"
 "checksum atty 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "d912da0db7fa85514874458ca3651fe2cddace8d0b0505571dbdcd41ab490159"
