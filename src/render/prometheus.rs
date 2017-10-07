@@ -101,6 +101,7 @@ mod tests {
                 avg: 37,
                 median: 10,
                 percentile90: 100,
+                count: 3,
             }),
             error: Some(error_analyzer::ErrorRatesResult {
                 client_error_4xx: 0.1,
@@ -132,6 +133,7 @@ mod tests {
                 avg: 42,
                 median: 75,
                 percentile90: 900,
+                count: 300,
             }),
             error: None,
         };

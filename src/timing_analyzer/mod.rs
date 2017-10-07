@@ -10,6 +10,7 @@ pub struct TimingResult {
     pub avg: usize,
     pub median: usize,
     pub percentile90: usize,
+    pub count: usize,
 }
 
 pub trait Timing {
@@ -44,28 +45,31 @@ pub fn analyze<T>(timings: &Vec<T>) -> Option<TimingResult>
         avg: avg,
         median: median,
         percentile90: percentile90,
+        count: times.len(),
     })
 }
 
 pub fn analyze_iterator<I, T>(timings: I) -> Option<TimingResult>
-    where I: Iterator<Item=T>, T: Timing
+    where I: Iterator<Item = T>,
+          T: Timing
 {
-	let mut stats = aggregated_stats::AggregatedStats::new();
+    let mut stats = aggregated_stats::AggregatedStats::new();
 
-	for timing in timings {
-		stats.add(timing.num_milliseconds() as usize);
-	}
-	
-	if stats.max().is_none() {
-		return None;
-	}
-	
-	Some(TimingResult {
+    for timing in timings {
+        stats.add(timing.num_milliseconds() as usize);
+    }
+
+    if stats.max().is_none() {
+        return None;
+    }
+
+    Some(TimingResult {
         max: stats.max().unwrap(),
         min: stats.min().unwrap(),
         avg: stats.average().unwrap() as usize,
         median: stats.median().unwrap() as usize,
         percentile90: stats.quantile(0.9).unwrap() as usize,
+        count: stats.count(),
     })
 }
 
@@ -91,16 +95,17 @@ mod tests {
             avg: 37,
             median: 10,
             percentile90: 100,
+            count: 3,
         });
 
         assert_eq!(result, expected);
     }
-	
-	#[test]
+
+    #[test]
     fn test_analyze_iterator() {
         let times: Vec<i64> = vec![1, 10, 100];
-		let times_iterator = times.into_iter();
-		
+        let times_iterator = times.into_iter();
+
         let result = analyze_iterator(times_iterator);
 
         let expected = Some(TimingResult {
@@ -109,6 +114,7 @@ mod tests {
             avg: 37,
             median: 10,
             percentile90: 100,
+            count: 3,
         });
 
         assert_eq!(result, expected);
@@ -124,12 +130,12 @@ mod tests {
 
         assert_eq!(result, expected);
     }
-	
-	#[test]
+
+    #[test]
     fn test_analyze_empty_iterator() {
         let times: Vec<i64> = vec![];
-		let times_iterator = times.into_iter();
-		
+        let times_iterator = times.into_iter();
+
         let result = analyze_iterator(times_iterator);
 
         let expected = None;

@@ -73,6 +73,7 @@ mod tests {
                     avg: 37,
                     median: 10,
                     percentile90: 100,
+                    count: 3,
                 }),
                 error: None,
             }
