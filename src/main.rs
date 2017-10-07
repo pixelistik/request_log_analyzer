@@ -78,20 +78,16 @@ fn run(args: &args::RequestLogAnalyzerArgs) -> result::RequestLogAnalyzerResult 
         .map(|event| event.unwrap());
 
     let pairs_iterator =
-        request_response_matcher::RequestResponsePairIterator::new(&mut events_iterator);
+        request_response_matcher::RequestResponsePairIterator::new(&mut events_iterator)
+            .filter(|pair| filter::matches_filter(pair, &args.conditions));
 
-    let pairs: Vec<Box<RequestResponsePair>> =
-        pairs_iterator.filter(|pair| filter::matches_filter(pair, &args.conditions))
-            .map(|pair| Box::new(pair))
-            .collect();
-
-    let timing_result = timing_analyzer::analyze(&pairs);
-    let error_result = error_analyzer::analyze(&pairs);
+    let timing_result = timing_analyzer::analyze_iterator(pairs_iterator);
+    // let error_result = error_analyzer::analyze(&pairs);
 
     result::RequestLogAnalyzerResult {
-        count: pairs.len(),
+        count: timing_result.as_ref().unwrap().count,
         timing: timing_result,
-        error: error_result,
+        error: None,
     }
 }
 
