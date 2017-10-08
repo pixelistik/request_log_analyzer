@@ -29,7 +29,6 @@ mod log_parser;
 use log_parser::log_events::*;
 mod render;
 mod request_response_matcher;
-use request_response_matcher::*;
 mod http_handler;
 mod result;
 
