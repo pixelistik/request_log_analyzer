@@ -10,7 +10,7 @@ pub trait HttpErrorState {
     fn error(&self) -> Option<HttpError>;
 }
 
-pub fn analyze<T>(statuses: &Vec<T>) -> Option<ErrorRatesResult>
+pub fn analyze<T>(statuses: &[T]) -> Option<ErrorRatesResult>
     where T: HttpErrorState
 {
     if statuses.is_empty() {
