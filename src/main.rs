@@ -16,8 +16,6 @@ extern crate env_logger;
 #[macro_use]
 extern crate log;
 
-extern crate stats;
-
 extern crate prometheus;
 extern crate hyper;
 
@@ -122,6 +120,8 @@ mod tests {
         let timing = result.timing.unwrap();
         assert_eq!(timing.min, 7);
         assert_eq!(timing.max, 10);
+
+        assert!(result.error.is_some());
     }
 
     #[test]

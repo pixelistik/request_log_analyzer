@@ -19,14 +19,12 @@ License: MIT, see
 https://github.com/pixelistik/request_log_analyzer/blob/master/LICENSE
 https://crates.io/crates/clap
 https://crates.io/crates/chrono
-https://crates.io/crates/streaming-stats
 https://crates.io/crates/hyper
 https://crates.io/crates/prometheus
 """
 
 [dependencies]
 chrono = "0.3"
-streaming-stats = "0.1"
 clap = "2.20"
 log = "*"
 env_logger = "*"
