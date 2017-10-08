@@ -69,8 +69,8 @@ impl Renderer for PrometheusRenderer {
 
         match result.error {
             Some(error) => {
-                self.client_error_4xx_rate.set(error.client_error_4xx as f64);
-                self.server_error_5xx_rate.set(error.server_error_5xx as f64);
+                self.client_error_4xx_rate.set(f64::from(error.client_error_4xx));
+                self.server_error_5xx_rate.set(f64::from(error.server_error_5xx));
             }
             None => {
                 warn!("No matching log lines in file.");
