@@ -1,4 +1,5 @@
 use aggregated_stats;
+use result;
 
 #[derive(PartialEq, Debug)]
 pub struct TimingResult {
@@ -14,7 +15,7 @@ pub trait Timing {
     fn num_milliseconds(&self) -> i64;
 }
 
-pub fn analyze_iterator<I, T>(timings: I) -> Option<TimingResult>
+pub fn analyze_iterator<I, T>(timings: I) -> result::RequestLogAnalyzerResult
     where I: Iterator<Item = T>,
           T: Timing
 {
@@ -25,21 +26,30 @@ pub fn analyze_iterator<I, T>(timings: I) -> Option<TimingResult>
     }
 
     if stats.max().is_none() {
-        return None;
+        return result::RequestLogAnalyzerResult {
+            count: 0,
+            timing: None,
+            error: None,
+        };
     }
 
-    Some(TimingResult {
-        max: stats.max().unwrap(),
-        min: stats.min().unwrap(),
-        avg: stats.average().unwrap() as usize,
-        median: stats.median().unwrap() as usize,
-        percentile90: stats.quantile(0.9).unwrap() as usize,
+    result::RequestLogAnalyzerResult {
         count: stats.count(),
-    })
+        timing: Some(TimingResult {
+            max: stats.max().unwrap(),
+            min: stats.min().unwrap(),
+            avg: stats.average().unwrap() as usize,
+            median: stats.median().unwrap() as usize,
+            percentile90: stats.quantile(0.9).unwrap() as usize,
+            count: stats.count(),
+        }),
+        error: None,
+    }
 }
 
 #[cfg(test)]
 mod tests {
+    use result;
     use super::*;
 
     impl Timing for i64 {
@@ -55,14 +65,18 @@ mod tests {
 
         let result = analyze_iterator(times_iterator);
 
-        let expected = Some(TimingResult {
-            max: 100,
-            min: 1,
-            avg: 37,
-            median: 10,
-            percentile90: 100,
+        let expected = result::RequestLogAnalyzerResult {
             count: 3,
-        });
+            timing: Some(TimingResult {
+                max: 100,
+                min: 1,
+                avg: 37,
+                median: 10,
+                percentile90: 100,
+                count: 3,
+            }),
+            error: None,
+        };
 
         assert_eq!(result, expected);
     }
@@ -74,7 +88,11 @@ mod tests {
 
         let result = analyze_iterator(times_iterator);
 
-        let expected = None;
+        let expected = result::RequestLogAnalyzerResult {
+            count: 0,
+            timing: None,
+            error: None,
+        };
 
         assert_eq!(result, expected);
     }

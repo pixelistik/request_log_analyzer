@@ -81,11 +81,7 @@ fn run(args: &args::RequestLogAnalyzerArgs) -> result::RequestLogAnalyzerResult 
     let timing_result = timing_analyzer::analyze_iterator(pairs_iterator);
     // let error_result = error_analyzer::analyze(&pairs);
 
-    result::RequestLogAnalyzerResult {
-        count: timing_result.as_ref().unwrap().count,
-        timing: timing_result,
-        error: None,
-    }
+    timing_result
 }
 
 fn parse_event(line: Result<String, std::io::Error>) -> Result<LogEvent, &'static str> {
