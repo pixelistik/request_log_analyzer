@@ -1,7 +1,7 @@
 pub mod log_events;
 use self::log_events::*;
 
-pub fn parse_line(line: &String) -> Result<LogEvent, &'static str> {
+pub fn parse_line(line: &str) -> Result<LogEvent, &'static str> {
     if line.contains("->") {
         let request = Request::new_from_log_line(line);
 

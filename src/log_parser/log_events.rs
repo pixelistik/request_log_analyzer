@@ -20,7 +20,7 @@ pub struct Request {
 }
 
 impl Request {
-    pub fn new_from_log_line(log_line: &String) -> Result<Request, &'static str> {
+    pub fn new_from_log_line(log_line: &str) -> Result<Request, &'static str> {
         let parts: Vec<&str> = log_line.split(' ').collect();
 
         let id = match parts.get(2) {
@@ -48,7 +48,7 @@ impl Request {
         Ok(Request {
             id: id_parsed,
             time: date_parsed,
-            original_log_line: log_line.clone(),
+            original_log_line: log_line.to_string(),
         })
     }
 }
@@ -62,7 +62,7 @@ pub struct Response {
 }
 
 impl Response {
-    pub fn new_from_log_line(log_line: &String) -> Result<Response, &'static str> {
+    pub fn new_from_log_line(log_line: &str) -> Result<Response, &'static str> {
         let parts: Vec<&str> = log_line.split(' ').collect();
 
         let id = parts[2];
@@ -97,7 +97,7 @@ impl Response {
             id: id_numeric,
             response_time: response_time_duration,
             http_error: http_error,
-            original_log_line: log_line.clone(),
+            original_log_line: log_line.to_string(),
         })
     }
 }
