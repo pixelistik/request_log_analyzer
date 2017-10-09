@@ -1,6 +1,6 @@
 [root]
 name = "request_log_analyzer"
-version = "2.0.1"
+version = "3.0.0"
 dependencies = [
  "aggregated_stats 0.1.0 (git+https://github.com/pixelistik/aggregated_stats)",
  "chrono 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
