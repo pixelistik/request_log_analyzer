@@ -15,6 +15,9 @@ time.median:    6
 time.90percent: 27
 time.max:       15747 (times are in milliseconds)
 
+Note: When analyzing more than 10.000 lines, median and 90th percentile are
+approximated for performance.
+
 License: MIT, see
 https://github.com/pixelistik/request_log_analyzer/blob/master/LICENSE
 https://crates.io/crates/clap
