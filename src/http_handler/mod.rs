@@ -44,7 +44,7 @@ mod tests {
     use hyper;
 
     use filter;
-    use timing_analyzer;
+    use analyzer;
     use super::*;
 
     mod mock;
@@ -67,7 +67,7 @@ mod tests {
         fn run_fn(_: &args::RequestLogAnalyzerArgs) -> result::RequestLogAnalyzerResult {
             result::RequestLogAnalyzerResult {
                 count: 3,
-                timing: Some(timing_analyzer::TimingResult {
+                timing: Some(analyzer::TimingResult {
                     max: 100,
                     min: 1,
                     avg: 37,

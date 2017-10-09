@@ -1,6 +1,6 @@
 use log_parser::*;
-use timing_analyzer::Timing;
-use timing_analyzer::aggregated_error_rates::HttpErrorState;
+use analyzer::Timing;
+use analyzer::aggregated_error_rates::HttpErrorState;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct RequestResponsePair {
@@ -111,8 +111,8 @@ mod tests {
     use chrono::*;
     use super::*;
     use log_parser;
-    use timing_analyzer::Timing;
-    use timing_analyzer::aggregated_error_rates::HttpErrorState;
+    use analyzer::Timing;
+    use analyzer::aggregated_error_rates::HttpErrorState;
 
     #[test]
     fn test_extract_matching_request_response_pairs_iterator() {

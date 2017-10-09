@@ -19,7 +19,7 @@ extern crate log;
 extern crate prometheus;
 extern crate hyper;
 
-mod timing_analyzer;
+mod analyzer;
 mod args;
 mod filter;
 mod log_parser;
@@ -77,7 +77,7 @@ fn run(args: &args::RequestLogAnalyzerArgs) -> result::RequestLogAnalyzerResult 
         request_response_matcher::RequestResponsePairIterator::new(&mut events_iterator)
             .filter(|pair| filter::matches_filter(pair, &args.conditions));
 
-    timing_analyzer::analyze_iterator(pairs_iterator)
+    analyzer::analyze_iterator(pairs_iterator)
 }
 
 fn parse_event(line: Result<String, std::io::Error>) -> Result<LogEvent, &'static str> {

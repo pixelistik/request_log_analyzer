@@ -41,13 +41,13 @@ impl Renderer for TerminalRenderer {
 
 #[cfg(test)]
 mod tests {
-    use timing_analyzer;
+    use analyzer;
     use super::*;
 
     fn get_result_fixture() -> result::RequestLogAnalyzerResult {
         result::RequestLogAnalyzerResult {
             count: 3,
-            timing: Some(timing_analyzer::TimingResult {
+            timing: Some(analyzer::TimingResult {
                 max: 100,
                 min: 1,
                 avg: 37,
@@ -55,7 +55,7 @@ mod tests {
                 percentile90: 100,
                 count: 3,
             }),
-            error: Some(timing_analyzer::aggregated_error_rates::ErrorRatesResult {
+            error: Some(analyzer::aggregated_error_rates::ErrorRatesResult {
                 client_error_4xx: 0.1,
                 server_error_5xx: 0.2,
             }),

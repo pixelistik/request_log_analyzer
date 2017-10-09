@@ -88,13 +88,13 @@ impl Renderer for PrometheusRenderer {
 mod tests {
     use std::str;
     use super::*;
-    use timing_analyzer;
+    use analyzer;
 
     #[test]
     fn test_render_1() {
         let result = result::RequestLogAnalyzerResult {
             count: 3,
-            timing: Some(timing_analyzer::TimingResult {
+            timing: Some(analyzer::TimingResult {
                 max: 100,
                 min: 1,
                 avg: 37,
@@ -102,7 +102,7 @@ mod tests {
                 percentile90: 100,
                 count: 3,
             }),
-            error: Some(timing_analyzer::aggregated_error_rates::ErrorRatesResult {
+            error: Some(analyzer::aggregated_error_rates::ErrorRatesResult {
                 client_error_4xx: 0.1,
                 server_error_5xx: 0.2,
             }),
@@ -126,7 +126,7 @@ mod tests {
     fn test_render_2() {
         let result = result::RequestLogAnalyzerResult {
             count: 300,
-            timing: Some(timing_analyzer::TimingResult {
+            timing: Some(analyzer::TimingResult {
                 max: 1000,
                 min: 10,
                 avg: 42,

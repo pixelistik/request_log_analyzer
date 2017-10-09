@@ -1,8 +1,8 @@
-use timing_analyzer;
+use analyzer;
 
 #[derive(PartialEq, Debug)]
 pub struct RequestLogAnalyzerResult {
     pub count: usize,
-    pub timing: Option<timing_analyzer::TimingResult>,
-    pub error: Option<timing_analyzer::aggregated_error_rates::ErrorRatesResult>,
+    pub timing: Option<analyzer::TimingResult>,
+    pub error: Option<analyzer::aggregated_error_rates::ErrorRatesResult>,
 }

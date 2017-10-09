@@ -54,8 +54,8 @@ pub fn analyze_iterator<I, T>(timings: I) -> result::RequestLogAnalyzerResult
 #[cfg(test)]
 mod tests {
     use result;
-    use timing_analyzer::aggregated_error_rates::HttpErrorState;
-    use timing_analyzer::aggregated_error_rates::ErrorRatesResult;
+    use analyzer::aggregated_error_rates::HttpErrorState;
+    use analyzer::aggregated_error_rates::ErrorRatesResult;
     use log_parser::log_events::HttpError;
     use super::*;
 
