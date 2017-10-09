@@ -1,5 +1,4 @@
 use timing_analyzer;
-use error_analyzer;
 
 #[derive(PartialEq, Debug)]
 pub struct RequestLogAnalyzerResult {

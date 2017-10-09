@@ -89,7 +89,6 @@ mod tests {
     use std::str;
     use super::*;
     use timing_analyzer;
-    use error_analyzer;
 
     #[test]
     fn test_render_1() {

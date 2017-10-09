@@ -79,7 +79,6 @@ mod tests {
     use std::str;
     use chrono::*;
     use timing_analyzer;
-    use error_analyzer;
     use super::*;
 
     struct MockTcpStream {

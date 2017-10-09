@@ -42,7 +42,6 @@ impl Renderer for TerminalRenderer {
 #[cfg(test)]
 mod tests {
     use timing_analyzer;
-    use error_analyzer;
     use super::*;
 
     fn get_result_fixture() -> result::RequestLogAnalyzerResult {
