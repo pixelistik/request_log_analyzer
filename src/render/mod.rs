@@ -56,7 +56,7 @@ mod tests {
                 percentile90: 100,
                 count: 3,
             }),
-            error: Some(error_analyzer::ErrorRatesResult {
+            error: Some(timing_analyzer::aggregated_error_rates::ErrorRatesResult {
                 client_error_4xx: 0.1,
                 server_error_5xx: 0.2,
             }),

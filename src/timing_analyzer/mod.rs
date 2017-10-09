@@ -1,6 +1,8 @@
 use aggregated_stats;
 use result;
 
+pub mod aggregated_error_rates;
+
 #[derive(PartialEq, Debug)]
 pub struct TimingResult {
     pub max: usize,
@@ -17,12 +19,14 @@ pub trait Timing {
 
 pub fn analyze_iterator<I, T>(timings: I) -> result::RequestLogAnalyzerResult
     where I: Iterator<Item = T>,
-          T: Timing
+          T: Timing + aggregated_error_rates::HttpErrorState
 {
     let mut stats = aggregated_stats::AggregatedStats::new();
+    let mut error_rates = aggregated_error_rates::AggregatedErrorRates::new();
 
     for timing in timings {
         stats.add(timing.num_milliseconds() as usize);
+        error_rates.add(&timing);
     }
 
     if stats.max().is_none() {
@@ -43,18 +47,27 @@ pub fn analyze_iterator<I, T>(timings: I) -> result::RequestLogAnalyzerResult
             percentile90: stats.quantile(0.9).unwrap() as usize,
             count: stats.count(),
         }),
-        error: None,
+        error: error_rates.result(),
     }
 }
 
 #[cfg(test)]
 mod tests {
     use result;
+    use timing_analyzer::aggregated_error_rates::HttpErrorState;
+    use timing_analyzer::aggregated_error_rates::ErrorRatesResult;
+    use log_parser::log_events::HttpError;
     use super::*;
 
     impl Timing for i64 {
         fn num_milliseconds(&self) -> i64 {
             self.clone()
+        }
+    }
+
+    impl HttpErrorState for i64 {
+        fn error(&self) -> Option<HttpError> {
+            None
         }
     }
 
@@ -75,7 +88,10 @@ mod tests {
                 percentile90: 100,
                 count: 3,
             }),
-            error: None,
+            error: Some(ErrorRatesResult {
+                client_error_4xx: 0.0,
+                server_error_5xx: 0.0,
+            }),
         };
 
         assert_eq!(result, expected);

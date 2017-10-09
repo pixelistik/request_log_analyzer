@@ -5,5 +5,5 @@ use error_analyzer;
 pub struct RequestLogAnalyzerResult {
     pub count: usize,
     pub timing: Option<timing_analyzer::TimingResult>,
-    pub error: Option<error_analyzer::ErrorRatesResult>,
+    pub error: Option<timing_analyzer::aggregated_error_rates::ErrorRatesResult>,
 }
