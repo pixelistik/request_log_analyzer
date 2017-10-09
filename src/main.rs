@@ -77,10 +77,7 @@ fn run(args: &args::RequestLogAnalyzerArgs) -> result::RequestLogAnalyzerResult 
         request_response_matcher::RequestResponsePairIterator::new(&mut events_iterator)
             .filter(|pair| filter::matches_filter(pair, &args.conditions));
 
-    let timing_result = timing_analyzer::analyze_iterator(pairs_iterator);
-    // let error_result = error_analyzer::analyze(&pairs);
-
-    timing_result
+    timing_analyzer::analyze_iterator(pairs_iterator)
 }
 
 fn parse_event(line: Result<String, std::io::Error>) -> Result<LogEvent, &'static str> {
