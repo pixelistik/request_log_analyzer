@@ -125,6 +125,9 @@ mod tests {
 		assert!(result.contains("time_avg=37"));
 		assert!(result.contains("time_median=10"));
 		assert!(result.contains("time_90percent=100"));
+		assert!(result.contains("client_error_4xx_rate=0.1"));
+		assert!(result.contains("server_error_5xx_rate=0.2"));
+		
 	}
 	
 	#[test]
@@ -145,5 +148,7 @@ mod tests {
 		assert!(!result.contains("time_avg="));
 		assert!(!result.contains("time_median="));
 		assert!(!result.contains("time_90percent="));
+		assert!(!result.contains("client_error_4xx_rate="));
+		assert!(!result.contains("server_error_5xx_rate="));
 	}
 }
