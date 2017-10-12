@@ -18,10 +18,10 @@ impl InfluxDbRenderer {
 impl Renderer for InfluxDbRenderer {
     fn render(&mut self, result: result::RequestLogAnalyzerResult) -> () {		
 		let client = client::Client::new();
-		let res = client.post(&self.write_url)
-					.body(&post_body(result))
-					.send()
-					.unwrap();
+		client.post(&self.write_url)
+			.body(&post_body(result))
+			.send()
+			.expect("Could not connect to InfluxDB host.");
     }
 }
 
