@@ -7,29 +7,23 @@ use hyper::net::Fresh;
 use hyper::method;
 use hyper::Url;
 
-pub struct InfluxDbRenderer<'a> {
-    time: DateTime<UTC>,
-    prefix: Option<String>,
-    stream: &'a mut Write,
+pub struct InfluxDbRenderer {
+    write_url: String,
 }
 
-impl<'a> InfluxDbRenderer<'a> {
-    pub fn new(time: DateTime<UTC>,
-               prefix: Option<String>,
-               stream: &'a mut Write)
-               -> InfluxDbRenderer<'a> {
+impl InfluxDbRenderer {
+    pub fn new(write_url: String)
+               -> InfluxDbRenderer {
         InfluxDbRenderer {
-            time: time,
-            prefix: prefix,
-            stream: stream,
+            write_url: write_url,
         }
     }
 }
 
-impl<'a> Renderer for InfluxDbRenderer<'a> {
+impl Renderer for InfluxDbRenderer {
     fn render(&mut self, result: result::RequestLogAnalyzerResult) -> () {		
 		let client = client::Client::new();
-		let res = client.post("http://localhost:8086/write?db=mydb")
+		let res = client.post(&self.write_url)
 					.body(&post_body(result))
 					.send()
 					.unwrap();
@@ -112,6 +106,11 @@ mod tests {
             }),
         }
     }
+	
+	#[test]
+	fn test_instantiate() {
+		InfluxDbRenderer::new(String::from("http://example.com/write?db=testdb"));
+	}
 	
 	#[test]
 	fn test_post_body() {
