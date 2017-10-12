@@ -1,5 +1,6 @@
 pub mod graphite;
 pub mod prometheus;
+pub mod influxdb;
 
 use result;
 
