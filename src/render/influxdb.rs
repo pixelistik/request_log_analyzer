@@ -43,13 +43,11 @@ fn post_body(result: result::RequestLogAnalyzerResult) -> String {
 	match result.timing {
 		Some(timing) => {
 			timing_values = format!("\
-				count={} \
 				time_max={} \
 				time_min={} \
 				time_avg={} \
 				time_median={} \
 				time_90percent={}", 
-				timing.count,
 				timing.max,
 				timing.min,
 				timing.avg,
@@ -70,7 +68,7 @@ fn post_body(result: result::RequestLogAnalyzerResult) -> String {
 		None => warn!("No matching log lines in file."),
 	}
 	
-	format!("request_log {} {}", timing_values, error_rate_values)
+	format!("request_log count={} {} {}", result.count, timing_values, error_rate_values)
 }
 
 #[cfg(test)]
@@ -127,5 +125,25 @@ mod tests {
 		assert!(result.contains("time_avg=37"));
 		assert!(result.contains("time_median=10"));
 		assert!(result.contains("time_90percent=100"));
+	}
+	
+	#[test]
+	fn test_post_body_empty() {
+		let result = post_body(result::RequestLogAnalyzerResult {
+            count: 0,
+            timing: None,
+            error: None,
+        });
+		
+		assert!(result.starts_with("request_log "));
+		
+		assert!(result.contains("count=0"));
+		
+		// Don't include empty fields
+		assert!(!result.contains("time_max="));
+		assert!(!result.contains("time_min="));
+		assert!(!result.contains("time_avg="));
+		assert!(!result.contains("time_median="));
+		assert!(!result.contains("time_90percent="));
 	}
 }
