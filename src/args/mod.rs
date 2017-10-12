@@ -10,6 +10,7 @@ pub struct RequestLogAnalyzerArgs {
     pub graphite_port: Option<u16>,
     pub graphite_prefix: Option<String>,
     pub prometheus_listen: Option<String>,
+	pub influxdb_write_url: Option<String>,
 }
 
 pub fn parse_args<'a, T>(args: T) -> Result<RequestLogAnalyzerArgs, &'a str>
@@ -64,6 +65,11 @@ pub fn parse_args<'a, T>(args: T) -> Result<RequestLogAnalyzerArgs, &'a str>
             .long("prometheus-listen")
             .help("Address and port to bind Prometheus HTTP server to, e.g. 'localhost:9898'")
             .takes_value(true))
+		.arg(Arg::with_name("influxdb-write-url")
+            .value_name("INFLUXDB_WRITE_URL")
+            .long("influxdb-write-url")
+            .help("base URL of InfluxDB to send metrics to, e.g. 'http://localhost:8086/write?db=mydb'")
+            .takes_value(true))
         .get_matches_from(args);
 
     let filename = app.value_of("filename").unwrap_or("-").to_string();
@@ -104,6 +110,11 @@ pub fn parse_args<'a, T>(args: T) -> Result<RequestLogAnalyzerArgs, &'a str>
         Some(value) => Some(String::from(value)),
         None => None,
     };
+	
+	let influxdb_write_url = match app.value_of("influxdb-write-url") {
+        Some(value) => Some(String::from(value)),
+        None => None,
+    };
 
     Ok(RequestLogAnalyzerArgs {
         filename: filename,
@@ -112,6 +123,7 @@ pub fn parse_args<'a, T>(args: T) -> Result<RequestLogAnalyzerArgs, &'a str>
         graphite_port: graphite_port,
         graphite_prefix: graphite_prefix,
         prometheus_listen: prometheus_listen,
+		influxdb_write_url: influxdb_write_url
     })
 }
 
@@ -136,6 +148,7 @@ mod tests {
             graphite_port: Some(2003),
             graphite_prefix: None,
             prometheus_listen: None,
+			influxdb_write_url: None,
         };
 
         let result = parse_args(raw_args).unwrap();
@@ -160,7 +173,9 @@ mod tests {
                             String::from("--graphite-prefix"),
                             String::from("prod"),
                             String::from("--prometheus-listen"),
-                            String::from("0.0.0.0:9898")];
+                            String::from("0.0.0.0:9898"),
+							String::from("--influxdb-write-url"),
+							String::from("https://example.com/write?db=metrics_prod")];
 
         let expected = RequestLogAnalyzerArgs {
             filename: String::from("my-logfile.log"),
@@ -173,6 +188,7 @@ mod tests {
             graphite_port: Some(4000),
             graphite_prefix: Some(String::from("prod")),
             prometheus_listen: Some(String::from("0.0.0.0:9898")),
+			influxdb_write_url: Some(String::from("https://example.com/write?db=metrics_prod")),
         };
 
         let result = parse_args(raw_args).unwrap();
@@ -204,6 +220,7 @@ mod tests {
             graphite_port: Some(2003),
             graphite_prefix: None,
             prometheus_listen: None,
+			influxdb_write_url: None,
         };
 
         let result = parse_args(raw_args).unwrap();
