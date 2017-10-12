@@ -1,11 +1,6 @@
-use chrono::*;
-use std::io::prelude::*;
 use render::Renderer;
 use result;
 use hyper::client;
-use hyper::net::Fresh;
-use hyper::method;
-use hyper::Url;
 
 pub struct InfluxDbRenderer {
     write_url: String,
@@ -67,27 +62,9 @@ fn post_body(result: result::RequestLogAnalyzerResult) -> String {
 
 #[cfg(test)]
 mod tests {
-    use std::io;
-    use std::io::prelude::*;
     use std::str;
-    use chrono::*;
     use analyzer;
     use super::*;
-
-    struct MockTcpStream {
-        write_calls: Vec<String>,
-    }
-
-    impl Write for MockTcpStream {
-        fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-            self.write_calls.push(str::from_utf8(buf).unwrap().to_string());
-            Ok(1)
-        }
-
-        fn flush(&mut self) -> io::Result<()> {
-            Ok(())
-        }
-    }
 
     fn get_result_fixture() -> result::RequestLogAnalyzerResult {
         result::RequestLogAnalyzerResult {
