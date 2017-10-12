@@ -119,6 +119,13 @@ mod tests {
 	fn test_post_body() {
 		let result = post_body(get_result_fixture());
 		
+		assert!(result.starts_with("request_log "));
+		
+		assert!(result.contains("count=3"));
 		assert!(result.contains("time_max=100"));
+		assert!(result.contains("time_min=1"));
+		assert!(result.contains("time_avg=37"));
+		assert!(result.contains("time_median=10"));
+		assert!(result.contains("time_90percent=100"));
 	}
 }
