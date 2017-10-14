@@ -1,5 +1,6 @@
 use render::Renderer;
 use result;
+use hyper;
 use hyper::client;
 
 pub struct InfluxDbRenderer {
@@ -15,10 +16,15 @@ impl InfluxDbRenderer {
 impl Renderer for InfluxDbRenderer {
     fn render(&mut self, result: result::RequestLogAnalyzerResult) -> () {
         let client = client::Client::new();
-        client.post(&self.write_url)
-            .body(&post_body(result))
+        let data = post_body(result);
+        let response = client.post(&self.write_url)
+            .body(&data)
             .send()
             .expect("Could not connect to InfluxDB host.");
+
+        if response.status.class() != hyper::status::StatusClass::Success {
+            panic!("POSTing data to InfluxDB failed: {:?}", response.status);
+        }
     }
 }
 
