@@ -123,7 +123,7 @@ Here we only look at the request/response lines from a specific hour.
 
 In the examples above, we used `request_log_analyzer` for individual insights.
 
-But it can also be used to continuously feed data into a Graphite or Prometheus data store, in order to be used for monitoring.
+But it can also be used to continuously feed data into a Graphite, InfluxDB or Prometheus data store, in order to be used for monitoring.
 
 	$ request_log_analyzer -t 5 \
 		--graphite-server localhost \
@@ -139,6 +139,17 @@ This will analyze the latest 5 minutes of the log file, then push it to a Graphi
 etc.
 
 If you set this command up as a cronjob to run every 1 minute, you can constantly monitor the data for the previous 5 minute window.
+
+### InfluxDB
+
+    $ request_log_analyzer -t 5 \
+        --influxdb-write-url "http://localhost:8086/write?db=metrics" \
+        --influxdb-tags type=publisher,time=5min \
+        crx-quickstart/logs/request.log
+
+This will analyze the latest 5 minutes of the log file, then push it to an InfluxDB server running on localhost, storing the results in the database `metrics` as the measurement `request_log` with the fields `time_max`, `time_min` etc.
+
+`--influxdb-tags` are an optional way to identify and categorize your measurements, in this example the tags `type=publisher` and `time=5min` are set.
 
 ### Prometheus
 
