@@ -53,6 +53,12 @@ fn main() {
                                                                         &mut stream)));
     }
 
+    if args.influxdb_write_url.is_some() {
+        renderers.push(Box::new(render::influxdb::InfluxDbRenderer::new(args.influxdb_write_url
+            .clone()
+            .unwrap())));
+    }
+
     for mut renderer in renderers {
         renderer.render(result.clone());
     }
