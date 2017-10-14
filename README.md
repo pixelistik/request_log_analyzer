@@ -20,14 +20,24 @@ Clone the repository and run `cargo build`.
         -V, --version    Prints version information
 
     OPTIONS:
-            --exclude <TERM>...                    Exclude lines that contain one of these terms
-            --graphite-port <GRAPHITE_PORT>         [default: 2003]
-            --graphite-prefix <GRAPHITE_PREFIX>    Prefix for Graphite key, e.g. 'servers.prod.publisher1'
-            --graphite-server <GRAPHITE_SERVER>    Send values to this Graphite server instead of stdout
-            --include <TERM>...                    Only include lines that contain one of these terms
-            --prometheus-listen <BINDING_ADDRESS>
-            Address and port to bind Prometheus HTTP server to, e.g. 'localhost:9898'
-            -t <MINUTES>                           Limit to the last n minutes
+        --exclude <TERM>...                          Exclude lines that contain one of these terms
+        --graphite-port <GRAPHITE_PORT>               [default: 2003]
+        --graphite-prefix <GRAPHITE_PREFIX>
+        Prefix for Graphite key, e.g. 'servers.prod.publisher1'
+
+        --graphite-server <GRAPHITE_SERVER>
+        Send values to this Graphite server instead of stdout
+
+        --include <TERM>...
+        Only include lines that contain one of these terms
+
+        --influxdb-write-url <INFLUXDB_WRITE_URL>
+        base URL of InfluxDB to send metrics to, e.g. 'http://localhost:8086/write?db=mydb'
+
+        --prometheus-listen <BINDING_ADDRESS>
+        Address and port to bind Prometheus HTTP server to, e.g. 'localhost:9898'
+
+        -t <MINUTES>                                     Limit to the last n minutes
 
     ARGS:
         <FILE>    Log file to analyze, defaults to stdin
