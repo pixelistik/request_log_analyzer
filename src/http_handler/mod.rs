@@ -62,7 +62,8 @@ mod tests {
             graphite_port: Some(2003),
             graphite_prefix: None,
             prometheus_listen: None,
-			influxdb_write_url: None,
+            influxdb_write_url: None,
+            influxdb_tags: None,
         };
 
         fn run_fn(_: &args::RequestLogAnalyzerArgs) -> result::RequestLogAnalyzerResult {

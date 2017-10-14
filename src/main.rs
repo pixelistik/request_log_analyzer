@@ -55,8 +55,10 @@ fn main() {
 
     if args.influxdb_write_url.is_some() {
         renderers.push(Box::new(render::influxdb::InfluxDbRenderer::new(args.influxdb_write_url
-            .clone()
-            .unwrap())));
+                                                                            .clone()
+                                                                            .unwrap(),
+                                                                        args.influxdb_tags
+                                                                            .clone())));
     }
 
     for mut renderer in renderers {
@@ -114,6 +116,7 @@ mod tests {
             graphite_prefix: None,
             prometheus_listen: None,
             influxdb_write_url: None,
+            influxdb_tags: None,
         };
 
         let result = run(&args);
@@ -140,6 +143,7 @@ mod tests {
             graphite_prefix: None,
             prometheus_listen: None,
             influxdb_write_url: None,
+            influxdb_tags: None,
         };
 
         let result = run(&args);

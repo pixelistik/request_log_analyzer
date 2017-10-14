@@ -34,6 +34,9 @@ Clone the repository and run `cargo build`.
         --influxdb-write-url <INFLUXDB_WRITE_URL>
         base URL of InfluxDB to send metrics to, e.g. 'http://localhost:8086/write?db=mydb'
 
+        --influxdb-tags <INFLUXDB_TAGS>
+        tags for the submitted measurement, e.g. 'host=prod3' or 'host=prod3,type=worker'
+
         --prometheus-listen <BINDING_ADDRESS>
         Address and port to bind Prometheus HTTP server to, e.g. 'localhost:9898'
 

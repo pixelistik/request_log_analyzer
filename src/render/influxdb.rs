@@ -5,18 +5,22 @@ use hyper::client;
 
 pub struct InfluxDbRenderer {
     write_url: String,
+    tags: Option<String>,
 }
 
 impl InfluxDbRenderer {
-    pub fn new(write_url: String) -> InfluxDbRenderer {
-        InfluxDbRenderer { write_url: write_url }
+    pub fn new(write_url: String, tags: Option<String>) -> InfluxDbRenderer {
+        InfluxDbRenderer {
+            write_url: write_url,
+            tags: tags,
+        }
     }
 }
 
 impl Renderer for InfluxDbRenderer {
     fn render(&mut self, result: result::RequestLogAnalyzerResult) -> () {
         let client = client::Client::new();
-        let data = post_body(result);
+        let data = self.post_body(result);
         let response = client.post(&self.write_url)
             .body(&data)
             .send()
@@ -28,38 +32,46 @@ impl Renderer for InfluxDbRenderer {
     }
 }
 
-fn post_body(result: result::RequestLogAnalyzerResult) -> String {
-    let mut timing_values = String::from("");
-    let mut error_rate_values = String::from("");
+impl InfluxDbRenderer {
+    fn post_body(&self, result: result::RequestLogAnalyzerResult) -> String {
+        let mut timing_values = String::from("");
+        let mut error_rate_values = String::from("");
 
-    match result.timing {
-        Some(timing) => {
-            timing_values = format!("\
-				time_max={},time_min={},time_avg={},time_median={},\
-                                     time_90percent={}",
-                                    timing.max,
-                                    timing.min,
-                                    timing.avg,
-                                    timing.median,
-                                    timing.percentile90);
+        let tags: String = match self.tags {
+            Some(ref tags) => format!(",{}", tags),
+            None => String::from(""),
+        };
+
+        match result.timing {
+            Some(timing) => {
+                timing_values = format!("\
+    				time_max={},time_min={},time_avg={},time_median={},\
+                                         time_90percent={}",
+                                        timing.max,
+                                        timing.min,
+                                        timing.avg,
+                                        timing.median,
+                                        timing.percentile90);
+            }
+            None => warn!("No matching log lines in file."),
         }
-        None => warn!("No matching log lines in file."),
-    }
 
-    match result.error {
-        Some(error) => {
-            error_rate_values = format!("\
-				client_error_4xx_rate={},server_error_5xx_rate={}",
-                                        error.client_error_4xx,
-                                        error.server_error_5xx);
+        match result.error {
+            Some(error) => {
+                error_rate_values = format!("\
+    				client_error_4xx_rate={},server_error_5xx_rate={}",
+                                            error.client_error_4xx,
+                                            error.server_error_5xx);
+            }
+            None => warn!("No matching log lines in file."),
         }
-        None => warn!("No matching log lines in file."),
-    }
 
-    format!("request_log count={},{},{}",
-            result.count,
-            timing_values,
-            error_rate_values)
+        format!("request_log{} count={},{},{}",
+                tags,
+                result.count,
+                timing_values,
+                error_rate_values)
+    }
 }
 
 #[cfg(test)]
@@ -88,12 +100,14 @@ mod tests {
 
     #[test]
     fn test_instantiate() {
-        InfluxDbRenderer::new(String::from("http://example.com/write?db=testdb"));
+        InfluxDbRenderer::new(String::from("http://example.com/write?db=testdb"), None);
     }
 
     #[test]
     fn test_post_body() {
-        let result = post_body(get_result_fixture());
+        let renderer = InfluxDbRenderer::new(String::from("http://example.com/write?db=testdb"),
+                                             None);
+        let result = renderer.post_body(get_result_fixture());
 
         assert!(result.starts_with("request_log "));
         assert_eq!(result.matches(" ").count(), 1);
@@ -106,12 +120,27 @@ mod tests {
         assert!(result.contains("time_90percent=100"));
         assert!(result.contains("client_error_4xx_rate=0.1"));
         assert!(result.contains("server_error_5xx_rate=0.2"));
+    }
 
+    #[test]
+    fn test_post_body_with_tag() {
+        let tags = String::from("host=testhost");
+        let renderer = InfluxDbRenderer::new(String::from("http://example.com/write?db=testdb"),
+                                             Some(tags));
+        let result = renderer.post_body(get_result_fixture());
+
+        assert!(result.starts_with("request_log,host=testhost "));
+        assert_eq!(result.matches(" ").count(), 1);
+
+        assert!(result.contains("count=3"));
     }
 
     #[test]
     fn test_post_body_empty() {
-        let result = post_body(result::RequestLogAnalyzerResult {
+        let renderer = InfluxDbRenderer::new(String::from("http://example.com/write?db=testdb"),
+                                             None);
+
+        let result = renderer.post_body(result::RequestLogAnalyzerResult {
             count: 0,
             timing: None,
             error: None,
