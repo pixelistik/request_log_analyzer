@@ -1,6 +1,6 @@
 use log_parser::log_events::HttpError;
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
 pub struct ErrorRatesResult {
     pub client_error_4xx: f32,
     pub server_error_5xx: f32,

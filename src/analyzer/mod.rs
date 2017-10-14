@@ -3,7 +3,7 @@ use result;
 
 pub mod aggregated_error_rates;
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
 pub struct TimingResult {
     pub max: usize,
     pub min: usize,

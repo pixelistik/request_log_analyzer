@@ -1,6 +1,6 @@
 use analyzer;
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
 pub struct RequestLogAnalyzerResult {
     pub count: usize,
     pub timing: Option<analyzer::TimingResult>,

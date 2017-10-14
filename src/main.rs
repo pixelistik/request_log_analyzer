@@ -37,27 +37,30 @@ fn main() {
     let result = run(&args);
 
     let mut stream;
-    let mut renderer: Box<render::Renderer>;
+    let mut renderers: Vec<Box<render::Renderer>>;
+    renderers = vec![];
 
-    renderer = match args.graphite_server {
-        Some(ref graphite_server) => {
-            stream = TcpStream::connect((graphite_server.as_ref(), args.graphite_port.unwrap()))
-                .expect("Could not connect to the Graphite server");
+    renderers.push(Box::new(render::TerminalRenderer::new()));
 
-            Box::new(render::graphite::GraphiteRenderer::new(UTC::now(),
-                                                             args.graphite_prefix.clone(),
-                                                             &mut stream))
-        }
-        None => Box::new(render::TerminalRenderer::new()),
-    };
+    if args.graphite_server.is_some() {
+        stream = TcpStream::connect((args.graphite_server.as_ref().unwrap().as_str(),
+                                     args.graphite_port.unwrap()))
+            .expect("Could not connect to the Graphite server");
 
-    renderer.render(result);
+        renderers.push(Box::new(render::graphite::GraphiteRenderer::new(UTC::now(),
+                                                                        args.graphite_prefix
+                                                                            .clone(),
+                                                                        &mut stream)));
+    }
+
+    for mut renderer in renderers {
+        renderer.render(result.clone());
+    }
 
     if args.prometheus_listen.is_some() {
         let binding_address = args.prometheus_listen.clone().unwrap();
         http_handler::listen_http(args, &binding_address);
     }
-
 }
 
 fn run(args: &args::RequestLogAnalyzerArgs) -> result::RequestLogAnalyzerResult {
