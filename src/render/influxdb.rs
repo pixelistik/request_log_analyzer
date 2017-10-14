@@ -29,7 +29,7 @@ fn post_body(result: result::RequestLogAnalyzerResult) -> String {
     match result.timing {
         Some(timing) => {
             timing_values = format!("\
-				time_max={} time_min={} time_avg={} time_median={} \
+				time_max={},time_min={},time_avg={},time_median={},\
                                      time_90percent={}",
                                     timing.max,
                                     timing.min,
@@ -43,14 +43,14 @@ fn post_body(result: result::RequestLogAnalyzerResult) -> String {
     match result.error {
         Some(error) => {
             error_rate_values = format!("\
-				client_error_4xx_rate={} server_error_5xx_rate={}",
+				client_error_4xx_rate={},server_error_5xx_rate={}",
                                         error.client_error_4xx,
                                         error.server_error_5xx);
         }
         None => warn!("No matching log lines in file."),
     }
 
-    format!("request_log count={} {} {}",
+    format!("request_log count={},{},{}",
             result.count,
             timing_values,
             error_rate_values)
@@ -90,6 +90,7 @@ mod tests {
         let result = post_body(get_result_fixture());
 
         assert!(result.starts_with("request_log "));
+        assert_eq!(result.matches(" ").count(), 1);
 
         assert!(result.contains("count=3"));
         assert!(result.contains("time_max=100"));
