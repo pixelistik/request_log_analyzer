@@ -60,7 +60,7 @@ release: committedworkingdir
 	cargo test
 	git commit --all -m "Bump version for release $(VERSION)"
 
-	git tag "$(VERSION)" --annotate --message="Release $(VERSION)"
+	git tag "v$(VERSION)" --annotate --message="Release $(VERSION)"
 
 committedworkingdir:
 	# Fail if there are uncommitted changes
