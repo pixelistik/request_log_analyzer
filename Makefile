@@ -55,4 +55,15 @@ target/x86_64-unknown-linux-musl/release/request_log_analyzer: musl-deps test sr
 target/x86_64-unknown-linux-musl/release/request_log_analyzer_portable_musl: target/x86_64-unknown-linux-musl/release/request_log_analyzer
 	cp target/x86_64-unknown-linux-musl/release/request_log_analyzer target/x86_64-unknown-linux-musl/release/request_log_analyzer_portable_musl
 
-.PHONY: all test coverage test-no-run perf musl-deps musl
+release: committedworkingdir
+	sed -i 's/version = ".*"/version = "$(VERSION)"/' Cargo.toml
+	cargo test
+	git commit --all -m "Bump version for release $(VERSION)"
+
+	git tag "$(VERSION)" --annotate --message="Release $(VERSION)"
+
+committedworkingdir:
+	# Fail if there are uncommitted changes
+	git diff-index --quiet HEAD
+
+.PHONY: all test coverage test-no-run perf musl-deps musl release committedworkingdir
