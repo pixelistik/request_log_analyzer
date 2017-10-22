@@ -3,31 +3,22 @@ pub mod log_events;
 use self::log_events::*;
 
 pub fn parse_line(line: Result<String, io::Error>) -> Result<LogEvent, &'static str> {
-    if line.is_err() {
-        return Err("Failed to read line.");
+    match line {
+        Err(_) => return Err("Failed to read line."),
+        Ok(ref line) if line.contains("->") => {
+            match Request::new_from_log_line(line) {
+                Ok(request) => Ok(LogEvent::Request(request)),
+                Err(err) => Err(err),
+            }
+        }
+        Ok(ref line) if line.contains("<-") => {
+            match Response::new_from_log_line(line) {
+                Ok(response) => Ok(LogEvent::Response(response)),
+                Err(err) => Err(err),
+            }
+        }
+        Ok(_) => Err("Line is neither a Request nor a Response"),
     }
-
-    let line2 = line.unwrap();
-
-    if line2.contains("->") {
-        let request = Request::new_from_log_line(&line2);
-
-        return match request {
-            Ok(request) => Ok(LogEvent::Request(request)),
-            Err(err) => Err(err),
-        };
-    }
-
-    if line2.contains("<-") {
-        let response = Response::new_from_log_line(&line2);
-
-        return match response {
-            Ok(response) => Ok(LogEvent::Response(response)),
-            Err(err) => Err(err),
-        };
-    }
-
-    Err("Line is neither a Request nor a Response")
 }
 
 #[cfg(test)]
