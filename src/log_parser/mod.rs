@@ -6,16 +6,10 @@ pub fn parse_line(line: Result<String, io::Error>) -> Result<LogEvent, &'static 
     match line {
         Err(_) => return Err("Failed to read line."),
         Ok(ref line) if line.contains("->") => {
-            match Request::new_from_log_line(line) {
-                Ok(request) => Ok(LogEvent::Request(request)),
-                Err(err) => Err(err),
-            }
+            Ok(LogEvent::Request(Request::new_from_log_line(line)?))
         }
         Ok(ref line) if line.contains("<-") => {
-            match Response::new_from_log_line(line) {
-                Ok(response) => Ok(LogEvent::Response(response)),
-                Err(err) => Err(err),
-            }
+            Ok(LogEvent::Response(Response::new_from_log_line(line)?))
         }
         Ok(_) => Err("Line is neither a Request nor a Response"),
     }
