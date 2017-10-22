@@ -80,7 +80,7 @@ fn run(args: &args::RequestLogAnalyzerArgs) -> result::RequestLogAnalyzerResult 
     let reader = io::BufReader::new(input);
 
     let mut events_iterator = reader.lines()
-        .map(parse_event)
+        .map(log_parser::parse_line)
         .filter(|event| event.is_ok())
         .map(|event| event.unwrap());
 
@@ -89,13 +89,6 @@ fn run(args: &args::RequestLogAnalyzerArgs) -> result::RequestLogAnalyzerResult 
             .filter(|pair| filter::matches_filter(pair, &args.conditions));
 
     analyzer::analyze_iterator(pairs_iterator)
-}
-
-fn parse_event(line: Result<String, std::io::Error>) -> Result<LogEvent, &'static str> {
-    match line {
-        Ok(line) => log_parser::parse_line(&line),
-        Err(_) => Err("Failed to read line."),
-    }
 }
 
 #[cfg(test)]
@@ -148,15 +141,5 @@ mod tests {
 
         let result = run(&args);
         assert_eq!(result.count, 1);
-    }
-
-    #[test]
-    fn test_parse_event() {
-        let lines = vec![Ok(String::from("08/Apr/2016:09:57:47 +0200 [001] -> GET \
-                                          /content/some/page.html HTTP/1.1")),
-                         Ok(String::from("08/Apr/2016:09:57:47 +0200 [001] <- 200 text/html 7ms"))];
-
-        let result: Vec<Result<LogEvent, &str>> = lines.into_iter().map(parse_event).collect();
-        assert_eq!(result.len(), 2);
     }
 }

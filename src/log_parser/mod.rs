@@ -1,9 +1,16 @@
+use std::io;
 pub mod log_events;
 use self::log_events::*;
 
-pub fn parse_line(line: &str) -> Result<LogEvent, &'static str> {
-    if line.contains("->") {
-        let request = Request::new_from_log_line(line);
+pub fn parse_line(line: Result<String, io::Error>) -> Result<LogEvent, &'static str> {
+    if line.is_err() {
+        return Err("Failed to read line.");
+    }
+
+    let line2 = line.unwrap();
+
+    if line2.contains("->") {
+        let request = Request::new_from_log_line(&line2);
 
         return match request {
             Ok(request) => Ok(LogEvent::Request(request)),
@@ -11,8 +18,8 @@ pub fn parse_line(line: &str) -> Result<LogEvent, &'static str> {
         };
     }
 
-    if line.contains("<-") {
-        let response = Response::new_from_log_line(line);
+    if line2.contains("<-") {
+        let response = Response::new_from_log_line(&line2);
 
         return match response {
             Ok(response) => Ok(LogEvent::Response(response)),
@@ -32,7 +39,7 @@ mod tests {
         let line = "08/Apr/2016:09:58:47 +0200 [02] -> GET /content/some/other.html HTTP/1.1"
             .to_string();
 
-        let event = match parse_line(&line).unwrap() {
+        let event = match parse_line(Ok(line)).unwrap() {
             LogEvent::Request(request) => request,
             LogEvent::Response(_) => unreachable!(),
         };
@@ -44,7 +51,7 @@ mod tests {
     fn test_parse_line_response() {
         let line = "08/Apr/2016:09:58:48 +0200 [05] <- 200 text/html 10ms".to_string();
 
-        let event = match parse_line(&line).unwrap() {
+        let event = match parse_line(Ok(line)).unwrap() {
             LogEvent::Request(_) => unreachable!(),
             LogEvent::Response(response) => response,
         };
@@ -56,7 +63,7 @@ mod tests {
     fn test_parse_line_unrecognized() {
         let line = "08/Apr/2016:09:58:48 +0200 [05] XY 200 text/html 10ms".to_string();
 
-        let event = parse_line(&line);
+        let event = parse_line(Ok(line));
 
         assert_eq!(event, Err("Line is neither a Request nor a Response"));
     }
@@ -65,7 +72,7 @@ mod tests {
     fn test_parse_line_with_response_arrow_in_url() {
         let line = "08/Apr/2016:09:58:47 +0200 [02] -> GET /content/<-.html HTTP/1.1".to_string();
 
-        let _ = match parse_line(&line).unwrap() {
+        let _ = match parse_line(Ok(line)).unwrap() {
             LogEvent::Request(request) => request,
             LogEvent::Response(_) => unreachable!(),
         };
