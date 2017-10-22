@@ -23,7 +23,6 @@ mod analyzer;
 mod args;
 mod filter;
 mod log_parser;
-use log_parser::log_events::*;
 mod render;
 mod request_response_matcher;
 mod http_handler;
