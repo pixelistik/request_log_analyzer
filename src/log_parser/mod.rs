@@ -4,7 +4,7 @@ use self::log_events::*;
 
 pub fn parse_line(line: Result<String, io::Error>) -> Result<LogEvent, &'static str> {
     match line {
-        Err(_) => return Err("Failed to read line."),
+        Err(_) => Err("Failed to read line."),
         Ok(ref line) if line.contains("->") => {
             Ok(LogEvent::Request(Request::new_from_log_line(line)?))
         }
