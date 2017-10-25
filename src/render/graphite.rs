@@ -179,4 +179,25 @@ mod tests {
         assert_eq!(&mock_tcp_stream.write_calls[7],
                    "my_prefix.requests.error.server_error_5xx_rate 0.2 1474576919\n");
     }
+
+    #[test]
+    fn test_no_lines() {
+        let mut mock_tcp_stream = MockTcpStream { write_calls: vec![] };
+
+        let result = result::RequestLogAnalyzerResult {
+            count: 0,
+            timing: None,
+            error: None,
+        };
+
+        {
+            let mut renderer =
+                GraphiteRenderer::new(get_time_fixture(), None, &mut mock_tcp_stream);
+            renderer.render(result);
+        }
+
+        assert_eq!(mock_tcp_stream.write_calls.len(), 1);
+        assert_eq!(&mock_tcp_stream.write_calls[0],
+                   "requests.count 0 1474576919\n");
+    }
 }

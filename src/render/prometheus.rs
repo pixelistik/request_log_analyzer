@@ -148,4 +148,25 @@ mod tests {
         assert!(buffer_text.contains("request_time_median 75"));
         assert!(buffer_text.contains("request_time_percentile90 900"));
     }
+
+    #[test]
+    fn test_render_no_lines() {
+        let result = result::RequestLogAnalyzerResult {
+            count: 0,
+            timing: None,
+            error: None,
+        };
+
+        let mut renderer = PrometheusRenderer::new();
+        renderer.render(result);
+
+        let buffer_text = str::from_utf8(&renderer.buffer).unwrap();
+
+        assert!(buffer_text.contains("request_count 0"));
+        assert!(buffer_text.contains("request_time_max 0"));
+        assert!(buffer_text.contains("request_time_min 0"));
+        assert!(buffer_text.contains("request_time_avg 0"));
+        assert!(buffer_text.contains("request_time_median 0"));
+        assert!(buffer_text.contains("request_time_percentile90 0"));
+    }
 }

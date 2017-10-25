@@ -71,4 +71,17 @@ mod tests {
 
         renderer.render(result);
     }
+
+    #[test]
+    fn test_terminal_renderer_no_lines() {
+        let mut renderer = TerminalRenderer::new();
+
+        let result = result::RequestLogAnalyzerResult {
+            count: 0,
+            timing: None,
+            error: None,
+        };
+
+        renderer.render(result);
+    }
 }
