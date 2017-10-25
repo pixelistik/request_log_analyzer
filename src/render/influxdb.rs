@@ -9,9 +9,9 @@ pub struct InfluxDbRenderer {
 }
 
 impl InfluxDbRenderer {
-    pub fn new(write_url: String, tags: Option<String>) -> InfluxDbRenderer {
+    pub fn new(write_url: &str, tags: Option<String>) -> InfluxDbRenderer {
         InfluxDbRenderer {
-            write_url: write_url,
+            write_url: String::from(write_url),
             tags: tags,
         }
     }
@@ -100,13 +100,12 @@ mod tests {
 
     #[test]
     fn test_instantiate() {
-        InfluxDbRenderer::new(String::from("http://example.com/write?db=testdb"), None);
+        InfluxDbRenderer::new("http://example.com/write?db=testdb", None);
     }
 
     #[test]
     fn test_post_body() {
-        let renderer = InfluxDbRenderer::new(String::from("http://example.com/write?db=testdb"),
-                                             None);
+        let renderer = InfluxDbRenderer::new("http://example.com/write?db=testdb", None);
         let result = renderer.post_body(get_result_fixture());
 
         assert!(result.starts_with("request_log "));
@@ -125,8 +124,7 @@ mod tests {
     #[test]
     fn test_post_body_with_tag() {
         let tags = String::from("host=testhost");
-        let renderer = InfluxDbRenderer::new(String::from("http://example.com/write?db=testdb"),
-                                             Some(tags));
+        let renderer = InfluxDbRenderer::new("http://example.com/write?db=testdb", Some(tags));
         let result = renderer.post_body(get_result_fixture());
 
         assert!(result.starts_with("request_log,host=testhost "));
@@ -137,8 +135,7 @@ mod tests {
 
     #[test]
     fn test_post_body_empty() {
-        let renderer = InfluxDbRenderer::new(String::from("http://example.com/write?db=testdb"),
-                                             None);
+        let renderer = InfluxDbRenderer::new("http://example.com/write?db=testdb", None);
 
         let result = renderer.post_body(result::RequestLogAnalyzerResult {
             count: 0,

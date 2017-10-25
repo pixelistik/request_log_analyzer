@@ -53,7 +53,7 @@ fn main() {
     }
 
     if args.influxdb_write_url.is_some() {
-        renderers.push(Box::new(render::influxdb::InfluxDbRenderer::new(args.influxdb_write_url
+        renderers.push(Box::new(render::influxdb::InfluxDbRenderer::new(&args.influxdb_write_url
                                                                             .clone()
                                                                             .unwrap(),
                                                                         args.influxdb_tags
