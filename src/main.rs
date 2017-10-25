@@ -36,11 +36,14 @@ fn main() {
     let result = run(&args);
 
     let mut stream;
+    let mut stdout;
+
     let mut renderers: Vec<Box<render::Renderer>>;
     renderers = vec![];
 
     if !args.quiet {
-        renderers.push(Box::new(render::terminal::TerminalRenderer::new()));
+        stdout = io::stdout();
+        renderers.push(Box::new(render::terminal::TerminalRenderer::new(&mut stdout)));
     }
 
     if args.graphite_server.is_some() {
