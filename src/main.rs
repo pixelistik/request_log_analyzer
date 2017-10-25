@@ -40,7 +40,7 @@ fn main() {
     renderers = vec![];
 
     if !args.quiet {
-        renderers.push(Box::new(render::TerminalRenderer::new()));
+        renderers.push(Box::new(render::terminal::TerminalRenderer::new()));
     }
 
     if args.graphite_server.is_some() {
