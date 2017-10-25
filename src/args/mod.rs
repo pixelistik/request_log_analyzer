@@ -12,6 +12,7 @@ pub struct RequestLogAnalyzerArgs {
     pub prometheus_listen: Option<String>,
     pub influxdb_write_url: Option<String>,
     pub influxdb_tags: Option<String>,
+    pub quiet: bool,
 }
 
 pub fn parse_args<'a, T>(args: T) -> Result<RequestLogAnalyzerArgs, &'a str>
@@ -78,6 +79,10 @@ pub fn parse_args<'a, T>(args: T) -> Result<RequestLogAnalyzerArgs, &'a str>
             .help("tags for the submitted measurement, e.g. 'host=prod3' or \
                    'host=prod3,type=worker'")
             .takes_value(true))
+        .arg(Arg::with_name("quiet")
+            .short("q")
+            .long("quiet")
+            .help("Don't output results to stdout"))
         .get_matches_from(args);
 
     let filename = app.value_of("filename").unwrap_or("-").to_string();
@@ -129,6 +134,8 @@ pub fn parse_args<'a, T>(args: T) -> Result<RequestLogAnalyzerArgs, &'a str>
         None => None,
     };
 
+    let quiet = app.is_present("quiet");
+
     Ok(RequestLogAnalyzerArgs {
         filename: filename,
         conditions: conditions,
@@ -138,6 +145,7 @@ pub fn parse_args<'a, T>(args: T) -> Result<RequestLogAnalyzerArgs, &'a str>
         prometheus_listen: prometheus_listen,
         influxdb_write_url: influxdb_write_url,
         influxdb_tags: influxdb_tags,
+        quiet: quiet,
     })
 }
 
@@ -164,6 +172,7 @@ mod tests {
             prometheus_listen: None,
             influxdb_write_url: None,
             influxdb_tags: None,
+            quiet: false,
         };
 
         let result = parse_args(raw_args).unwrap();
@@ -192,7 +201,8 @@ mod tests {
                             String::from("--influxdb-write-url"),
                             String::from("https://example.com/write?db=metrics_prod"),
                             String::from("--influxdb-tags"),
-                            String::from("host=prod3,type=worker")];
+                            String::from("host=prod3,type=worker"),
+                            String::from("--quiet")];
 
         let expected = RequestLogAnalyzerArgs {
             filename: String::from("my-logfile.log"),
@@ -207,6 +217,7 @@ mod tests {
             prometheus_listen: Some(String::from("0.0.0.0:9898")),
             influxdb_write_url: Some(String::from("https://example.com/write?db=metrics_prod")),
             influxdb_tags: Some(String::from("host=prod3,type=worker")),
+            quiet: true,
         };
 
         let result = parse_args(raw_args).unwrap();
@@ -240,6 +251,7 @@ mod tests {
             prometheus_listen: None,
             influxdb_write_url: None,
             influxdb_tags: None,
+            quiet: false,
         };
 
         let result = parse_args(raw_args).unwrap();

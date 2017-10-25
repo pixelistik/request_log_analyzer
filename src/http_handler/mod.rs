@@ -64,6 +64,7 @@ mod tests {
             prometheus_listen: None,
             influxdb_write_url: None,
             influxdb_tags: None,
+            quiet: false,
         };
 
         fn run_fn(_: &args::RequestLogAnalyzerArgs) -> result::RequestLogAnalyzerResult {

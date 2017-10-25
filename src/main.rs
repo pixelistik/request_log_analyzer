@@ -39,7 +39,9 @@ fn main() {
     let mut renderers: Vec<Box<render::Renderer>>;
     renderers = vec![];
 
-    renderers.push(Box::new(render::TerminalRenderer::new()));
+    if !args.quiet {
+        renderers.push(Box::new(render::TerminalRenderer::new()));
+    }
 
     if args.graphite_server.is_some() {
         stream = TcpStream::connect((args.graphite_server.as_ref().unwrap().as_str(),
@@ -109,6 +111,7 @@ mod tests {
             prometheus_listen: None,
             influxdb_write_url: None,
             influxdb_tags: None,
+            quiet: false,
         };
 
         let result = run(&args);
@@ -136,6 +139,7 @@ mod tests {
             prometheus_listen: None,
             influxdb_write_url: None,
             influxdb_tags: None,
+            quiet: false,
         };
 
         let result = run(&args);
