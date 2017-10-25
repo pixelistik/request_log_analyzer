@@ -27,8 +27,8 @@ https://crates.io/crates/prometheus
 """
 
 [dependencies]
-chrono = "0.3"
-clap = "2.20"
+chrono = "0.4"
+clap = "2.27"
 log = "*"
 env_logger = "*"
 prometheus = { git = "https://github.com/pingcap/rust-prometheus" }

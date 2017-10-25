@@ -34,7 +34,7 @@ pub fn matches_filter(pair: &RequestResponsePair, conditions: &FilterConditions)
     let matches_time: bool = match conditions.latest_time {
         Some(latest_time) => {
             let timezone = pair.request.time.timezone();
-            let now = UTC::now().with_timezone(&timezone);
+            let now = Utc::now().with_timezone(&timezone);
             let include_since_time = now - latest_time;
             pair.request.time >= include_since_time
         }
@@ -171,7 +171,7 @@ mod tests {
     #[test]
     fn test_filter_time_matches() {
         let mut pair = get_fixture();
-        pair.request.time = UTC::now().with_timezone(&pair.request.time.timezone());
+        pair.request.time = Utc::now().with_timezone(&pair.request.time.timezone());
 
         let conditions = FilterConditions {
             include_terms: None,
@@ -187,7 +187,7 @@ mod tests {
     #[test]
     fn test_filter_time_matches_not() {
         let mut pair = get_fixture();
-        pair.request.time = UTC::now().with_timezone(&pair.request.time.timezone()) -
+        pair.request.time = Utc::now().with_timezone(&pair.request.time.timezone()) -
                             Duration::minutes(12);
 
         let conditions = FilterConditions {

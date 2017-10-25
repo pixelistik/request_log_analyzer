@@ -51,7 +51,7 @@ fn main() {
                                      args.graphite_port.unwrap()))
             .expect("Could not connect to the Graphite server");
 
-        renderers.push(Box::new(render::graphite::GraphiteRenderer::new(UTC::now(),
+        renderers.push(Box::new(render::graphite::GraphiteRenderer::new(Utc::now(),
                                                                         args.graphite_prefix
                                                                             .clone(),
                                                                         &mut stream)));

@@ -4,13 +4,13 @@ use render::Renderer;
 use result;
 
 pub struct GraphiteRenderer<'a> {
-    time: DateTime<UTC>,
+    time: DateTime<Utc>,
     prefix: Option<String>,
     stream: &'a mut Write,
 }
 
 impl<'a> GraphiteRenderer<'a> {
-    pub fn new(time: DateTime<UTC>,
+    pub fn new(time: DateTime<Utc>,
                prefix: Option<String>,
                stream: &'a mut Write)
                -> GraphiteRenderer<'a> {
@@ -114,11 +114,11 @@ mod tests {
         }
     }
 
-    fn get_time_fixture() -> DateTime<UTC> {
-        let time: DateTime<UTC> = DateTime::parse_from_str("22/Sep/2016:22:41:59 +0200",
+    fn get_time_fixture() -> DateTime<Utc> {
+        let time: DateTime<Utc> = DateTime::parse_from_str("22/Sep/2016:22:41:59 +0200",
                                                            "%d/%b/%Y:%H:%M:%S %z")
             .unwrap()
-            .with_timezone(&UTC);
+            .with_timezone(&Utc);
 
         time
     }
