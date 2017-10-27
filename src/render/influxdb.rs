@@ -44,7 +44,7 @@ impl InfluxDbRenderer {
 
         match result.timing {
             Some(timing) => {
-                timing_values = format!("\
+                timing_values = format!(",\
     				time_max={},time_min={},time_avg={},time_median={},\
                                          time_90percent={}",
                                         timing.max,
@@ -58,7 +58,7 @@ impl InfluxDbRenderer {
 
         match result.error {
             Some(error) => {
-                error_rate_values = format!("\
+                error_rate_values = format!(",\
     				client_error_4xx_rate={},server_error_5xx_rate={}",
                                             error.client_error_4xx,
                                             error.server_error_5xx);
@@ -66,7 +66,7 @@ impl InfluxDbRenderer {
             None => warn!("No matching log lines in file."),
         }
 
-        format!("request_log{} count={},{},{}",
+        format!("request_log{} count={}{}{}",
                 tags,
                 result.count,
                 timing_values,
@@ -145,7 +145,7 @@ mod tests {
 
         assert!(result.starts_with("request_log "));
 
-        assert!(result.contains("count=0"));
+        assert!(result.ends_with("count=0"));
 
         // Don't include empty fields
         assert!(!result.contains("time_max="));
