@@ -1,12 +1,13 @@
 [![Build Status](https://travis-ci.org/pixelistik/request_log_analyzer.svg?branch=master)](https://travis-ci.org/pixelistik/request_log_analyzer)
 
 ## Installation
-Download the Linux x64 binary `request_log_analyzer` from
+Download and unzip one of the 64-bit Linux / macOS / Windows binaries from
 the [releases page](https://github.com/pixelistik/request_log_analyzer/releases/latest)
-(built on Travis CI servers).
+(built on Travis CI servers). The program is a single binary that you run in
+the terminal.
 
 Alternatively you can build from source, if you have a Rust toolchain set up:
-Clone the repository and run `cargo build`.
+Clone the repository and run `cargo build --release`.
 
 ## Usage
 
@@ -144,11 +145,13 @@ If you set this command up as a cronjob to run every 1 minute, you can constantl
 ### InfluxDB
 
     $ request_log_analyzer -t 5 \
+        --quiet \
         --influxdb-write-url "http://localhost:8086/write?db=metrics" \
         --influxdb-tags type=publisher,time=5min \
         crx-quickstart/logs/request.log
 
-This will analyze the latest 5 minutes of the log file, then push it to an InfluxDB server running on localhost, storing the results in the database `metrics` as the measurement `request_log` with the fields `time_max`, `time_min` etc.
+This will analyze the latest 5 minutes of the log file, then push it to an InfluxDB server running on localhost, storing the results in the database `metrics` as the measurement `request_log` with the fields `time_max`, `time_min` etc. The result
+will not be displayed in the terminal.
 
 `--influxdb-tags` are an optional way to identify and categorize your measurements, in this example the tags `type=publisher` and `time=5min` are set.
 
