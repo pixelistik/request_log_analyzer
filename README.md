@@ -17,6 +17,7 @@ Clone the repository and run `cargo build`.
 
     FLAGS:
         -h, --help       Prints help information
+        -q, --quiet      Don't output results to stdout
         -V, --version    Prints version information
 
     OPTIONS:
