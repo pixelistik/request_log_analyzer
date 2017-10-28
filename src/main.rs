@@ -33,45 +33,45 @@ fn main() {
 
     let args = args::parse_args(env::args()).expect("Failed to parse arguments.");
 
-    let result = run(&args);
-
-    let mut stream;
-    let mut stdout;
-
-    let mut renderers: Vec<Box<render::Renderer>>;
-    renderers = vec![];
-
-    if !args.quiet {
-        stdout = io::stdout();
-        renderers.push(Box::new(render::terminal::TerminalRenderer::new(&mut stdout)));
-    }
-
-    if args.graphite_server.is_some() {
-        stream = TcpStream::connect((args.graphite_server.as_ref().unwrap().as_str(),
-                                     args.graphite_port.unwrap()))
-            .expect("Could not connect to the Graphite server");
-
-        renderers.push(Box::new(render::graphite::GraphiteRenderer::new(Utc::now(),
-                                                                        args.graphite_prefix
-                                                                            .clone(),
-                                                                        &mut stream)));
-    }
-
-    if args.influxdb_write_url.is_some() {
-        renderers.push(Box::new(render::influxdb::InfluxDbRenderer::new(&args.influxdb_write_url
-                                                                            .clone()
-                                                                            .unwrap(),
-                                                                        args.influxdb_tags
-                                                                            .clone())));
-    }
-
-    for mut renderer in renderers {
-        renderer.render(result.clone());
-    }
-
     if args.prometheus_listen.is_some() {
         let binding_address = args.prometheus_listen.clone().unwrap();
         http_handler::listen_http(args, &binding_address);
+    } else {
+        let result = run(&args);
+
+        let mut stream;
+        let mut stdout;
+
+        let mut renderers: Vec<Box<render::Renderer>>;
+        renderers = vec![];
+
+        if !args.quiet {
+            stdout = io::stdout();
+            renderers.push(Box::new(render::terminal::TerminalRenderer::new(&mut stdout)));
+        }
+
+        if args.graphite_server.is_some() {
+            stream = TcpStream::connect((args.graphite_server.as_ref().unwrap().as_str(),
+                                         args.graphite_port.unwrap()))
+                .expect("Could not connect to the Graphite server");
+
+            renderers.push(Box::new(render::graphite::GraphiteRenderer::new(Utc::now(),
+                                                                            args.graphite_prefix
+                                                                                .clone(),
+                                                                            &mut stream)));
+        }
+
+        if args.influxdb_write_url.is_some() {
+            renderers.push(Box::new(render::influxdb::InfluxDbRenderer::new(&args.influxdb_write_url
+                                                                           .clone()
+                                                                           .unwrap(),
+                                                                       args.influxdb_tags
+                                                                           .clone())));
+        }
+
+        for mut renderer in renderers {
+            renderer.render(result.clone());
+        }
     }
 }
 
