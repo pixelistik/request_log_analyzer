@@ -3,6 +3,7 @@ use std::io::prelude::*;
 use std::net::TcpStream;
 use std::fs::File;
 use std::env;
+use std::process;
 
 extern crate chrono;
 use chrono::*;
@@ -78,7 +79,15 @@ fn main() {
 fn run(args: &args::RequestLogAnalyzerArgs) -> result::RequestLogAnalyzerResult {
     let input: Box<io::Read> = match args.filename.as_ref() {
         "-" => Box::new(io::stdin()),
-        _ => Box::new(File::open(&args.filename).expect("Failed to open file.")),
+        _ => {
+            match File::open(&args.filename) {
+                Ok(file) => Box::new(file),
+                Err(err) => {
+                    eprintln!("Failed to open file {}: {}", &args.filename, err);
+                    process::exit(1);
+                }
+            }
+        }
     };
 
     let reader = io::BufReader::new(input);
