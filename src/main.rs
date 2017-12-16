@@ -52,9 +52,14 @@ fn main() {
         }
 
         if args.graphite_server.is_some() {
-            stream = TcpStream::connect((args.graphite_server.as_ref().unwrap().as_str(),
-                                         args.graphite_port.unwrap()))
-                .expect("Could not connect to the Graphite server");
+            stream = match TcpStream::connect((args.graphite_server.as_ref().unwrap().as_str(),
+                                               args.graphite_port.unwrap())) {
+                Ok(stream) => stream,
+                Err(err) => {
+                    eprintln!("Could not connect to the Graphite server: {}", err);
+                    process::exit(1);
+                }
+            };
 
             renderers.push(Box::new(render::graphite::GraphiteRenderer::new(Utc::now(),
                                                                             args.graphite_prefix
