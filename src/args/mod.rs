@@ -99,7 +99,10 @@ pub fn parse_args<'a, T>(args: T) -> Result<RequestLogAnalyzerArgs, Error>
         },
         latest_time: match app.value_of("time_filter_minutes") {
             Some(minutes) => {
-                Some(Duration::minutes(minutes.parse().expect("Minutes value must be numeric")))
+                match minutes.parse() {
+                    Ok(minutes) => Some(Duration::minutes(minutes)),
+                    Err(err) => return Err(err_msg(format!("-t must be numeric ({})", err))),
+                }
             }
             None => None,
         },
@@ -281,5 +284,19 @@ mod tests {
         };
 
         assert!(error_message.contains("--graphite-port must be numeric"));
+    }
+
+    #[test]
+    fn test_invalid_minutes() {
+        let raw_args = vec![String::from("request_log_analyzer"),
+                            String::from("-t"),
+                            String::from("nonumber")];
+
+        let error_message = match parse_args(raw_args) {
+            Err(fail) => format!("{}", fail),
+            Ok(_) => unreachable!(),
+        };
+
+        assert!(error_message.contains("-t must be numeric"));
     }
 }
