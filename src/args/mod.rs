@@ -1,6 +1,7 @@
 use clap::{Arg, App};
 use chrono::*;
 use filter;
+use failure::{Error, err_msg};
 
 #[derive(PartialEq, Debug)]
 pub struct RequestLogAnalyzerArgs {
@@ -15,7 +16,7 @@ pub struct RequestLogAnalyzerArgs {
     pub quiet: bool,
 }
 
-pub fn parse_args<'a, T>(args: T) -> Result<RequestLogAnalyzerArgs, &'a str>
+pub fn parse_args<'a, T>(args: T) -> Result<RequestLogAnalyzerArgs, Error>
     where T: IntoIterator<Item = String>
 {
     let app = App::new("Request.log Analyzer")
@@ -110,7 +111,14 @@ pub fn parse_args<'a, T>(args: T) -> Result<RequestLogAnalyzerArgs, &'a str>
     };
 
     let graphite_port: Option<u16> = match app.value_of("graphite-port") {
-        Some(value) => Some(value.parse().expect("Port number must be numeric.")),
+        Some(value) => {
+            match value.parse() {
+                Ok(value) => Some(value),
+                Err(err) => {
+                    return Err(err_msg(format!("--graphite-port must be numeric ({})", err)))
+                }
+            }
+        }
         None => None,
     };
 
@@ -257,5 +265,21 @@ mod tests {
         let result = parse_args(raw_args).unwrap();
 
         assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_invalid_graphite_port() {
+        let raw_args = vec![String::from("request_log_analyzer"),
+                            String::from("--graphite-server"),
+                            String::from("localhost"),
+                            String::from("--graphite-port"),
+                            String::from("nonumber")];
+
+        let error_message = match parse_args(raw_args) {
+            Err(fail) => format!("{}", fail),
+            Ok(_) => unreachable!(),
+        };
+
+        assert!(error_message.contains("--graphite-port must be numeric"));
     }
 }

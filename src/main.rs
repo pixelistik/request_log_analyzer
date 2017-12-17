@@ -20,6 +20,8 @@ extern crate log;
 extern crate prometheus;
 extern crate hyper;
 
+extern crate failure;
+
 mod analyzer;
 mod args;
 mod filter;
