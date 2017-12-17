@@ -34,7 +34,13 @@ mod result;
 fn main() {
     env_logger::init().expect("Failed to initialize logging.");
 
-    let args = args::parse_args(env::args()).expect("Failed to parse arguments.");
+    let args = match args::parse_args(env::args()) {
+        Ok(args) => args,
+        Err(err) => {
+            eprintln!("Failed to parse arguments: {}", err);
+            process::exit(1);
+        }
+    };
 
     if args.prometheus_listen.is_some() {
         let binding_address = args.prometheus_listen.clone().unwrap();
