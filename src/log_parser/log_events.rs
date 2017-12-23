@@ -33,10 +33,11 @@ impl Request {
             return Err("Uncomprehensible request logline");
         }
 
-        let id_parsed: i32 = match id[1..id.len() - 1].parse() {
-            Ok(id) => id,
-            Err(_) => return Err("Uncomprehensible request logline"),
-        };
+        let id_parsed: i32 =
+            match id.chars().skip(1).take(id.len() - 2).collect::<String>().parse() {
+                Ok(id) => id,
+                Err(_) => return Err("Uncomprehensible request logline"),
+            };
 
         let date = &format!("{} {}", parts[0], parts[1]);
 
@@ -65,32 +66,42 @@ impl Response {
     pub fn new_from_log_line(log_line: &str) -> Result<Response, &'static str> {
         let parts: Vec<&str> = log_line.split(' ').collect();
 
-        let id = parts[2];
+        let id = match parts.get(2) {
+            Some(id) => id,
+            None => return Err("Uncomprehensible request logline"),
+        };
 
         // Shortest valid id format is "[1]"
         if id.len() < 3 {
             return Err("Uncomprehensible response logline");
         }
 
-        let id_numeric: i32 = match id[1..id.len() - 1].parse() {
-            Ok(number) => number,
-            Err(_) => return Err("Uncomprehensible response logline"),
-        };
+        let id_numeric: i32 =
+            match id.chars().skip(1).take(id.len() - 2).collect::<String>().parse() {
+                Ok(number) => number,
+                Err(_) => return Err("Uncomprehensible response logline"),
+            };
 
         let response_time = parts[parts.len() - 1];
         if response_time.len() < 3 {
             return Err("Uncomprehensible response logline");
         }
 
-        let response_time_duration = match response_time[0..response_time.len() - 2].parse() {
-            Ok(number) => Duration::milliseconds(number),
-            Err(_) => return Err("Uncomprehensible response logline"),
-        };
+        let response_time_duration =
+            match response_time.chars().take(response_time.len() - 2).collect::<String>().parse() {
+                Ok(number) => Duration::milliseconds(number),
+                Err(_) => return Err("Uncomprehensible response logline"),
+            };
 
-        let http_error = match parts[4].chars().nth(0) {
-            Some('4') => Some(HttpError::ClientError4xx),
-            Some('5') => Some(HttpError::ServerError5xx),
-            _ => None,
+        let http_error = match parts.get(4) {
+            Some(part) => {
+                match part.chars().nth(0) {
+                    Some('4') => Some(HttpError::ClientError4xx),
+                    Some('5') => Some(HttpError::ServerError5xx),
+                    _ => None,
+                }
+            }
+            None => return Err("Uncomprehensible response logline"),
         };
 
         Ok(Response {
@@ -275,5 +286,23 @@ mod tests {
 
         let _ = LogEvent::Request(Request::new_from_log_line(&request_line).unwrap());
         let _ = LogEvent::Response(Response::new_from_log_line(&response_line).unwrap());
+    }
+
+    #[test]
+    fn test_no_panic_at_umlaut_char_boundary() {
+        let line = "AAÜ".to_string();
+        let _result: Result<Response, &'static str> = Response::new_from_log_line(&line);
+    }
+
+    #[test]
+    fn test_no_panic_at_missing_http_result() {
+        let line = "54/d(Ict>S-y ISt0<-y> 2222222I".to_string();
+        let _result: Result<Response, &'static str> = Response::new_from_log_line(&line);
+    }
+
+    #[test]
+    fn test_no_panic_at_response_time_char_boundary() {
+        let line = "54/dI-(>cSty ISt0ctypeIcE*2<\n-y> 2222 IS<-y> 45402)9я/".to_string();
+        let _result: Result<Response, &'static str> = Response::new_from_log_line(&line);
     }
 }
