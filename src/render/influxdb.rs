@@ -76,7 +76,6 @@ impl InfluxDbRenderer {
 
 #[cfg(test)]
 mod tests {
-    use std::str;
     use analyzer;
     use super::*;
 
