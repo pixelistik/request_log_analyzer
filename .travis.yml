@@ -74,9 +74,9 @@ script:
 after_script: set +e
 
 after_success: |
-  wget https://github.com/SimonKagstrom/kcov/archive/v31.tar.gz &&
-  tar xzf v31.tar.gz &&
-  cd kcov-31 &&
+  wget https://github.com/SimonKagstrom/kcov/archive/v34.tar.gz &&
+  tar xzf v34.tar.gz &&
+  cd kcov-34 &&
   mkdir build &&
   cd build &&
   cmake .. &&
