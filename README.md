@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/pixelistik/request_log_analyzer.svg?branch=master)](https://travis-ci.org/pixelistik/request_log_analyzer)
+[![Coverage Status](https://coveralls.io/repos/github/pixelistik/request_log_analyzer/badge.svg?branch=)](https://coveralls.io/github/pixelistik/request_log_analyzer?branch=)
 
 ## Installation
 Download and unzip one of the 64-bit Linux / macOS / Windows binaries from
