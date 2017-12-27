@@ -74,7 +74,7 @@ script:
 after_script: set +e
 
 after_success: |
-  wget https://github.com/SimonKagstrom/kcov/archive/master.tar.gz &&
+  wget https://github.com/SimonKagstrom/kcov/archive/v31.tar.gz &&
   tar xzf master.tar.gz &&
   cd kcov-master &&
   mkdir build &&
