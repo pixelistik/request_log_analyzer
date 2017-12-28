@@ -18,8 +18,9 @@ pub trait Timing {
 }
 
 pub fn analyze_iterator<I, T>(timings: I) -> result::RequestLogAnalyzerResult
-    where I: Iterator<Item = T>,
-          T: Timing + aggregated_error_rates::HttpErrorState
+where
+    I: Iterator<Item = T>,
+    T: Timing + aggregated_error_rates::HttpErrorState,
 {
     let mut stats = aggregated_stats::AggregatedStats::new();
     let mut error_rates = aggregated_error_rates::AggregatedErrorRates::new();

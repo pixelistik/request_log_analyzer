@@ -6,7 +6,7 @@ pub enum HttpError {
     ServerError5xx,
 }
 
-#[derive(PartialEq,Debug)]
+#[derive(PartialEq, Debug)]
 pub enum LogEvent {
     Request(Request),
     Response(Response),
@@ -33,11 +33,14 @@ impl Request {
             return Err("Uncomprehensible request logline");
         }
 
-        let id_parsed: i32 =
-            match id.chars().skip(1).take(id.len() - 2).collect::<String>().parse() {
-                Ok(id) => id,
-                Err(_) => return Err("Uncomprehensible request logline"),
-            };
+        let id_parsed: i32 = match id.chars()
+            .skip(1)
+            .take(id.len() - 2)
+            .collect::<String>()
+            .parse() {
+            Ok(id) => id,
+            Err(_) => return Err("Uncomprehensible request logline"),
+        };
 
         let date = &format!("{} {}", parts[0], parts[1]);
 
@@ -76,22 +79,28 @@ impl Response {
             return Err("Uncomprehensible response logline");
         }
 
-        let id_numeric: i32 =
-            match id.chars().skip(1).take(id.len() - 2).collect::<String>().parse() {
-                Ok(number) => number,
-                Err(_) => return Err("Uncomprehensible response logline"),
-            };
+        let id_numeric: i32 = match id.chars()
+            .skip(1)
+            .take(id.len() - 2)
+            .collect::<String>()
+            .parse() {
+            Ok(number) => number,
+            Err(_) => return Err("Uncomprehensible response logline"),
+        };
 
         let response_time = parts[parts.len() - 1];
         if response_time.len() < 3 {
             return Err("Uncomprehensible response logline");
         }
 
-        let response_time_duration =
-            match response_time.chars().take(response_time.len() - 2).collect::<String>().parse() {
-                Ok(number) => Duration::milliseconds(number),
-                Err(_) => return Err("Uncomprehensible response logline"),
-            };
+        let response_time_duration = match response_time
+            .chars()
+            .take(response_time.len() - 2)
+            .collect::<String>()
+            .parse() {
+            Ok(number) => Duration::milliseconds(number),
+            Err(_) => return Err("Uncomprehensible response logline"),
+        };
 
         let http_error = match parts.get(4) {
             Some(part) => {
@@ -115,7 +124,7 @@ impl Response {
 
 #[cfg(test)]
 mod tests {
-    use::chrono::*;
+    use chrono::*;
     use super::*;
 
     #[test]
@@ -280,8 +289,8 @@ mod tests {
 
     #[test]
     fn test_log_event_type() {
-        let request_line =
-            "08/Apr/2016:09:58:47 +0200 [02] -> GET /content/some/other.html HTTP/1.1".to_string();
+        let request_line = "08/Apr/2016:09:58:47 +0200 [02] -> GET /content/some/other.html HTTP/1.1"
+            .to_string();
         let response_line = "08/Apr/2016:09:58:48 +0200 [02] <- 200 text/html 10ms".to_string();
 
         let _ = LogEvent::Request(Request::new_from_log_line(&request_line).unwrap());

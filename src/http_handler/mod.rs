@@ -17,11 +17,13 @@ impl hyper::server::Handler for HttpHandler {
 
         let mut renderer = render::prometheus::PrometheusRenderer::new();
         renderer.render(result);
-        res.headers_mut()
-            .set(hyper::header::ContentType(renderer.encoder
+        res.headers_mut().set(hyper::header::ContentType(
+            renderer
+                .encoder
                 .format_type()
                 .parse::<hyper::mime::Mime>()
-                .unwrap()));
+                .unwrap(),
+        ));
         res.send(&renderer.buffer).unwrap();
     }
 }
@@ -33,7 +35,10 @@ pub fn listen_http(args: args::RequestLogAnalyzerArgs, binding_address: &str) {
     };
 
     info!("listening addr {:?}", binding_address);
-    hyper::server::Server::http(binding_address).unwrap().handle(handler).unwrap();
+    hyper::server::Server::http(binding_address)
+        .unwrap()
+        .handle(handler)
+        .unwrap();
 }
 
 #[cfg(test)]
@@ -91,8 +96,9 @@ mod tests {
         let mut request_mock_network_stream =
             mock::MockStream::with_input(b"GET / HTTP/1.0\r\n\r\n");
 
-        let mut reader = hyper::buffer::BufReader::new(&mut request_mock_network_stream as
-                                                       &mut hyper::net::NetworkStream);
+        let mut reader = hyper::buffer::BufReader::new(
+            &mut request_mock_network_stream as &mut hyper::net::NetworkStream,
+        );
 
         let socket = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 8080);
 
@@ -102,8 +108,8 @@ mod tests {
         let mut response_mock_network_stream = mock::MockStream::new();
 
         {
-            let response = hyper::server::Response::new(&mut response_mock_network_stream,
-                                                        &mut headers);
+            let response =
+                hyper::server::Response::new(&mut response_mock_network_stream, &mut headers);
 
             handler.handle(request, response);
         }

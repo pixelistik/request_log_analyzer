@@ -18,15 +18,18 @@ pub struct PrometheusRenderer {
 
 impl PrometheusRenderer {
     pub fn new() -> PrometheusRenderer {
-        fn make_and_register_gauge(gauge_name: &str,
-                                   registry: &prometheus::Registry)
-                                   -> prometheus::Gauge {
-            let gauge = prometheus::Gauge::new(String::from(gauge_name),
-                                               format!("The {} of responses.", gauge_name))
-                .expect("Failed to create Prometheus gauge.");
+        fn make_and_register_gauge(
+            gauge_name: &str,
+            registry: &prometheus::Registry,
+        ) -> prometheus::Gauge {
+            let gauge = prometheus::Gauge::new(
+                String::from(gauge_name),
+                format!("The {} of responses.", gauge_name),
+            ).expect("Failed to create Prometheus gauge.");
 
-            registry.register(Box::new(gauge.clone()))
-                .expect("Failed to register Prometheus gauge.");
+            registry.register(Box::new(gauge.clone())).expect(
+                "Failed to register Prometheus gauge.",
+            );
             gauge
         }
 
@@ -41,10 +44,14 @@ impl PrometheusRenderer {
             avg: make_and_register_gauge("request_time_avg", &registry),
             median: make_and_register_gauge("request_time_median", &registry),
             percentile90: make_and_register_gauge("request_time_percentile90", &registry),
-            client_error_4xx_rate: make_and_register_gauge("request_error_client_error_4xx_rate",
-                                                           &registry),
-            server_error_5xx_rate: make_and_register_gauge("request_error_server_error_5xx_rate",
-                                                           &registry),
+            client_error_4xx_rate: make_and_register_gauge(
+                "request_error_client_error_4xx_rate",
+                &registry,
+            ),
+            server_error_5xx_rate: make_and_register_gauge(
+                "request_error_server_error_5xx_rate",
+                &registry,
+            ),
             registry: registry,
         }
     }
@@ -69,8 +76,12 @@ impl Renderer for PrometheusRenderer {
 
         match result.error {
             Some(error) => {
-                self.client_error_4xx_rate.set(f64::from(error.client_error_4xx));
-                self.server_error_5xx_rate.set(f64::from(error.server_error_5xx));
+                self.client_error_4xx_rate.set(
+                    f64::from(error.client_error_4xx),
+                );
+                self.server_error_5xx_rate.set(
+                    f64::from(error.server_error_5xx),
+                );
             }
             None => {
                 warn!("No matching log lines in file.");
@@ -118,8 +129,12 @@ mod tests {
         assert!(buffer_text.contains("request_time_avg 37"));
         assert!(buffer_text.contains("request_time_median 10"));
         assert!(buffer_text.contains("request_time_percentile90 100"));
-        assert!(buffer_text.contains("request_error_client_error_4xx_rate 0.1"));
-        assert!(buffer_text.contains("request_error_server_error_5xx_rate 0.2"));
+        assert!(buffer_text.contains(
+            "request_error_client_error_4xx_rate 0.1",
+        ));
+        assert!(buffer_text.contains(
+            "request_error_server_error_5xx_rate 0.2",
+        ));
     }
 
     #[test]

@@ -57,12 +57,16 @@ fn main() {
 
         if !args.quiet {
             stdout = io::stdout();
-            renderers.push(Box::new(render::terminal::TerminalRenderer::new(&mut stdout)));
+            renderers.push(Box::new(
+                render::terminal::TerminalRenderer::new(&mut stdout),
+            ));
         }
 
         if args.graphite_server.is_some() {
-            stream = match TcpStream::connect((args.graphite_server.as_ref().unwrap().as_str(),
-                                               args.graphite_port.unwrap())) {
+            stream = match TcpStream::connect((
+                args.graphite_server.as_ref().unwrap().as_str(),
+                args.graphite_port.unwrap(),
+            )) {
                 Ok(stream) => stream,
                 Err(err) => {
                     eprintln!("Could not connect to the Graphite server: {}", err);
@@ -70,18 +74,18 @@ fn main() {
                 }
             };
 
-            renderers.push(Box::new(render::graphite::GraphiteRenderer::new(Utc::now(),
-                                                                            args.graphite_prefix
-                                                                                .clone(),
-                                                                            &mut stream)));
+            renderers.push(Box::new(render::graphite::GraphiteRenderer::new(
+                Utc::now(),
+                args.graphite_prefix.clone(),
+                &mut stream,
+            )));
         }
 
         if args.influxdb_write_url.is_some() {
-            renderers.push(Box::new(render::influxdb::InfluxDbRenderer::new(&args.influxdb_write_url
-                                                                           .clone()
-                                                                           .unwrap(),
-                                                                       args.influxdb_tags
-                                                                           .clone())));
+            renderers.push(Box::new(render::influxdb::InfluxDbRenderer::new(
+                &args.influxdb_write_url.clone().unwrap(),
+                args.influxdb_tags.clone(),
+            )));
         }
 
         for mut renderer in renderers {
@@ -95,8 +99,12 @@ fn get_input(args: &args::RequestLogAnalyzerArgs) -> Result<Box<io::Read>, Error
         "-" => Box::new(io::stdin()),
         _ => Box::new(match File::open(&args.filename) {
             Ok(file) => file,
-            Err(err) => return Err(err_msg(format!("Failed to open file {}: {}", &args.filename, err))),
-        })
+            Err(err) => {
+                return Err(err_msg(
+                    format!("Failed to open file {}: {}", &args.filename, err),
+                ))
+            }
+        }),
     };
     Ok(input)
 }
@@ -112,14 +120,15 @@ fn run(args: &args::RequestLogAnalyzerArgs) -> result::RequestLogAnalyzerResult 
 
     let reader = io::BufReader::new(input);
 
-    let mut events_iterator = reader.lines()
+    let mut events_iterator = reader
+        .lines()
         .map(log_parser::parse_line)
         .filter(|event| event.is_ok())
         .map(|event| event.unwrap());
 
-    let pairs_iterator =
-        request_response_matcher::RequestResponsePairIterator::new(&mut events_iterator)
-            .filter(|pair| filter::matches_filter(pair, &args.conditions));
+    let pairs_iterator = request_response_matcher::RequestResponsePairIterator::new(
+        &mut events_iterator,
+    ).filter(|pair| filter::matches_filter(pair, &args.conditions));
 
     analyzer::analyze_iterator(pairs_iterator)
 }
@@ -155,7 +164,7 @@ mod tests {
 
         assert!(result.error.is_some());
     }
-    
+
     #[test]
     fn test_get_input_file() {
         let args = args::RequestLogAnalyzerArgs {
@@ -177,7 +186,7 @@ mod tests {
         let result = get_input(&args);
         assert!(result.is_ok());
     }
-    
+
     #[test]
     fn test_get_input_non_existent_file() {
         let args = args::RequestLogAnalyzerArgs {
@@ -199,9 +208,11 @@ mod tests {
         let result = get_input(&args);
         assert!(result.is_err());
         let error_message = format!("{}", result.err().unwrap());
-        assert!(error_message.contains("Failed to open file src/test/non-existent.log"));
+        assert!(error_message.contains(
+            "Failed to open file src/test/non-existent.log",
+        ));
     }
-    
+
     #[test]
     fn test_get_input_stdin() {
         let args = args::RequestLogAnalyzerArgs {

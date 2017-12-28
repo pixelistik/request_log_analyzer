@@ -11,22 +11,20 @@ pub struct FilterConditions {
 pub fn matches_filter(pair: &RequestResponsePair, conditions: &FilterConditions) -> bool {
     let matches_include_terms: bool = match conditions.include_terms {
         Some(ref include_terms) => {
-            include_terms.iter()
-                .fold(false, |result, include_term| {
-                    result || pair.request.original_log_line.contains(include_term) ||
+            include_terms.iter().fold(false, |result, include_term| {
+                result || pair.request.original_log_line.contains(include_term) ||
                     pair.response.original_log_line.contains(include_term)
-                })
+            })
         }
         None => true,
     };
 
     let matches_exclude_terms: bool = match conditions.exclude_terms {
         Some(ref exclude_terms) => {
-            !exclude_terms.iter()
-                .fold(false, |result, exclude_term| {
-                    result || pair.request.original_log_line.contains(exclude_term) ||
+            !exclude_terms.iter().fold(false, |result, exclude_term| {
+                result || pair.request.original_log_line.contains(exclude_term) ||
                     pair.response.original_log_line.contains(exclude_term)
-                })
+            })
         }
         None => true,
     };
@@ -54,12 +52,10 @@ mod tests {
         RequestResponsePair {
             request: Request::new_from_log_line(&"08/Apr/2016:09:57:47 +0200 [001] -> GET \
                                                   /content/some/page.html HTTP/1.1"
-                    .to_string())
-                .unwrap(),
+                .to_string()).unwrap(),
             response: Response::new_from_log_line(&"08/Apr/2016:09:57:47 +0200 [001] <- 200 \
                                                     text/html 1ms"
-                    .to_string())
-                .unwrap(),
+                .to_string()).unwrap(),
         }
     }
 
@@ -188,7 +184,7 @@ mod tests {
     fn test_filter_time_matches_not() {
         let mut pair = get_fixture();
         pair.request.time = Utc::now().with_timezone(&pair.request.time.timezone()) -
-                            Duration::minutes(12);
+            Duration::minutes(12);
 
         let conditions = FilterConditions {
             include_terms: None,

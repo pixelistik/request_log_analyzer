@@ -21,10 +21,9 @@ impl Renderer for InfluxDbRenderer {
     fn render(&mut self, result: result::RequestLogAnalyzerResult) -> () {
         let client = client::Client::new();
         let data = self.post_body(result);
-        let response = client.post(&self.write_url)
-            .body(&data)
-            .send()
-            .expect("Could not connect to InfluxDB host.");
+        let response = client.post(&self.write_url).body(&data).send().expect(
+            "Could not connect to InfluxDB host.",
+        );
 
         if response.status.class() != hyper::status::StatusClass::Success {
             panic!("POSTing data to InfluxDB failed: {:?}", response.status);
@@ -44,33 +43,39 @@ impl InfluxDbRenderer {
 
         match result.timing {
             Some(timing) => {
-                timing_values = format!(",\
+                timing_values = format!(
+                    ",\
     				time_max={},time_min={},time_avg={},time_median={},\
                                          time_90percent={}",
-                                        timing.max,
-                                        timing.min,
-                                        timing.avg,
-                                        timing.median,
-                                        timing.percentile90);
+                    timing.max,
+                    timing.min,
+                    timing.avg,
+                    timing.median,
+                    timing.percentile90
+                );
             }
             None => warn!("No matching log lines in file."),
         }
 
         match result.error {
             Some(error) => {
-                error_rate_values = format!(",\
+                error_rate_values = format!(
+                    ",\
     				client_error_4xx_rate={},server_error_5xx_rate={}",
-                                            error.client_error_4xx,
-                                            error.server_error_5xx);
+                    error.client_error_4xx,
+                    error.server_error_5xx
+                );
             }
             None => warn!("No matching log lines in file."),
         }
 
-        format!("request_log{} count={}{}{}",
-                tags,
-                result.count,
-                timing_values,
-                error_rate_values)
+        format!(
+            "request_log{} count={}{}{}",
+            tags,
+            result.count,
+            timing_values,
+            error_rate_values
+        )
     }
 }
 

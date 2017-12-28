@@ -14,9 +14,8 @@ impl<'a> TerminalRenderer<'a> {
 
 impl<'a> Renderer for TerminalRenderer<'a> {
     fn render(&mut self, result: result::RequestLogAnalyzerResult) -> () {
-        let mut write = |text: String| {
-            let _ = self.stream.write(format!("{}\n", text).as_bytes());
-        };
+        let mut write =
+            |text: String| { let _ = self.stream.write(format!("{}\n", text).as_bytes()); };
 
         write(format!("count:\t{}", result.count));
 
@@ -33,8 +32,14 @@ impl<'a> Renderer for TerminalRenderer<'a> {
 
         match result.error {
             Some(error) => {
-                write(format!("error.client_error_4xx_rate:\t{}", error.client_error_4xx));
-                write(format!("error.server_error_5xx_rate:\t{}", error.server_error_5xx));
+                write(format!(
+                    "error.client_error_4xx_rate:\t{}",
+                    error.client_error_4xx
+                ));
+                write(format!(
+                    "error.server_error_5xx_rate:\t{}",
+                    error.server_error_5xx
+                ));
             }
             None => warn!("No matching log lines for error rate results."),
         }
@@ -55,7 +60,9 @@ mod tests {
 
     impl Write for MockWrite {
         fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-            self.write_calls.push(str::from_utf8(buf).unwrap().to_string());
+            self.write_calls.push(
+                str::from_utf8(buf).unwrap().to_string(),
+            );
             Ok(1)
         }
 
@@ -92,17 +99,31 @@ mod tests {
             renderer.render(result);
         }
         println!("{:?}", mock_write.write_calls);
-        assert!(mock_write.write_calls.contains(&String::from("time.max:\t100\n")));
-        assert!(mock_write.write_calls.contains(&String::from("time.min:\t1\n")));
-        assert!(mock_write.write_calls.contains(&String::from("time.avg:\t37\n")));
-        assert!(mock_write.write_calls.contains(&String::from("time.median:\t10\n")));
-        assert!(mock_write.write_calls.contains(&String::from("time.90percent:\t100\n")));
-        assert!(mock_write.write_calls.contains(&String::from("count:\t3\n")));
+        assert!(mock_write.write_calls.contains(
+            &String::from("time.max:\t100\n"),
+        ));
+        assert!(mock_write.write_calls.contains(
+            &String::from("time.min:\t1\n"),
+        ));
+        assert!(mock_write.write_calls.contains(
+            &String::from("time.avg:\t37\n"),
+        ));
+        assert!(mock_write.write_calls.contains(
+            &String::from("time.median:\t10\n"),
+        ));
+        assert!(mock_write.write_calls.contains(&String::from(
+            "time.90percent:\t100\n",
+        )));
+        assert!(mock_write.write_calls.contains(
+            &String::from("count:\t3\n"),
+        ));
 
-        assert!(mock_write.write_calls
-            .contains(&String::from("error.client_error_4xx_rate:\t0.1\n")));
-        assert!(mock_write.write_calls
-            .contains(&String::from("error.server_error_5xx_rate:\t0.2\n")));
+        assert!(mock_write.write_calls.contains(&String::from(
+            "error.client_error_4xx_rate:\t0.1\n",
+        )));
+        assert!(mock_write.write_calls.contains(&String::from(
+            "error.server_error_5xx_rate:\t0.2\n",
+        )));
     }
 
     #[test]
@@ -121,7 +142,9 @@ mod tests {
             renderer.render(result);
         }
 
-        assert!(mock_write.write_calls.contains(&String::from("count:\t0\n")));
+        assert!(mock_write.write_calls.contains(
+            &String::from("count:\t0\n"),
+        ));
         assert_eq!(mock_write.write_calls.len(), 1);
     }
 }

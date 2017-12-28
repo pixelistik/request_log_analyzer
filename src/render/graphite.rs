@@ -10,10 +10,11 @@ pub struct GraphiteRenderer<'a> {
 }
 
 impl<'a> GraphiteRenderer<'a> {
-    pub fn new(time: DateTime<Utc>,
-               prefix: Option<String>,
-               stream: &'a mut Write)
-               -> GraphiteRenderer<'a> {
+    pub fn new(
+        time: DateTime<Utc>,
+        prefix: Option<String>,
+        stream: &'a mut Write,
+    ) -> GraphiteRenderer<'a> {
         GraphiteRenderer {
             time: time,
             prefix: prefix,
@@ -39,12 +40,15 @@ impl<'a> Renderer for GraphiteRenderer<'a> {
         };
 
         let mut write = |text: String| {
-            let _ = self.stream.write(format!("{}{}{} {}\n",
-                                              prefix_text,
-                                              prefix_separator,
-                                              text,
-                                              self.time.timestamp())
-                .as_bytes());
+            let _ = self.stream.write(
+                format!(
+                    "{}{}{} {}\n",
+                    prefix_text,
+                    prefix_separator,
+                    text,
+                    self.time.timestamp()
+                ).as_bytes(),
+            );
         };
 
         write(format!("requests.count {}", result.count));
@@ -62,10 +66,14 @@ impl<'a> Renderer for GraphiteRenderer<'a> {
 
         match result.error {
             Some(error) => {
-                write(format!("requests.error.client_error_4xx_rate {}",
-                              error.client_error_4xx));
-                write(format!("requests.error.server_error_5xx_rate {}",
-                              error.server_error_5xx));
+                write(format!(
+                    "requests.error.client_error_4xx_rate {}",
+                    error.client_error_4xx
+                ));
+                write(format!(
+                    "requests.error.server_error_5xx_rate {}",
+                    error.server_error_5xx
+                ));
             }
             None => warn!("No matching log lines in file."),
         }
@@ -87,7 +95,9 @@ mod tests {
 
     impl Write for MockTcpStream {
         fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-            self.write_calls.push(str::from_utf8(buf).unwrap().to_string());
+            self.write_calls.push(
+                str::from_utf8(buf).unwrap().to_string(),
+            );
             Ok(1)
         }
 
@@ -115,10 +125,10 @@ mod tests {
     }
 
     fn get_time_fixture() -> DateTime<Utc> {
-        let time: DateTime<Utc> = DateTime::parse_from_str("22/Sep/2016:22:41:59 +0200",
-                                                           "%d/%b/%Y:%H:%M:%S %z")
-            .unwrap()
-            .with_timezone(&Utc);
+        let time: DateTime<Utc> =
+            DateTime::parse_from_str("22/Sep/2016:22:41:59 +0200", "%d/%b/%Y:%H:%M:%S %z")
+                .unwrap()
+                .with_timezone(&Utc);
 
         time
     }
@@ -133,22 +143,38 @@ mod tests {
             renderer.render(get_result_fixture());
         }
 
-        assert_eq!(&mock_tcp_stream.write_calls[0],
-                   "requests.count 3 1474576919\n");
-        assert_eq!(&mock_tcp_stream.write_calls[1],
-                   "requests.time.max 100 1474576919\n");
-        assert_eq!(&mock_tcp_stream.write_calls[2],
-                   "requests.time.min 1 1474576919\n");
-        assert_eq!(&mock_tcp_stream.write_calls[3],
-                   "requests.time.avg 37 1474576919\n");
-        assert_eq!(&mock_tcp_stream.write_calls[4],
-                   "requests.time.median 10 1474576919\n");
-        assert_eq!(&mock_tcp_stream.write_calls[5],
-                   "requests.time.90percent 100 1474576919\n");
-        assert_eq!(&mock_tcp_stream.write_calls[6],
-                   "requests.error.client_error_4xx_rate 0.1 1474576919\n");
-        assert_eq!(&mock_tcp_stream.write_calls[7],
-                   "requests.error.server_error_5xx_rate 0.2 1474576919\n");
+        assert_eq!(
+            &mock_tcp_stream.write_calls[0],
+            "requests.count 3 1474576919\n"
+        );
+        assert_eq!(
+            &mock_tcp_stream.write_calls[1],
+            "requests.time.max 100 1474576919\n"
+        );
+        assert_eq!(
+            &mock_tcp_stream.write_calls[2],
+            "requests.time.min 1 1474576919\n"
+        );
+        assert_eq!(
+            &mock_tcp_stream.write_calls[3],
+            "requests.time.avg 37 1474576919\n"
+        );
+        assert_eq!(
+            &mock_tcp_stream.write_calls[4],
+            "requests.time.median 10 1474576919\n"
+        );
+        assert_eq!(
+            &mock_tcp_stream.write_calls[5],
+            "requests.time.90percent 100 1474576919\n"
+        );
+        assert_eq!(
+            &mock_tcp_stream.write_calls[6],
+            "requests.error.client_error_4xx_rate 0.1 1474576919\n"
+        );
+        assert_eq!(
+            &mock_tcp_stream.write_calls[7],
+            "requests.error.server_error_5xx_rate 0.2 1474576919\n"
+        );
     }
 
     #[test]
@@ -156,28 +182,46 @@ mod tests {
         let mut mock_tcp_stream = MockTcpStream { write_calls: vec![] };
 
         {
-            let mut renderer = GraphiteRenderer::new(get_time_fixture(),
-                                                     Some(String::from("my_prefix")),
-                                                     &mut mock_tcp_stream);
+            let mut renderer = GraphiteRenderer::new(
+                get_time_fixture(),
+                Some(String::from("my_prefix")),
+                &mut mock_tcp_stream,
+            );
             renderer.render(get_result_fixture());
         }
 
-        assert_eq!(&mock_tcp_stream.write_calls[0],
-                   "my_prefix.requests.count 3 1474576919\n");
-        assert_eq!(&mock_tcp_stream.write_calls[1],
-                   "my_prefix.requests.time.max 100 1474576919\n");
-        assert_eq!(&mock_tcp_stream.write_calls[2],
-                   "my_prefix.requests.time.min 1 1474576919\n");
-        assert_eq!(&mock_tcp_stream.write_calls[3],
-                   "my_prefix.requests.time.avg 37 1474576919\n");
-        assert_eq!(&mock_tcp_stream.write_calls[4],
-                   "my_prefix.requests.time.median 10 1474576919\n");
-        assert_eq!(&mock_tcp_stream.write_calls[5],
-                   "my_prefix.requests.time.90percent 100 1474576919\n");
-        assert_eq!(&mock_tcp_stream.write_calls[6],
-                   "my_prefix.requests.error.client_error_4xx_rate 0.1 1474576919\n");
-        assert_eq!(&mock_tcp_stream.write_calls[7],
-                   "my_prefix.requests.error.server_error_5xx_rate 0.2 1474576919\n");
+        assert_eq!(
+            &mock_tcp_stream.write_calls[0],
+            "my_prefix.requests.count 3 1474576919\n"
+        );
+        assert_eq!(
+            &mock_tcp_stream.write_calls[1],
+            "my_prefix.requests.time.max 100 1474576919\n"
+        );
+        assert_eq!(
+            &mock_tcp_stream.write_calls[2],
+            "my_prefix.requests.time.min 1 1474576919\n"
+        );
+        assert_eq!(
+            &mock_tcp_stream.write_calls[3],
+            "my_prefix.requests.time.avg 37 1474576919\n"
+        );
+        assert_eq!(
+            &mock_tcp_stream.write_calls[4],
+            "my_prefix.requests.time.median 10 1474576919\n"
+        );
+        assert_eq!(
+            &mock_tcp_stream.write_calls[5],
+            "my_prefix.requests.time.90percent 100 1474576919\n"
+        );
+        assert_eq!(
+            &mock_tcp_stream.write_calls[6],
+            "my_prefix.requests.error.client_error_4xx_rate 0.1 1474576919\n"
+        );
+        assert_eq!(
+            &mock_tcp_stream.write_calls[7],
+            "my_prefix.requests.error.server_error_5xx_rate 0.2 1474576919\n"
+        );
     }
 
     #[test]
@@ -197,7 +241,9 @@ mod tests {
         }
 
         assert_eq!(mock_tcp_stream.write_calls.len(), 1);
-        assert_eq!(&mock_tcp_stream.write_calls[0],
-                   "requests.count 0 1474576919\n");
+        assert_eq!(
+            &mock_tcp_stream.write_calls[0],
+            "requests.count 0 1474576919\n"
+        );
     }
 }

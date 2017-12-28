@@ -26,7 +26,8 @@ impl AggregatedErrorRates {
     }
 
     pub fn add<T>(&mut self, value: &T)
-        where T: HttpErrorState
+    where
+        T: HttpErrorState,
     {
         self.total_count += 1;
 
@@ -44,10 +45,10 @@ impl AggregatedErrorRates {
 
         Some(ErrorRatesResult {
             client_error_4xx: (self.client_error_4xx_count as f32 / self.total_count as f32 *
-                               10000.0)
+                                   10000.0)
                 .round() / 10000.0,
             server_error_5xx: (self.server_error_5xx_count as f32 / self.total_count as f32 *
-                               10000.0)
+                                   10000.0)
                 .round() / 10000.0,
         })
     }

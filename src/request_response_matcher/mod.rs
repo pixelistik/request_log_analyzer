@@ -69,16 +69,19 @@ impl<'a> Iterator for RequestResponsePairIterator<'a> {
                 None => return None,
             }
 
-            pair = extract_first_matching_request_response_pair(&mut self.requests,
-                                                                &mut self.responses);
+            pair = extract_first_matching_request_response_pair(
+                &mut self.requests,
+                &mut self.responses,
+            );
         }
         pair
     }
 }
 
-pub fn extract_first_matching_request_response_pair(requests: &mut Vec<log_events::Request>,
-                                                    responses: &mut Vec<log_events::Response>)
-                                                    -> Option<RequestResponsePair> {
+pub fn extract_first_matching_request_response_pair(
+    requests: &mut Vec<log_events::Request>,
+    responses: &mut Vec<log_events::Response>,
+) -> Option<RequestResponsePair> {
     for request_index in 0..requests.len() {
         {
             let request = requests.get(request_index);
@@ -88,8 +91,9 @@ pub fn extract_first_matching_request_response_pair(requests: &mut Vec<log_event
             }
         }
 
-        let matching_response_index: Option<usize> = responses.iter()
-            .position(|response| requests[request_index].id == response.id);
+        let matching_response_index: Option<usize> = responses.iter().position(|response| {
+            requests[request_index].id == response.id
+        });
 
         if matching_response_index.is_some() {
             let request = requests.remove(request_index);
@@ -117,19 +121,22 @@ mod tests {
     #[test]
     fn test_extract_matching_request_response_pairs_iterator() {
         let events =
-            vec![log_parser::log_events::LogEvent::Request(log_parser::log_events::Request {
-                     id: 1,
-                     time: DateTime::parse_from_str("08/Apr/2016:09:57:47 +0200",
-                                                    "%d/%b/%Y:%H:%M:%S %z")
-                         .unwrap(),
-                     original_log_line: "whatever".to_string(),
-                 }),
-                 log_parser::log_events::LogEvent::Response(log_parser::log_events::Response {
-                     id: 1,
-                     response_time: Duration::milliseconds(7),
-                     original_log_line: "whatever".to_string(),
-                     http_error: None,
-                 })];
+            vec![
+                log_parser::log_events::LogEvent::Request(log_parser::log_events::Request {
+                    id: 1,
+                    time: DateTime::parse_from_str(
+                        "08/Apr/2016:09:57:47 +0200",
+                        "%d/%b/%Y:%H:%M:%S %z",
+                    ).unwrap(),
+                    original_log_line: "whatever".to_string(),
+                }),
+                log_parser::log_events::LogEvent::Response(log_parser::log_events::Response {
+                    id: 1,
+                    response_time: Duration::milliseconds(7),
+                    original_log_line: "whatever".to_string(),
+                    http_error: None,
+                }),
+            ];
 
         let mut events_iter = events.into_iter();
         let mut iterator = RequestResponsePairIterator::new(&mut events_iter);
@@ -143,9 +150,10 @@ mod tests {
         let timing: &Timing = &RequestResponsePair {
             request: log_parser::log_events::Request {
                 id: 1,
-                time: DateTime::parse_from_str("08/Apr/2016:09:57:47 +0200",
-                                               "%d/%b/%Y:%H:%M:%S %z")
-                    .unwrap(),
+                time: DateTime::parse_from_str(
+                    "08/Apr/2016:09:57:47 +0200",
+                    "%d/%b/%Y:%H:%M:%S %z",
+                ).unwrap(),
                 original_log_line: "whatever".to_string(),
             },
             response: log_parser::log_events::Response {
@@ -170,9 +178,10 @@ mod tests {
         let state: &HttpErrorState = &RequestResponsePair {
             request: log_parser::log_events::Request {
                 id: 1,
-                time: DateTime::parse_from_str("08/Apr/2016:09:57:47 +0200",
-                                               "%d/%b/%Y:%H:%M:%S %z")
-                    .unwrap(),
+                time: DateTime::parse_from_str(
+                    "08/Apr/2016:09:57:47 +0200",
+                    "%d/%b/%Y:%H:%M:%S %z",
+                ).unwrap(),
                 original_log_line: "whatever".to_string(),
             },
             response: log_parser::log_events::Response {
