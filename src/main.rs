@@ -21,6 +21,7 @@ extern crate prometheus;
 extern crate hyper;
 
 extern crate failure;
+use failure::{Error, err_msg};
 
 mod analyzer;
 mod args;
@@ -89,17 +90,23 @@ fn main() {
     }
 }
 
-fn run(args: &args::RequestLogAnalyzerArgs) -> result::RequestLogAnalyzerResult {
+fn get_input(args: &args::RequestLogAnalyzerArgs) -> Result<Box<io::Read>, Error> {
     let input: Box<io::Read> = match args.filename.as_ref() {
         "-" => Box::new(io::stdin()),
-        _ => {
-            match File::open(&args.filename) {
-                Ok(file) => Box::new(file),
-                Err(err) => {
-                    eprintln!("Failed to open file {}: {}", &args.filename, err);
-                    process::exit(1);
-                }
-            }
+        _ => Box::new(match File::open(&args.filename) {
+            Ok(file) => file,
+            Err(err) => return Err(err_msg(format!("Failed to open file {}: {}", &args.filename, err))),
+        })
+    };
+    Ok(input)
+}
+
+fn run(args: &args::RequestLogAnalyzerArgs) -> result::RequestLogAnalyzerResult {
+    let input = match get_input(&args) {
+        Ok(input) => input,
+        Err(err) => {
+            eprintln!("{}", err);
+            process::exit(1);
         }
     };
 
@@ -147,6 +154,74 @@ mod tests {
         assert_eq!(timing.max, 10);
 
         assert!(result.error.is_some());
+    }
+    
+    #[test]
+    fn test_get_input_file() {
+        let args = args::RequestLogAnalyzerArgs {
+            filename: String::from("src/test/simple-1.log"),
+            conditions: filter::FilterConditions {
+                include_terms: None,
+                exclude_terms: None,
+                latest_time: None,
+            },
+            graphite_server: None,
+            graphite_port: Some(2003),
+            graphite_prefix: None,
+            prometheus_listen: None,
+            influxdb_write_url: None,
+            influxdb_tags: None,
+            quiet: false,
+        };
+
+        let result = get_input(&args);
+        assert!(result.is_ok());
+    }
+    
+    #[test]
+    fn test_get_input_non_existent_file() {
+        let args = args::RequestLogAnalyzerArgs {
+            filename: String::from("src/test/non-existent.log"),
+            conditions: filter::FilterConditions {
+                include_terms: None,
+                exclude_terms: None,
+                latest_time: None,
+            },
+            graphite_server: None,
+            graphite_port: Some(2003),
+            graphite_prefix: None,
+            prometheus_listen: None,
+            influxdb_write_url: None,
+            influxdb_tags: None,
+            quiet: false,
+        };
+
+        let result = get_input(&args);
+        assert!(result.is_err());
+        let error_message = format!("{}", result.err().unwrap());
+        assert!(error_message.contains("Failed to open file src/test/non-existent.log"));
+    }
+    
+    #[test]
+    fn test_get_input_stdin() {
+        let args = args::RequestLogAnalyzerArgs {
+            filename: String::from("-"),
+            conditions: filter::FilterConditions {
+                include_terms: None,
+                exclude_terms: None,
+                latest_time: None,
+            },
+            graphite_server: None,
+            graphite_port: Some(2003),
+            graphite_prefix: None,
+            prometheus_listen: None,
+            influxdb_write_url: None,
+            influxdb_tags: None,
+            quiet: false,
+        };
+
+        let result = get_input(&args);
+        assert!(result.is_ok());
     }
 
     #[test]
