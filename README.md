@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/pixelistik/request_log_analyzer.svg?branch=master)](https://travis-ci.org/pixelistik/request_log_analyzer)
+[![codecov](https://codecov.io/gh/pixelistik/request_log_analyzer/branch/master/graph/badge.svg)](https://codecov.io/gh/pixelistik/request_log_analyzer)
 
 ## Installation
 Download and unzip one of the 64-bit Linux / macOS / Windows binaries from
