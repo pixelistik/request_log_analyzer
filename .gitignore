@@ -3,3 +3,4 @@ target
 *.bk
 ._*
 src/test/random-*.log
+*.secret

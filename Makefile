@@ -1,3 +1,5 @@
+CODECOV_TOKEN := $(shell cat .codecov-token.secret)
+
 all: test target/release/request_log_analyzer
 
 target/release/request_log_analyzer: src/
@@ -32,11 +34,18 @@ coverage: test-no-run
 # In this case, we simply look for the dash that separates the postfix...
 	$(eval LATEST_TEST_BINARY := $(shell ls -t1 `find target/debug -maxdepth 1 -type f -executable -name "*-*"` | head -1))
 # http://sunjay.ca/2016/07/25/rust-code-coverage
-	kcov --coveralls-id=$(COVERALLS_ID) \
+	kcov \
 		--exclude-pattern=/.cargo,/usr/lib,tests \
 		--exclude-region="cfg(test):LCOV_EXCL_STOP" \
 		--verify \
 		target/cov $(LATEST_TEST_BINARY)
+		
+/tmp/codecov-uploader:
+	wget https://codecov.io/bash --output-document=/tmp/codecov-uploader
+	chmod +x /tmp/codecov-uploader
+	
+report-coverage: committedworkingdir /tmp/codecov-uploader coverage 
+	/tmp/codecov-uploader -t $(CODECOV_TOKEN)
 
 src/test/random-small.log:
 	python src/test/generate_random_log.py 1000 > src/test/random-small.log
