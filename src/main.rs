@@ -33,7 +33,7 @@ mod http_handler;
 mod result;
 
 fn main() {
-    env_logger::init().expect("Failed to initialize logging.");
+    env_logger::init();
 
     let args = match args::parse_args(env::args()) {
         Ok(args) => args,
