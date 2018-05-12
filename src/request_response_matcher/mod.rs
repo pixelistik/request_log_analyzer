@@ -46,7 +46,7 @@ impl<'a> Iterator for RequestResponsePairIterator<'a> {
     }
 }
 
-pub fn extract_first_matching_request_response_pair(
+fn extract_first_matching_request_response_pair(
     requests: &mut Vec<log_events::Request>,
     responses: &mut Vec<log_events::Response>,
 ) -> Option<RequestResponsePair> {
