@@ -20,19 +20,13 @@ impl Timing for Box<Timing> {
     }
 }
 
-impl Timing for Box<RequestResponsePair> {
-    fn num_milliseconds(&self) -> i64 {
-        (**self).num_milliseconds()
-    }
-}
-
 impl HttpErrorState for RequestResponsePair {
     fn error(&self) -> Option<log_events::HttpError> {
         self.response.http_error.clone()
     }
 }
 
-impl HttpErrorState for Box<RequestResponsePair> {
+impl HttpErrorState for Box<HttpErrorState> {
     fn error(&self) -> Option<log_events::HttpError> {
         (**self).error()
     }
