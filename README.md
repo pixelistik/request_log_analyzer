@@ -4,7 +4,7 @@
 ## Installation
 Download and unzip one of the 64-bit Linux / macOS / Windows binaries from
 the [releases page](https://github.com/pixelistik/request_log_analyzer/releases/latest)
-(built on Travis CI servers). The program is a single binary that you run in
+(built on Travis/Appveyor servers). The program is a single binary that you run in
 the terminal.
 
 Alternatively you can build from source, if you have a Rust toolchain set up:
