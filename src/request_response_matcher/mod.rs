@@ -1,35 +1,9 @@
 use log_parser::*;
-use analyzer::Timing;
-use analyzer::aggregated_error_rates::HttpErrorState;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct RequestResponsePair {
     pub request: log_events::Request,
     pub response: log_events::Response,
-}
-
-impl Timing for RequestResponsePair {
-    fn num_milliseconds(&self) -> i64 {
-        self.response.response_time.num_milliseconds()
-    }
-}
-
-impl Timing for Box<Timing> {
-    fn num_milliseconds(&self) -> i64 {
-        (**self).num_milliseconds()
-    }
-}
-
-impl HttpErrorState for RequestResponsePair {
-    fn error(&self) -> Option<log_events::HttpError> {
-        self.response.http_error.clone()
-    }
-}
-
-impl HttpErrorState for Box<HttpErrorState> {
-    fn error(&self) -> Option<log_events::HttpError> {
-        (**self).error()
-    }
 }
 
 pub struct RequestResponsePairIterator<'a> {

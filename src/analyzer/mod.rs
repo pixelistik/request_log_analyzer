@@ -1,5 +1,6 @@
 use aggregated_stats;
 use result;
+use request_response_matcher;
 
 pub mod aggregated_error_rates;
 
@@ -15,6 +16,18 @@ pub struct TimingResult {
 
 pub trait Timing {
     fn num_milliseconds(&self) -> i64;
+}
+
+impl Timing for request_response_matcher::RequestResponsePair {
+    fn num_milliseconds(&self) -> i64 {
+        self.response.response_time.num_milliseconds()
+    }
+}
+
+impl Timing for Box<Timing> {
+    fn num_milliseconds(&self) -> i64 {
+        (**self).num_milliseconds()
+    }
 }
 
 pub fn analyze_iterator<I, T>(timings: I) -> result::RequestLogAnalyzerResult

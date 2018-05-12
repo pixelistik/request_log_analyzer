@@ -1,4 +1,6 @@
 use log_parser::log_events::HttpError;
+use request_response_matcher;
+use log_parser::*;
 
 #[derive(PartialEq, Debug, Clone)]
 pub struct ErrorRatesResult {
@@ -8,6 +10,18 @@ pub struct ErrorRatesResult {
 
 pub trait HttpErrorState {
     fn error(&self) -> Option<HttpError>;
+}
+
+impl HttpErrorState for request_response_matcher::RequestResponsePair {
+    fn error(&self) -> Option<log_events::HttpError> {
+        self.response.http_error.clone()
+    }
+}
+
+impl HttpErrorState for Box<HttpErrorState> {
+    fn error(&self) -> Option<log_events::HttpError> {
+        (**self).error()
+    }
 }
 
 pub struct AggregatedErrorRates {
