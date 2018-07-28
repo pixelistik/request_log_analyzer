@@ -57,7 +57,7 @@ mod tests {
     #[test]
     fn test_handle() {
         let args = args::RequestLogAnalyzerArgs {
-            filename: String::from("src/test/simple-1.log"),
+            filenames: vec![String::from("src/test/simple-1.log")],
             conditions: filter::FilterConditions {
                 include_terms: None,
                 exclude_terms: None,

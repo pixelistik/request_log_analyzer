@@ -5,7 +5,7 @@ use failure::{Error, err_msg};
 
 #[derive(PartialEq, Debug)]
 pub struct RequestLogAnalyzerArgs {
-    pub filename: String,
+    pub filenames: Vec<String>,
     pub conditions: filter::FilterConditions,
     pub graphite_server: Option<String>,
     pub graphite_port: Option<u16>,
@@ -25,11 +25,12 @@ where
         .version(crate_version!())
         .after_help(crate_description!())
         .arg(
-            Arg::with_name("filename")
+            Arg::with_name("filenames")
                 .index(1)
-                .value_name("FILE")
+                .value_name("FILES")
+                .multiple(true)
                 .required(false)
-                .help("Log file to analyze, defaults to stdin")
+                .help("Log files to analyze, defaults to stdin")
                 .takes_value(true),
         )
         .arg(
@@ -112,7 +113,10 @@ where
         ))
         .get_matches_from(args);
 
-    let filename = app.value_of("filename").unwrap_or("-").to_string();
+    let filenames: Vec<String> = match app.values_of("filenames") {
+        Some(values) => values.map(|x| x.to_string()).collect(),
+        None => vec![String::from("-")],
+    };
 
     let conditions = filter::FilterConditions {
         include_terms: match app.values_of("include_term") {
@@ -176,7 +180,7 @@ where
     let quiet = app.is_present("quiet");
 
     Ok(RequestLogAnalyzerArgs {
-        filename: filename,
+        filenames: filenames,
         conditions: conditions,
         graphite_server: graphite_server,
         graphite_port: graphite_port,
@@ -199,7 +203,7 @@ mod tests {
         let raw_args = vec!["request_log_analyzer".to_string()];
 
         let expected = RequestLogAnalyzerArgs {
-            filename: String::from("-"),
+            filenames: vec![String::from("-")],
             conditions: filter::FilterConditions {
                 include_terms: None,
                 exclude_terms: None,
@@ -246,7 +250,7 @@ mod tests {
         ];
 
         let expected = RequestLogAnalyzerArgs {
-            filename: String::from("my-logfile.log"),
+            filenames: vec![String::from("my-logfile.log")],
             conditions: filter::FilterConditions {
                 include_terms: Some(vec![String::from("one")]),
                 exclude_terms: Some(vec![String::from("this other")]),
@@ -282,7 +286,7 @@ mod tests {
         ];
 
         let expected = RequestLogAnalyzerArgs {
-            filename: String::from("my-logfile.log"),
+            filenames: vec![String::from("my-logfile.log")],
             conditions: filter::FilterConditions {
                 include_terms: Some(vec![String::from("one"), String::from("two")]),
                 exclude_terms: Some(vec![String::from("this other"), String::from("more")]),
@@ -335,4 +339,33 @@ mod tests {
 
         assert!(error_message.contains("-t must be numeric"));
     }
+}
+
+#[test]
+fn test_parse_args_multiple_files() {
+    let raw_args = vec![
+        String::from("request_log_analyzer"),
+        String::from("one.log"),
+        String::from("two.log"),
+    ];
+
+    let expected = RequestLogAnalyzerArgs {
+        filenames: vec![String::from("one.log"), String::from("two.log")],
+        conditions: filter::FilterConditions {
+            include_terms: None,
+            exclude_terms: None,
+            latest_time: None,
+        },
+        graphite_server: None,
+        graphite_port: Some(2003),
+        graphite_prefix: None,
+        prometheus_listen: None,
+        influxdb_write_url: None,
+        influxdb_tags: None,
+        quiet: false,
+    };
+
+    let result = parse_args(raw_args).unwrap();
+
+    assert_eq!(result, expected);
 }

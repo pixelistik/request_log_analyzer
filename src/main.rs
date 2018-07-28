@@ -95,14 +95,16 @@ fn main() {
 }
 
 fn get_input(args: &args::RequestLogAnalyzerArgs) -> Result<Box<io::Read>, Error> {
-    let input: Box<io::Read> = match args.filename.as_ref() {
+    let input: Box<io::Read> = match args.filenames[0].as_ref() {
         "-" => Box::new(io::stdin()),
-        _ => Box::new(match File::open(&args.filename) {
+        _ => Box::new(match File::open(&args.filenames[0]) {
             Ok(file) => file,
             Err(err) => {
-                return Err(err_msg(
-                    format!("Failed to open file {}: {}", &args.filename, err),
-                ))
+                return Err(err_msg(format!(
+                    "Failed to open file {}: {}",
+                    &args.filenames[0],
+                    err
+                )))
             }
         }),
     };
@@ -140,7 +142,7 @@ mod tests {
     #[test]
     fn test_run() {
         let args = args::RequestLogAnalyzerArgs {
-            filename: String::from("src/test/simple-1.log"),
+            filenames: vec![String::from("src/test/simple-1.log")],
             conditions: filter::FilterConditions {
                 include_terms: None,
                 exclude_terms: None,
@@ -168,7 +170,7 @@ mod tests {
     #[test]
     fn test_get_input_file() {
         let args = args::RequestLogAnalyzerArgs {
-            filename: String::from("src/test/simple-1.log"),
+            filenames: vec![String::from("src/test/simple-1.log")],
             conditions: filter::FilterConditions {
                 include_terms: None,
                 exclude_terms: None,
@@ -190,7 +192,7 @@ mod tests {
     #[test]
     fn test_get_input_non_existent_file() {
         let args = args::RequestLogAnalyzerArgs {
-            filename: String::from("src/test/non-existent.log"),
+            filenames: vec![String::from("src/test/non-existent.log")],
             conditions: filter::FilterConditions {
                 include_terms: None,
                 exclude_terms: None,
@@ -216,7 +218,7 @@ mod tests {
     #[test]
     fn test_get_input_stdin() {
         let args = args::RequestLogAnalyzerArgs {
-            filename: String::from("-"),
+            filenames: vec![String::from("-")],
             conditions: filter::FilterConditions {
                 include_terms: None,
                 exclude_terms: None,
@@ -238,7 +240,7 @@ mod tests {
     #[test]
     fn test_run_ignore_broken_lines() {
         let args = args::RequestLogAnalyzerArgs {
-            filename: String::from("src/test/broken.log"),
+            filenames: vec![String::from("src/test/broken.log")],
             conditions: filter::FilterConditions {
                 include_terms: None,
                 exclude_terms: None,
