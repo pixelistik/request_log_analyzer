@@ -25,6 +25,7 @@ use failure::{Error, err_msg};
 
 mod analyzer;
 mod args;
+mod multi_file;
 mod filter;
 mod log_parser;
 mod render;
