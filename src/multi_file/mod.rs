@@ -17,22 +17,20 @@ impl MultiFile {
 
 impl io::Read for MultiFile {
     fn read(&mut self, mut buf: &mut [u8]) -> io::Result<usize> {
-        println!("read()", );
         let read_size;
         {
             let mut file = match self.current_file {
                 Some(ref file) => file,
                 None => {
                     println!("No file yet");
-                    self.current_file =
-                        Some(File::open(&self.files_iterator.next().unwrap()).unwrap());
+                    self.current_file = Some(File::open(&self.files_iterator.next().unwrap())?);
                     println!("Opened file {:#?}", &self.current_file);
                     return self.read(&mut buf);
                 }
             };
             read_size = file.read(buf);
         }
-        println!("Read size {:?}", read_size);
+
         match read_size {
             Ok(0) => {
                 println!("Read 0 bytes, current file {:#?}", &self.current_file);
@@ -54,6 +52,7 @@ impl io::Read for MultiFile {
 #[cfg(test)]
 mod tests {
     use std::io;
+    use std::io::Read;
     use std::io::BufRead;
 
     use super::*;
@@ -83,5 +82,15 @@ mod tests {
 
         let result = reader.lines().count();
         assert_eq!(result, 8);
+    }
+
+    #[test]
+    fn test_read_non_existent() {
+        let filenames = Box::new(vec![String::from("src/test/non-existent.log")].into_iter());
+        let mut input = MultiFile::new(filenames);
+        let mut buffer = [0; 10];
+        let result = input.read(&mut buffer);
+
+        assert!(result.is_err());
     }
 }
