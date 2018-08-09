@@ -54,17 +54,6 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_instantiate() {
-        let filenames = Box::new(
-            vec![
-                String::from("src/test/simple-1.log"),
-                String::from("src/test/simple-2.log"),
-            ].into_iter(),
-        );
-        let _input = MultiFile::new(filenames);
-    }
-
-    #[test]
     fn test_read_all() {
         let filenames = Box::new(
             vec![
