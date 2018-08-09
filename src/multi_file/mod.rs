@@ -65,7 +65,7 @@ mod tests {
                 String::from("src/test/simple-2.log"),
             ].into_iter(),
         );
-        let input = MultiFile::new(filenames);
+        let _input = MultiFile::new(filenames);
     }
 
     #[test]
@@ -76,7 +76,7 @@ mod tests {
                 String::from("src/test/simple-2.log"),
             ].into_iter(),
         );
-        let mut input = MultiFile::new(filenames);
+        let input = MultiFile::new(filenames);
 
         let reader = io::BufReader::new(input);
 
