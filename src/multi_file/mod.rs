@@ -22,9 +22,7 @@ impl io::Read for MultiFile {
             let mut file = match self.current_file {
                 Some(ref file) => file,
                 None => {
-                    println!("No file yet");
                     self.current_file = Some(File::open(&self.files_iterator.next().unwrap())?);
-                    println!("Opened file {:#?}", &self.current_file);
                     return self.read(&mut buf);
                 }
             };
@@ -33,14 +31,12 @@ impl io::Read for MultiFile {
 
         match read_size {
             Ok(0) => {
-                println!("Read 0 bytes, current file {:#?}", &self.current_file);
                 self.current_file = match &self.files_iterator.next() {
                     Some(file) => Some(File::open(file).unwrap()),
                     None => {
                         return Ok(0);
                     }
                 };
-                println!("Opened file {:#?}", &self.current_file);
                 return self.read(&mut buf);
             }
             Ok(read_size) => Ok(read_size),
