@@ -1,7 +1,6 @@
 use std::io;
 use std::io::prelude::*;
 use std::net::TcpStream;
-use std::fs::File;
 use std::env;
 use std::process;
 
@@ -21,7 +20,7 @@ extern crate prometheus;
 extern crate hyper;
 
 extern crate failure;
-use failure::{Error, err_msg};
+use failure::Error;
 
 mod analyzer;
 mod args;
@@ -98,51 +97,9 @@ fn main() {
 fn get_input(args: &args::RequestLogAnalyzerArgs) -> Result<Box<io::Read>, Error> {
     let input: Box<io::Read> = match args.filenames[0].as_ref() {
         "-" => Box::new(io::stdin()),
-        // _ => Box::new(match File::open(&args.filenames[0]) {
-        //     Ok(file) => file,
-        //     Err(err) => {
-        //         return Err(err_msg(format!(
-        //             "Failed to open file {}: {}",
-        //             &args.filenames[0],
-        //             err
-        //         )))
-        //     }
-        // }),
         _ => {
-            if args.filenames.len() == 1 {
-                Box::new(match File::open(&args.filenames[0]) {
-                    Ok(file) => file,
-                    Err(err) => {
-                        return Err(err_msg(format!(
-                            "Failed to open file {}: {}",
-                            &args.filenames[0],
-                            err
-                        )))
-                    }
-                })
-            } else {
-                let file1 = match File::open(&args.filenames[0]) {
-                    Ok(file) => file,
-                    Err(err) => {
-                        return Err(err_msg(format!(
-                            "Failed to open file {}: {}",
-                            &args.filenames[0],
-                            err
-                        )))
-                    }
-                };
-                let file2 = match File::open(&args.filenames[1]) {
-                    Ok(file) => file,
-                    Err(err) => {
-                        return Err(err_msg(format!(
-                            "Failed to open file {}: {}",
-                            &args.filenames[0],
-                            err
-                        )))
-                    }
-                };
-                Box::new(file1.chain(file2))
-            }
+            let filenames = args.filenames.clone();
+            Box::new(multi_file::MultiFile::new(Box::new(filenames.into_iter())))
         }
     };
     Ok(input)
@@ -224,32 +181,6 @@ mod tests {
 
         let result = get_input(&args);
         assert!(result.is_ok());
-    }
-
-    #[test]
-    fn test_get_input_non_existent_file() {
-        let args = args::RequestLogAnalyzerArgs {
-            filenames: vec![String::from("src/test/non-existent.log")],
-            conditions: filter::FilterConditions {
-                include_terms: None,
-                exclude_terms: None,
-                latest_time: None,
-            },
-            graphite_server: None,
-            graphite_port: Some(2003),
-            graphite_prefix: None,
-            prometheus_listen: None,
-            influxdb_write_url: None,
-            influxdb_tags: None,
-            quiet: false,
-        };
-
-        let result = get_input(&args);
-        assert!(result.is_err());
-        let error_message = format!("{}", result.err().unwrap());
-        assert!(error_message.contains(
-            "Failed to open file src/test/non-existent.log",
-        ));
     }
 
     #[test]
