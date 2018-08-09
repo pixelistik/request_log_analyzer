@@ -7,9 +7,9 @@ pub struct MultiFile {
 }
 
 impl MultiFile {
-    pub fn new(filenames: Box<Iterator<Item = String>>) -> MultiFile {
+    pub fn new(filenames: Vec<String>) -> MultiFile {
         MultiFile {
-            files_iterator: filenames,
+            files_iterator: Box::new(filenames.into_iter()),
             current_file: None,
         }
     }
@@ -55,12 +55,10 @@ mod tests {
 
     #[test]
     fn test_read_all() {
-        let filenames = Box::new(
-            vec![
-                String::from("src/test/simple-1.log"),
-                String::from("src/test/simple-2.log"),
-            ].into_iter(),
-        );
+        let filenames = vec![
+            String::from("src/test/simple-1.log"),
+            String::from("src/test/simple-2.log"),
+        ];
         let input = MultiFile::new(filenames);
 
         let reader = io::BufReader::new(input);
@@ -71,7 +69,7 @@ mod tests {
 
     #[test]
     fn test_read_non_existent() {
-        let filenames = Box::new(vec![String::from("src/test/non-existent.log")].into_iter());
+        let filenames = vec![String::from("src/test/non-existent.log")];
         let mut input = MultiFile::new(filenames);
         let mut buffer = [0; 10];
         let result = input.read(&mut buffer);

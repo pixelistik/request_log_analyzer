@@ -99,7 +99,7 @@ fn get_input(args: &args::RequestLogAnalyzerArgs) -> Result<Box<io::Read>, Error
         "-" => Box::new(io::stdin()),
         _ => {
             let filenames = args.filenames.clone();
-            Box::new(multi_file::MultiFile::new(Box::new(filenames.into_iter())))
+            Box::new(multi_file::MultiFile::new(filenames))
         }
     };
     Ok(input)
