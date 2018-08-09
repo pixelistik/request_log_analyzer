@@ -37,7 +37,7 @@ impl io::Read for MultiFile {
         match read_size {
             Ok(0) => {
                 self.current_file = match &self.files_iterator.next() {
-                    Some(file) => Some(File::open(file).unwrap()),
+                    Some(file) => Some(File::open(file)?),
                     None => {
                         return Ok(0);
                     }
@@ -75,6 +75,19 @@ mod tests {
     #[test]
     fn test_read_non_existent() {
         let filenames = vec![String::from("src/test/non-existent.log")];
+        let mut input = MultiFile::new(filenames);
+        let mut buffer = [0; 10];
+        let result = input.read(&mut buffer);
+
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_read_second_non_existent() {
+        let filenames = vec![
+            String::from("src/test/empty.log"),
+            String::from("src/test/non-existent.log"),
+        ];
         let mut input = MultiFile::new(filenames);
         let mut buffer = [0; 10];
         let result = input.read(&mut buffer);
