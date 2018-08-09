@@ -22,7 +22,12 @@ impl io::Read for MultiFile {
             let mut file = match self.current_file {
                 Some(ref file) => file,
                 None => {
-                    self.current_file = Some(File::open(&self.files_iterator.next().unwrap())?);
+                    self.current_file = match &self.files_iterator.next() {
+                        Some(file) => Some(File::open(file)?),
+                        None => {
+                            return Ok(0);
+                        }
+                    };
                     return self.read(&mut buf);
                 }
             };
@@ -75,5 +80,16 @@ mod tests {
         let result = input.read(&mut buffer);
 
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_read_no_files_means_eof() {
+        let filenames = vec![];
+        let mut input = MultiFile::new(filenames);
+        let mut buffer = [0; 10];
+        let result = input.read(&mut buffer);
+
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), 0);
     }
 }
