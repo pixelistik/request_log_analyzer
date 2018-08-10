@@ -52,7 +52,7 @@ impl PrometheusRenderer {
                 "request_error_server_error_5xx_rate",
                 &registry,
             ),
-            registry: registry,
+            registry,
         }
     }
 }

@@ -16,9 +16,9 @@ impl<'a> GraphiteRenderer<'a> {
         stream: &'a mut Write,
     ) -> GraphiteRenderer<'a> {
         GraphiteRenderer {
-            time: time,
-            prefix: prefix,
-            stream: stream,
+            time,
+            prefix,
+            stream,
         }
     }
 }

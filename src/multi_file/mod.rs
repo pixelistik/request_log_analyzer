@@ -38,7 +38,7 @@ impl io::Read for MultiFile {
             Ok(0) => {
                 // EOF, proceed with next file
                 self.current_file = None;
-                return self.read(&mut buf);
+                self.read(&mut buf)
             }
             Ok(read_size) => Ok(read_size),
             Err(err) => Err(err),

@@ -29,10 +29,7 @@ impl hyper::server::Handler for HttpHandler {
 }
 
 pub fn listen_http(args: args::RequestLogAnalyzerArgs, binding_address: &str) {
-    let handler = HttpHandler {
-        args: args,
-        run: run,
-    };
+    let handler = HttpHandler { args, run };
 
     info!("listening addr {:?}", binding_address);
     hyper::server::Server::http(binding_address)

@@ -15,7 +15,7 @@ pub struct RequestResponsePairIterator<'a> {
 impl<'a> RequestResponsePairIterator<'a> {
     pub fn new(events: &'a mut Iterator<Item = log_events::LogEvent>) -> Self {
         RequestResponsePairIterator {
-            events: events,
+            events,
             requests: vec![],
             responses: vec![],
         }
@@ -67,10 +67,7 @@ fn extract_first_matching_request_response_pair(
             let request = requests.remove(request_index);
             let response = responses.remove(matching_response_index.unwrap());
 
-            let pair = RequestResponsePair {
-                request: request,
-                response: response,
-            };
+            let pair = RequestResponsePair { request, response };
 
             return Some(pair);
         }

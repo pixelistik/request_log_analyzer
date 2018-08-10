@@ -8,7 +8,7 @@ pub struct TerminalRenderer<'a> {
 
 impl<'a> TerminalRenderer<'a> {
     pub fn new(stream: &'a mut Write) -> TerminalRenderer {
-        TerminalRenderer { stream: stream }
+        TerminalRenderer { stream }
     }
 }
 

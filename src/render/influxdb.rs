@@ -12,7 +12,7 @@ impl InfluxDbRenderer {
     pub fn new(write_url: &str, tags: Option<String>) -> InfluxDbRenderer {
         InfluxDbRenderer {
             write_url: String::from(write_url),
-            tags: tags,
+            tags,
         }
     }
 }

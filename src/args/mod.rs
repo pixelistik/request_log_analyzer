@@ -16,7 +16,7 @@ pub struct RequestLogAnalyzerArgs {
     pub quiet: bool,
 }
 
-pub fn parse_args<'a, T>(args: T) -> Result<RequestLogAnalyzerArgs, Error>
+pub fn parse_args<T>(args: T) -> Result<RequestLogAnalyzerArgs, Error>
 where
     T: IntoIterator<Item = String>,
 {
@@ -180,15 +180,15 @@ where
     let quiet = app.is_present("quiet");
 
     Ok(RequestLogAnalyzerArgs {
-        filenames: filenames,
-        conditions: conditions,
-        graphite_server: graphite_server,
-        graphite_port: graphite_port,
-        graphite_prefix: graphite_prefix,
-        prometheus_listen: prometheus_listen,
-        influxdb_write_url: influxdb_write_url,
-        influxdb_tags: influxdb_tags,
-        quiet: quiet,
+        filenames,
+        conditions,
+        graphite_server,
+        graphite_port,
+        graphite_prefix,
+        prometheus_listen,
+        influxdb_write_url,
+        influxdb_tags,
+        quiet,
     })
 }
 

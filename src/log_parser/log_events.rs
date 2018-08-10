@@ -116,7 +116,7 @@ impl Response {
         Ok(Response {
             id: id_numeric,
             response_time: response_time_duration,
-            http_error: http_error,
+            http_error,
             original_log_line: log_line.to_string(),
         })
     }
