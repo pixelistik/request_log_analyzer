@@ -36,12 +36,8 @@ impl io::Read for MultiFile {
 
         match read_size {
             Ok(0) => {
-                self.current_file = match &self.files_iterator.next() {
-                    Some(file) => Some(File::open(file)?),
-                    None => {
-                        return Ok(0);
-                    }
-                };
+                // EOF, proceed with next file
+                self.current_file = None;
                 return self.read(&mut buf);
             }
             Ok(read_size) => Ok(read_size),
