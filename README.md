@@ -15,7 +15,7 @@ Clone the repository and run `cargo build --release`.
     Request.log Analyzer
 
     USAGE:
-        request_log_analyzer [OPTIONS] [--] [<FILE>]
+        request_log_analyzer [OPTIONS] [--] [FILES]...
 
     FLAGS:
         -h, --help       Prints help information
@@ -46,7 +46,7 @@ Clone the repository and run `cargo build --release`.
         -t <MINUTES>                                     Limit to the last n minutes
 
     ARGS:
-        <FILE>    Log file to analyze, defaults to stdin
+        <FILES>...    Log files to analyze, defaults to stdin
 
 ## Example output
     $ request_log_analyzer crx-quickstart/logs/request.log
