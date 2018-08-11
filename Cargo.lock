@@ -349,7 +349,7 @@ dependencies = [
 
 [[package]]
 name = "request_log_analyzer"
-version = "3.3.0"
+version = "3.4.0"
 dependencies = [
  "aggregated_stats 0.1.0 (git+https://github.com/pixelistik/aggregated_stats)",
  "chrono 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
