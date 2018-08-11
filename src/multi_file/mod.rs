@@ -17,22 +17,18 @@ impl MultiFile {
 
 impl io::Read for MultiFile {
     fn read(&mut self, mut buf: &mut [u8]) -> io::Result<usize> {
-        let read_size;
-        {
-            let mut file = match self.current_file {
-                Some(ref file) => file,
-                None => {
-                    self.current_file = match &self.files_iterator.next() {
-                        Some(file) => Some(File::open(file)?),
-                        None => {
-                            return Ok(0);
-                        }
-                    };
-                    return self.read(&mut buf);
-                }
-            };
-            read_size = file.read(buf);
-        }
+        let read_size = match self.current_file {
+            Some(ref mut file) => file.read(buf),
+            None => {
+                self.current_file = match &self.files_iterator.next() {
+                    Some(file) => Some(File::open(file)?),
+                    None => {
+                        return Ok(0);
+                    }
+                };
+                return self.read(&mut buf);
+            }
+        };
 
         match read_size {
             Ok(0) => {
