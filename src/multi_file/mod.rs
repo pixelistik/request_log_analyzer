@@ -55,6 +55,17 @@ mod tests {
     use super::*;
 
     #[test]
+    fn test_read_single() {
+        let filenames = vec![String::from("src/test/simple-1.log")];
+        let input = MultiFile::new(filenames);
+
+        let reader = io::BufReader::new(input);
+
+        let result = reader.lines().count();
+        assert_eq!(result, 4);
+    }
+
+    #[test]
     fn test_read_all() {
         let filenames = vec![
             String::from("src/test/simple-1.log"),
@@ -100,5 +111,19 @@ mod tests {
 
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), 0);
+    }
+
+    #[test]
+    fn test_read_with_gzip() {
+        let filenames = vec![
+            String::from("src/test/simple-1.log"),
+            String::from("src/test/simple-1.log.gz"),
+        ];
+        let input = MultiFile::new(filenames);
+
+        let reader = io::BufReader::new(input);
+
+        let result = reader.lines().count();
+        assert_eq!(result, 8);
     }
 }
