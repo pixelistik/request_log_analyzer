@@ -18,6 +18,7 @@ extern crate log;
 
 extern crate prometheus;
 extern crate hyper;
+extern crate flate2;
 
 extern crate failure;
 use failure::Error;
@@ -250,5 +251,27 @@ mod tests {
 
         let result = run(&args);
         assert_eq!(result.count, 4);
+    }
+
+    #[test]
+    fn test_run_gzipped_file() {
+        let args = args::RequestLogAnalyzerArgs {
+            filenames: vec![String::from("src/test/simple-1.log.gz")],
+            conditions: filter::FilterConditions {
+                include_terms: None,
+                exclude_terms: None,
+                latest_time: None,
+            },
+            graphite_server: None,
+            graphite_port: Some(2003),
+            graphite_prefix: None,
+            prometheus_listen: None,
+            influxdb_write_url: None,
+            influxdb_tags: None,
+            quiet: false,
+        };
+
+        let result = run(&args);
+        assert_eq!(result.count, 2);
     }
 }

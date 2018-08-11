@@ -35,6 +35,7 @@ env_logger = "*"
 prometheus = { git = "https://github.com/pingcap/rust-prometheus" }
 hyper = "0.10"
 aggregated_stats = { git = "https://github.com/pixelistik/aggregated_stats" }
+flate2 = "1.0"
 
 [profile.release]
 # https://lifthrasiir.github.io/rustlog/why-is-a-rust-executable-large.html

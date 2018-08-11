@@ -1,9 +1,10 @@
 use io;
 use std::fs::File;
+use flate2::read::GzDecoder;
 
 pub struct MultiFile {
     files_iterator: Box<Iterator<Item = String>>,
-    current_file: Option<File>,
+    current_file: Option<Box<io::Read>>,
 }
 
 impl MultiFile {
@@ -21,7 +22,10 @@ impl io::Read for MultiFile {
             Some(ref mut file) => file.read(buf),
             None => {
                 self.current_file = match &self.files_iterator.next() {
-                    Some(file) => Some(File::open(file)?),
+                    Some(file) if file.ends_with(".gz") => Some(Box::new(
+                        GzDecoder::new(File::open(file)?),
+                    )),
+                    Some(file) => Some(Box::new(File::open(file)?)),
                     None => {
                         return Ok(0);
                     }
