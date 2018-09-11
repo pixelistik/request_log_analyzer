@@ -25,6 +25,7 @@ impl<'a> Renderer for TerminalRenderer<'a> {
                 write(format!("time.min:\t{}", timing.min));
                 write(format!("time.median:\t{}", timing.median));
                 write(format!("time.90percent:\t{}", timing.percentile90));
+                write(format!("time.99percent:\t{}", timing.percentile99));
                 write(format!("time.max:\t{}", timing.max));
             }
             None => warn!("No matching log lines for timing results."),
@@ -79,7 +80,8 @@ mod tests {
                 min: 1,
                 avg: 37,
                 median: 10,
-                percentile90: 100,
+                percentile90: 90,
+                percentile99: 99,
                 count: 3,
             }),
             error: Some(analyzer::aggregated_error_rates::ErrorRatesResult {
@@ -112,7 +114,10 @@ mod tests {
             &String::from("time.median:\t10\n"),
         ));
         assert!(mock_write.write_calls.contains(&String::from(
-            "time.90percent:\t100\n",
+            "time.90percent:\t90\n",
+        )));
+        assert!(mock_write.write_calls.contains(&String::from(
+            "time.99percent:\t99\n",
         )));
         assert!(mock_write.write_calls.contains(
             &String::from("count:\t3\n"),

@@ -12,6 +12,7 @@ pub struct PrometheusRenderer {
     avg: prometheus::Gauge,
     median: prometheus::Gauge,
     percentile90: prometheus::Gauge,
+    percentile99: prometheus::Gauge,
     client_error_4xx_rate: prometheus::Gauge,
     server_error_5xx_rate: prometheus::Gauge,
 }
@@ -44,6 +45,7 @@ impl PrometheusRenderer {
             avg: make_and_register_gauge("request_time_avg", &registry),
             median: make_and_register_gauge("request_time_median", &registry),
             percentile90: make_and_register_gauge("request_time_percentile90", &registry),
+            percentile99: make_and_register_gauge("request_time_percentile99", &registry),
             client_error_4xx_rate: make_and_register_gauge(
                 "request_error_client_error_4xx_rate",
                 &registry,
@@ -68,6 +70,7 @@ impl Renderer for PrometheusRenderer {
                 self.avg.set(timing.avg as f64);
                 self.median.set(timing.median as f64);
                 self.percentile90.set(timing.percentile90 as f64);
+                self.percentile99.set(timing.percentile99 as f64);
             }
             None => {
                 warn!("No matching log lines in file.");
@@ -110,7 +113,8 @@ mod tests {
                 min: 1,
                 avg: 37,
                 median: 10,
-                percentile90: 100,
+                percentile90: 90,
+                percentile99: 99,
                 count: 3,
             }),
             error: Some(analyzer::aggregated_error_rates::ErrorRatesResult {
@@ -128,7 +132,8 @@ mod tests {
         assert!(buffer_text.contains("request_time_min 1"));
         assert!(buffer_text.contains("request_time_avg 37"));
         assert!(buffer_text.contains("request_time_median 10"));
-        assert!(buffer_text.contains("request_time_percentile90 100"));
+        assert!(buffer_text.contains("request_time_percentile90 90"));
+        assert!(buffer_text.contains("request_time_percentile99 99"));
         assert!(buffer_text.contains(
             "request_error_client_error_4xx_rate 0.1",
         ));
@@ -147,6 +152,7 @@ mod tests {
                 avg: 42,
                 median: 75,
                 percentile90: 900,
+                percentile99: 990,
                 count: 300,
             }),
             error: None,
@@ -162,6 +168,7 @@ mod tests {
         assert!(buffer_text.contains("request_time_avg 42"));
         assert!(buffer_text.contains("request_time_median 75"));
         assert!(buffer_text.contains("request_time_percentile90 900"));
+        assert!(buffer_text.contains("request_time_percentile99 990"));
     }
 
     #[test]
@@ -183,5 +190,6 @@ mod tests {
         assert!(buffer_text.contains("request_time_avg 0"));
         assert!(buffer_text.contains("request_time_median 0"));
         assert!(buffer_text.contains("request_time_percentile90 0"));
+        assert!(buffer_text.contains("request_time_percentile99 0"));
     }
 }

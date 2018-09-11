@@ -46,12 +46,13 @@ impl InfluxDbRenderer {
                 timing_values = format!(
                     ",\
     				time_max={},time_min={},time_avg={},time_median={},\
-                                         time_90percent={}",
+                                         time_90percent={},time_99percent={}",
                     timing.max,
                     timing.min,
                     timing.avg,
                     timing.median,
-                    timing.percentile90
+                    timing.percentile90,
+                    timing.percentile99
                 );
             }
             None => warn!("No matching log lines in file."),
@@ -92,7 +93,8 @@ mod tests {
                 min: 1,
                 avg: 37,
                 median: 10,
-                percentile90: 100,
+                percentile90: 90,
+                percentile99: 99,
                 count: 3,
             }),
             error: Some(analyzer::aggregated_error_rates::ErrorRatesResult {
@@ -120,7 +122,8 @@ mod tests {
         assert!(result.contains("time_min=1"));
         assert!(result.contains("time_avg=37"));
         assert!(result.contains("time_median=10"));
-        assert!(result.contains("time_90percent=100"));
+        assert!(result.contains("time_90percent=90"));
+        assert!(result.contains("time_99percent=99"));
         assert!(result.contains("client_error_4xx_rate=0.1"));
         assert!(result.contains("server_error_5xx_rate=0.2"));
     }
@@ -157,6 +160,7 @@ mod tests {
         assert!(!result.contains("time_avg="));
         assert!(!result.contains("time_median="));
         assert!(!result.contains("time_90percent="));
+        assert!(!result.contains("time_99percent="));
         assert!(!result.contains("client_error_4xx_rate="));
         assert!(!result.contains("server_error_5xx_rate="));
     }

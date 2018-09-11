@@ -60,6 +60,7 @@ impl<'a> Renderer for GraphiteRenderer<'a> {
                 write(format!("requests.time.avg {}", timing.avg));
                 write(format!("requests.time.median {}", timing.median));
                 write(format!("requests.time.90percent {}", timing.percentile90));
+                write(format!("requests.time.99percent {}", timing.percentile99));
             }
             None => warn!("No matching log lines in file."),
         }
@@ -114,7 +115,8 @@ mod tests {
                 min: 1,
                 avg: 37,
                 median: 10,
-                percentile90: 100,
+                percentile90: 90,
+                percentile99: 99,
                 count: 3,
             }),
             error: Some(analyzer::aggregated_error_rates::ErrorRatesResult {
@@ -165,14 +167,18 @@ mod tests {
         );
         assert_eq!(
             &mock_tcp_stream.write_calls[5],
-            "requests.time.90percent 100 1474576919\n"
+            "requests.time.90percent 90 1474576919\n"
         );
         assert_eq!(
             &mock_tcp_stream.write_calls[6],
-            "requests.error.client_error_4xx_rate 0.1 1474576919\n"
+            "requests.time.99percent 99 1474576919\n"
         );
         assert_eq!(
             &mock_tcp_stream.write_calls[7],
+            "requests.error.client_error_4xx_rate 0.1 1474576919\n"
+        );
+        assert_eq!(
+            &mock_tcp_stream.write_calls[8],
             "requests.error.server_error_5xx_rate 0.2 1474576919\n"
         );
     }
@@ -212,14 +218,18 @@ mod tests {
         );
         assert_eq!(
             &mock_tcp_stream.write_calls[5],
-            "my_prefix.requests.time.90percent 100 1474576919\n"
+            "my_prefix.requests.time.90percent 90 1474576919\n"
         );
         assert_eq!(
             &mock_tcp_stream.write_calls[6],
-            "my_prefix.requests.error.client_error_4xx_rate 0.1 1474576919\n"
+            "my_prefix.requests.time.99percent 99 1474576919\n"
         );
         assert_eq!(
             &mock_tcp_stream.write_calls[7],
+            "my_prefix.requests.error.client_error_4xx_rate 0.1 1474576919\n"
+        );
+        assert_eq!(
+            &mock_tcp_stream.write_calls[8],
             "my_prefix.requests.error.server_error_5xx_rate 0.2 1474576919\n"
         );
     }

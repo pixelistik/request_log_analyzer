@@ -77,7 +77,8 @@ mod tests {
                     min: 1,
                     avg: 37,
                     median: 10,
-                    percentile90: 100,
+                    percentile90: 90,
+                    percentile99: 99,
                     count: 3,
                 }),
                 error: None,
@@ -118,7 +119,8 @@ mod tests {
         assert!(result.contains("request_time_min 1"));
         assert!(result.contains("request_time_avg 37"));
         assert!(result.contains("request_time_median 10"));
-        assert!(result.contains("request_time_percentile90 100"));
+        assert!(result.contains("request_time_percentile90 90"));
+        assert!(result.contains("request_time_percentile99 99"));
 
     }
 }

@@ -11,6 +11,7 @@ pub struct TimingResult {
     pub avg: usize,
     pub median: usize,
     pub percentile90: usize,
+    pub percentile99: usize,
     pub count: usize,
 }
 
@@ -59,6 +60,7 @@ where
             avg: stats.average().unwrap() as usize,
             median: stats.median().unwrap() as usize,
             percentile90: stats.quantile(0.9).unwrap() as usize,
+            percentile99: stats.quantile(0.99).unwrap() as usize,
             count: stats.count(),
         }),
         error: error_rates.result(),
@@ -100,6 +102,7 @@ mod tests {
                 avg: 37,
                 median: 10,
                 percentile90: 100,
+                percentile99: 100,
                 count: 3,
             }),
             error: Some(ErrorRatesResult {
