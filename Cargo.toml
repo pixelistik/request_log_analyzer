@@ -28,7 +28,7 @@ https://crates.io/crates/prometheus
 """
 
 [dependencies]
-failure = "0.1.1"
+failure = "0.1.5"
 chrono = "0.4"
 clap = "2.27"
 log = "*"
