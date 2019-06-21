@@ -341,8 +341,8 @@ dependencies = [
 
 [[package]]
 name = "prometheus"
-version = "0.6.1"
-source = "git+https://github.com/pingcap/rust-prometheus#9c3d03c2baa0a8e07adf8286048d00d609a3cc1f"
+version = "0.7.0"
+source = "git+https://github.com/pingcap/rust-prometheus#0489e00f96c0ae0426947861f4d8faca02c92874"
 dependencies = [
  "cfg-if 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "fnv 1.0.6 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -415,7 +415,7 @@ dependencies = [
  "flate2 1.0.9 (registry+https://github.com/rust-lang/crates.io-index)",
  "hyper 0.10.13 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
- "prometheus 0.6.1 (git+https://github.com/pingcap/rust-prometheus)",
+ "prometheus 0.7.0 (git+https://github.com/pingcap/rust-prometheus)",
 ]
 
 [[package]]
@@ -653,7 +653,7 @@ dependencies = [
 "checksum num_cpus 1.8.0 (registry+https://github.com/rust-lang/crates.io-index)" = "c51a3322e4bca9d212ad9a158a02abc6934d005490c054a2778df73a70aa0a30"
 "checksum percent-encoding 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)" = "31010dd2e1ac33d5b46a5b413495239882813e0369f8ed8a5e266f173602f831"
 "checksum proc-macro2 0.4.19 (registry+https://github.com/rust-lang/crates.io-index)" = "ffe022fb8c8bd254524b0b3305906c1921fa37a84a644e29079a9e62200c3901"
-"checksum prometheus 0.6.1 (git+https://github.com/pingcap/rust-prometheus)" = "<none>"
+"checksum prometheus 0.7.0 (git+https://github.com/pingcap/rust-prometheus)" = "<none>"
 "checksum protobuf 2.6.0 (registry+https://github.com/rust-lang/crates.io-index)" = "3959be8d6250192f80ef056c0a4aaaeaff8a25e904e6e7a0f5285cb1a061835f"
 "checksum quick-error 1.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "9274b940887ce9addde99c4eee6b5c44cc494b182b97e73dc8ffdcb3397fd3f0"
 "checksum quote 0.6.8 (registry+https://github.com/rust-lang/crates.io-index)" = "dd636425967c33af890042c483632d33fa7a18f19ad1d7ea72e8998c6ef8dea5"
