@@ -1,6 +1,6 @@
 [package]
 name = "request_log_analyzer"
-version = "4.0.0"
+version = "4.0.1"
 authors = ["pixelistik"]
 repository = "https://github.com/pixelistik/request_log_analyzer"
 license = "MIT"
