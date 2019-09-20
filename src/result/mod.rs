@@ -1,4 +1,4 @@
-use analyzer;
+use crate::analyzer;
 
 #[derive(PartialEq, Debug, Clone)]
 pub struct RequestLogAnalyzerResult {

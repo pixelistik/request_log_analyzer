@@ -1,6 +1,6 @@
-use log_parser::log_events::HttpError;
-use request_response_matcher;
-use log_parser::*;
+use crate::log_parser::log_events::HttpError;
+use crate::request_response_matcher;
+use crate::log_parser::*;
 
 #[derive(PartialEq, Debug, Clone)]
 pub struct ErrorRatesResult {

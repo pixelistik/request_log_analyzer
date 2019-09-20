@@ -1,4 +1,4 @@
-use log_parser::*;
+use crate::log_parser::*;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct RequestResponsePair {
@@ -79,9 +79,9 @@ fn extract_first_matching_request_response_pair(
 mod tests {
     use chrono::*;
     use super::*;
-    use log_parser;
-    use analyzer::Timing;
-    use analyzer::aggregated_error_rates::HttpErrorState;
+    use crate::log_parser;
+    use crate::analyzer::Timing;
+    use crate::analyzer::aggregated_error_rates::HttpErrorState;
 
     #[test]
     fn test_extract_matching_request_response_pairs_iterator() {
@@ -112,7 +112,7 @@ mod tests {
 
     #[test]
     fn test_timing_trait() {
-        let timing: &Timing = &RequestResponsePair {
+        let timing: &dyn Timing = &RequestResponsePair {
             request: log_parser::log_events::Request {
                 id: 1,
                 time: DateTime::parse_from_str(
@@ -127,7 +127,7 @@ mod tests {
                 original_log_line: "whatever".to_string(),
                 http_error: None,
             },
-        } as &Timing;
+        } as &dyn Timing;
 
         let result: i64 = timing.num_milliseconds();
         assert_eq!(result, 7);
@@ -140,7 +140,7 @@ mod tests {
 
     #[test]
     fn test_http_error_state_trait() {
-        let state: &HttpErrorState = &RequestResponsePair {
+        let state: &dyn HttpErrorState = &RequestResponsePair {
             request: log_parser::log_events::Request {
                 id: 1,
                 time: DateTime::parse_from_str(
@@ -155,7 +155,7 @@ mod tests {
                 original_log_line: "whatever".to_string(),
                 http_error: None,
             },
-        } as &HttpErrorState;
+        } as &dyn HttpErrorState;
 
         let result = state.error();
         assert_eq!(result, None);

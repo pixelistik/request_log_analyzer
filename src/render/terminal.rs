@@ -1,6 +1,6 @@
 use std::io::prelude::*;
-use result;
-use render::Renderer;
+use crate::result;
+use crate::render::Renderer;
 
 pub struct TerminalRenderer<'a> {
     stream: &'a mut dyn Write,
@@ -52,7 +52,7 @@ mod tests {
     use std::io;
     use std::io::prelude::*;
     use std::str;
-    use analyzer;
+    use crate::analyzer;
     use super::*;
 
     struct MockWrite {

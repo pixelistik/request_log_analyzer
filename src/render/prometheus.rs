@@ -102,7 +102,7 @@ impl Renderer for PrometheusRenderer {
 mod tests {
     use std::str;
     use super::*;
-    use analyzer;
+    use crate::analyzer;
 
     #[test]
     fn test_render_1() {

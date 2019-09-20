@@ -1,10 +1,10 @@
-use args;
-use result;
+use crate::args;
+use crate::result;
 use hyper;
 use prometheus::Encoder;
-use render;
-use render::Renderer;
-use run;
+use crate::render;
+use crate::render::Renderer;
+use crate::run;
 
 struct HttpHandler {
     args: args::RequestLogAnalyzerArgs,
@@ -45,8 +45,8 @@ mod tests {
     use hyper::server::Handler;
     use hyper;
 
-    use filter;
-    use analyzer;
+    use crate::filter;
+    use crate::analyzer;
     use super::*;
 
     mod mock;
@@ -95,7 +95,7 @@ mod tests {
             mock::MockStream::with_input(b"GET / HTTP/1.0\r\n\r\n");
 
         let mut reader = hyper::buffer::BufReader::new(
-            &mut request_mock_network_stream as &mut hyper::net::NetworkStream,
+            &mut request_mock_network_stream as &mut dyn hyper::net::NetworkStream,
         );
 
         let socket = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 8080);

@@ -1,4 +1,4 @@
-use request_response_matcher::*;
+use crate::request_response_matcher::*;
 use chrono::*;
 
 #[derive(PartialEq, Debug)]
@@ -44,7 +44,7 @@ pub fn matches_filter(pair: &RequestResponsePair, conditions: &FilterConditions)
 
 #[cfg(test)]
 mod tests {
-    use log_parser::log_events::*;
+    use crate::log_parser::log_events::*;
     use chrono::*;
     use super::*;
 

@@ -1,6 +1,6 @@
 use aggregated_stats;
-use result;
-use request_response_matcher;
+use crate::result;
+use crate::request_response_matcher;
 
 pub mod aggregated_error_rates;
 
@@ -69,10 +69,10 @@ where
 
 #[cfg(test)]
 mod tests {
-    use result;
-    use analyzer::aggregated_error_rates::HttpErrorState;
-    use analyzer::aggregated_error_rates::ErrorRatesResult;
-    use log_parser::log_events::HttpError;
+    use crate::result;
+    use crate::analyzer::aggregated_error_rates::HttpErrorState;
+    use crate::analyzer::aggregated_error_rates::ErrorRatesResult;
+    use crate::log_parser::log_events::HttpError;
     use super::*;
 
     impl Timing for i64 {

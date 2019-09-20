@@ -1,7 +1,7 @@
 use chrono::*;
 use std::io::prelude::*;
-use render::Renderer;
-use result;
+use crate::render::Renderer;
+use crate::result;
 
 pub struct GraphiteRenderer<'a> {
     time: DateTime<Utc>,
@@ -87,7 +87,7 @@ mod tests {
     use std::io::prelude::*;
     use std::str;
     use chrono::*;
-    use analyzer;
+    use crate::analyzer;
     use super::*;
 
     struct MockTcpStream {

@@ -1,6 +1,6 @@
 use clap::{Arg, App};
 use chrono::*;
-use filter;
+use crate::filter;
 use failure::{Error, err_msg};
 
 #[derive(PartialEq, Debug)]
@@ -194,7 +194,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use filter;
+    use crate::filter;
     use chrono::*;
     use super::*;
 

@@ -1,5 +1,5 @@
-use render::Renderer;
-use result;
+use crate::render::Renderer;
+use crate::result;
 use hyper;
 use hyper::client;
 
@@ -82,7 +82,7 @@ impl InfluxDbRenderer {
 
 #[cfg(test)]
 mod tests {
-    use analyzer;
+    use crate::analyzer;
     use super::*;
 
     fn get_result_fixture() -> result::RequestLogAnalyzerResult {
