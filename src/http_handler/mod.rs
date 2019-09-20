@@ -1,5 +1,6 @@
 use crate::args;
 use crate::result;
+use log::info;
 use hyper;
 use prometheus::Encoder;
 use crate::render;

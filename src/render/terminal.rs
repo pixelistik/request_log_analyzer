@@ -1,6 +1,7 @@
 use std::io::prelude::*;
 use crate::result;
 use crate::render::Renderer;
+use log::warn;
 
 pub struct TerminalRenderer<'a> {
     stream: &'a mut dyn Write,

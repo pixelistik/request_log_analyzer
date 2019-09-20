@@ -1,4 +1,4 @@
-use clap::{Arg, App};
+use clap::{Arg, App, crate_authors, crate_version, crate_description};
 use chrono::*;
 use crate::filter;
 use failure::{Error, err_msg};

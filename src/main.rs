@@ -3,24 +3,7 @@ use std::io::prelude::*;
 use std::net::TcpStream;
 use std::env;
 use std::process;
-
-extern crate chrono;
 use chrono::*;
-
-extern crate aggregated_stats;
-
-#[macro_use]
-extern crate clap;
-
-extern crate env_logger;
-#[macro_use]
-extern crate log;
-
-extern crate prometheus;
-extern crate hyper;
-extern crate flate2;
-
-extern crate failure;
 use failure::Error;
 
 mod analyzer;

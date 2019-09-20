@@ -1,3 +1,4 @@
+use log::warn;
 use crate::render::Renderer;
 use crate::result;
 use hyper;
