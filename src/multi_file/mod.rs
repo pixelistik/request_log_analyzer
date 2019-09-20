@@ -3,8 +3,8 @@ use std::fs::File;
 use flate2::read::GzDecoder;
 
 pub struct MultiFile {
-    files_iterator: Box<Iterator<Item = String>>,
-    current_file: Option<Box<io::Read>>,
+    files_iterator: Box<dyn Iterator<Item = String>>,
+    current_file: Option<Box<dyn io::Read>>,
 }
 
 impl MultiFile {

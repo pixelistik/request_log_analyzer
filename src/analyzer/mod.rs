@@ -25,7 +25,7 @@ impl Timing for request_response_matcher::RequestResponsePair {
     }
 }
 
-impl Timing for Box<Timing> {
+impl Timing for Box<dyn Timing> {
     fn num_milliseconds(&self) -> i64 {
         (**self).num_milliseconds()
     }

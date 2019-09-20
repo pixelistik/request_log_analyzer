@@ -6,14 +6,14 @@ use result;
 pub struct GraphiteRenderer<'a> {
     time: DateTime<Utc>,
     prefix: Option<String>,
-    stream: &'a mut Write,
+    stream: &'a mut dyn Write,
 }
 
 impl<'a> GraphiteRenderer<'a> {
     pub fn new(
         time: DateTime<Utc>,
         prefix: Option<String>,
-        stream: &'a mut Write,
+        stream: &'a mut dyn Write,
     ) -> GraphiteRenderer<'a> {
         GraphiteRenderer {
             time,

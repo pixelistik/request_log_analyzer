@@ -7,13 +7,13 @@ pub struct RequestResponsePair {
 }
 
 pub struct RequestResponsePairIterator<'a> {
-    events: &'a mut Iterator<Item = log_events::LogEvent>,
+    events: &'a mut dyn Iterator<Item = log_events::LogEvent>,
     requests: Vec<log_events::Request>,
     responses: Vec<log_events::Response>,
 }
 
 impl<'a> RequestResponsePairIterator<'a> {
-    pub fn new(events: &'a mut Iterator<Item = log_events::LogEvent>) -> Self {
+    pub fn new(events: &'a mut dyn Iterator<Item = log_events::LogEvent>) -> Self {
         RequestResponsePairIterator {
             events,
             requests: vec![],

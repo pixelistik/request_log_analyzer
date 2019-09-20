@@ -18,7 +18,7 @@ impl HttpErrorState for request_response_matcher::RequestResponsePair {
     }
 }
 
-impl HttpErrorState for Box<HttpErrorState> {
+impl HttpErrorState for Box<dyn HttpErrorState> {
     fn error(&self) -> Option<log_events::HttpError> {
         (**self).error()
     }

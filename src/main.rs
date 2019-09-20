@@ -53,7 +53,7 @@ fn main() {
         let mut stream;
         let mut stdout;
 
-        let mut renderers: Vec<Box<render::Renderer>>;
+        let mut renderers: Vec<Box<dyn render::Renderer>>;
         renderers = vec![];
 
         if !args.quiet {
@@ -95,8 +95,8 @@ fn main() {
     }
 }
 
-fn get_input(args: &args::RequestLogAnalyzerArgs) -> Result<Box<io::Read>, Error> {
-    let input: Box<io::Read> = match args.filenames[0].as_ref() {
+fn get_input(args: &args::RequestLogAnalyzerArgs) -> Result<Box<dyn io::Read>, Error> {
+    let input: Box<dyn io::Read> = match args.filenames[0].as_ref() {
         "-" => Box::new(io::stdin()),
         _ => {
             let filenames = args.filenames.clone();

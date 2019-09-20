@@ -3,11 +3,11 @@ use result;
 use render::Renderer;
 
 pub struct TerminalRenderer<'a> {
-    stream: &'a mut Write,
+    stream: &'a mut dyn Write,
 }
 
 impl<'a> TerminalRenderer<'a> {
-    pub fn new(stream: &'a mut Write) -> TerminalRenderer {
+    pub fn new(stream: &'a mut dyn Write) -> TerminalRenderer {
         TerminalRenderer { stream }
     }
 }
