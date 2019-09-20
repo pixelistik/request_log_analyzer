@@ -1,4 +1,4 @@
-use crate::io;
+use std::io;
 use std::fs::File;
 use flate2::read::GzDecoder;
 
