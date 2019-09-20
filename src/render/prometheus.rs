@@ -1,4 +1,4 @@
-use prometheus::{Registry, Gauge, Encoder, TextEncoder};
+use ::prometheus::{Registry, Gauge, Encoder, TextEncoder};
 
 use super::*;
 
