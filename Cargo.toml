@@ -33,7 +33,7 @@ chrono = "0.4"
 clap = "2.33"
 log = "*"
 env_logger = "*"
-prometheus = { git = "https://github.com/pingcap/rust-prometheus" }
+prometheus = "0.7.0"
 hyper = "~0.10"
 aggregated_stats = { git = "https://github.com/pixelistik/aggregated_stats" }
 flate2 = "1.0"
