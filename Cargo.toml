@@ -2,6 +2,7 @@
 name = "request_log_analyzer"
 version = "4.0.2"
 authors = ["pixelistik"]
+edition = "2018"
 repository = "https://github.com/pixelistik/request_log_analyzer"
 license = "MIT"
 description = """
