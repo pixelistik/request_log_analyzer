@@ -359,7 +359,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "request_log_analyzer"
-version = "4.0.3"
+version = "4.0.4"
 dependencies = [
  "aggregated_stats 0.1.0 (git+https://github.com/pixelistik/aggregated_stats)",
  "chrono 0.4.10 (registry+https://github.com/rust-lang/crates.io-index)",
