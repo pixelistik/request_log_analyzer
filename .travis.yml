@@ -53,8 +53,6 @@ matrix:
 before_install:
   - set -e
   - rustup self update
-  - echo 'DOCKER_OPTS="$DOCKER_OPTS --registry-mirror=https://mirror.gcr.io"'
-  - sudo service docker restart
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then echo 'DOCKER_OPTS="$DOCKER_OPTS --registry-mirror=https://mirror.gcr.io"'; sudo service docker restart; fi
 
 install:
