@@ -113,7 +113,7 @@ With the `-t` param, only the most recent _n_ minutes will be taken into account
 		-t 180 \
 		crx-quickstart/logs/request.log
 
-We look at request/resonse lines that contain "text/html" (the MIME type) or a path from the DAM, but we exclude POST requests. Also, we are only interested in the latest 3 hours.
+We look at request/response lines that contain "text/html" (the MIME type) or a path from the DAM, but we exclude POST requests. Also, we are only interested in the latest 3 hours.
 
 ### Piped log data
 
