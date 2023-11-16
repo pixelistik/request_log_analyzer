@@ -35,7 +35,7 @@ clap = "2.34"
 log = "0.4.20"
 env_logger = "*"
 prometheus = "0.13.3"
-hyper = "~0.10"
+hyper = "~1.0"
 aggregated_stats = { git = "https://github.com/pixelistik/aggregated_stats" }
 flate2 = "1.0"
 
